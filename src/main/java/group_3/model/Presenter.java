@@ -23,4 +23,16 @@ public class Presenter extends Person {
     public String getPresenterRole() {
         return presenterRole;
     }
+
+    public String getStatistics() {
+        return statistics;
+    }
+
+    public void setPresenterRole(String presenterRole) {
+        this.presenterRole = presenterRole;
+    }
+
+    public void setStatistics(String statistics) {
+        this.statistics = statistics;
+    }
 }

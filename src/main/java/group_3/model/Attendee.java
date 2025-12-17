@@ -20,4 +20,8 @@ public class Attendee extends Person {
     public String getHistory() {
         return history;
     }
+
+    public void setHistory(String history) {
+        this.history = history;
+    }
 }
