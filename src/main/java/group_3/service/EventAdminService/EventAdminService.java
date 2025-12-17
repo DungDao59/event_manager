@@ -1,4 +1,4 @@
-package group_3.service;
+package group_3.service.EventAdminService;
 
 import group_3.model.Event;
 import group_3.model.Session;

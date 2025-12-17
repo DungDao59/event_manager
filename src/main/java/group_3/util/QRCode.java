@@ -15,7 +15,7 @@ public final class QRCode {
                 ticket.getTicketID(),
                 ticket.getAttendeeID(),
                 ticket.getEventID(),
-                ticket.getSessionID() == 0 ? "null" : ticket.getSessionID(),
+                ticket.getSessionID() == 0 ? "null" : ticket.getSessionID()
         );
     }
 }

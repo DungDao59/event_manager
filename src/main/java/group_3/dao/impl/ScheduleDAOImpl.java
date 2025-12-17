@@ -28,8 +28,8 @@ public class ScheduleDAOImpl implements ScheduleDAO {
 
     @Override
     public void update(Schedule_entry scheduleEntry) {
-        String sql = "UPDATE schedule_entry" +
-                "SET person_id = ?, session_id = ?, start_time = ?, end_time = ?" +
+        String sql = "UPDATE schedule_entry " +
+                "SET person_id = ?, session_id = ?, start_time = ?, end_time = ? " +
                 "WHERE session_id = ?";
 
         try (Connection connection = DatabaseConnection.getConnection();
@@ -61,8 +61,8 @@ public class ScheduleDAOImpl implements ScheduleDAO {
 
     @Override
     public boolean deleteByUserAndSession(int userID, int sessionID) {
-        String sql = "DELETE FROM schedule_entry" +
-                "WHERE user_id = ? AND session_id = ?";
+        String sql = "DELETE FROM schedule_entry " +
+                "WHERE person_id = ? AND session_id = ?";
 
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {

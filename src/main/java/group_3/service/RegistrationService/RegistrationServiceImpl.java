@@ -1,4 +1,4 @@
-package group_3.service;
+package group_3.service.RegistrationService;
 
 import group_3.dao.*;
 import group_3.dao.impl.*;
@@ -8,7 +8,7 @@ import group_3.model.enums.TicketType;
 
 import java.util.ArrayList;
 
-public class RegistrationService {
+public class RegistrationServiceImpl implements RegistrationService{
     private final TicketDAO ticketDAO =  new TicketDAOImpl();
     private final ScheduleDAO scheduleDAO = new ScheduleDAOImpl();
 
@@ -30,6 +30,7 @@ public class RegistrationService {
         } return false;
     }
 
+    @Override
     public boolean registerAttendee(int AttendeeId, int newSessionId, TicketType ticketType, double ticketPrice) {
         if (checkPersonConflict (AttendeeId, newSessionId)) {return false;}
         Session s = getSessionById(newSessionId);
@@ -54,6 +55,7 @@ public class RegistrationService {
         return true;
     }
 
+    @Override
     public boolean cancelTicket(int id)  {
         Ticket ticket = ticketDAO.findById(id);
         if (ticket == null) {
