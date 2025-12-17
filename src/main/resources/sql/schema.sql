@@ -99,7 +99,7 @@ CREATE TABLE
       FOREIGN KEY (session_id) REFERENCES session (session_id) ON DELETE CASCADE
    );
 
--- SESSION PRESENTER TABLE
+-- SESSION PRESENTER TABLE --
 CREATE TABLE
    session_presenter (
       session_id INT NOT NULL,
@@ -125,6 +125,7 @@ CREATE TABLE
       FOREIGN KEY (session_id) REFERENCES session (session_id) ON DELETE CASCADE
    );
 
+-- SCHEDULE-ENTRY TABLE --
 CREATE TABLE
    schedule_entry (
       schedule_id SERIAL PRIMARY KEY,
