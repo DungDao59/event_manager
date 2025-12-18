@@ -1,25 +1,24 @@
 package group_3.dao.impl;
 
-import group_3.model.Session;
-import group_3.dao.SessionDAO;
-import group_3.util.DatabaseConnection;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Time;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import group_3.dao.SessionDAO;
+import group_3.model.Session;
+import group_3.util.DatabaseConnection;
+
 /**
  * Implementation of SessionDAO interface.
  * Handles database operations for Session entities.
  * 
- * Author: Group 3
+ * Author: Tram Anh Tuan - s4075376 
  */
 public class SessionDAOImpl implements SessionDAO {
 
@@ -34,16 +33,15 @@ public class SessionDAOImpl implements SessionDAO {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            LocalDateTime scheduledDateTime = session.getScheduledDateTime();
+            int eventId = session.getEventId() != null ? Integer.parseInt(session.getEventId()) : 1;
             
-            ps.setInt(1, extractEventIdFromSessionId(session.getSessionId()));
+            ps.setInt(1, eventId);
             ps.setString(2, session.getTitle());
             ps.setString(3, session.getDescription());
-            ps.setDate(4, java.sql.Date.valueOf(scheduledDateTime.toLocalDate()));
-            ps.setTime(5, java.sql.Time.valueOf(scheduledDateTime.toLocalTime()));
-            ps.setTime(6, java.sql.Time.valueOf(scheduledDateTime.toLocalTime().plusHours(1))); // Default 1 hour duration
-            ps.setString(7, session.getVenue());
-            ps.setInt(8, session.getCapacity());
+            ps.setTimestamp(4, java.sql.Timestamp.valueOf(session.getStartTime()));
+            ps.setTimestamp(5, java.sql.Timestamp.valueOf(session.getEndTime() != null ? session.getEndTime() : session.getStartTime().plusHours(1)));
+            ps.setString(6, session.getVenue());
+            ps.setInt(7, session.getCapacity());
 
             ps.executeUpdate();
             ResultSet rs = ps.getGeneratedKeys();
@@ -131,18 +129,18 @@ public class SessionDAOImpl implements SessionDAO {
 
     @Override
     public void update(Session session) {
-        String sql = "UPDATE session SET title = ?, description = ?, scheduled_date = ?, " +
+        String sql = "UPDATE session SET event_id = ?, title = ?, description = ?, scheduled_date = ?, " +
                 "start_time = ?, end_time = ?, venue = ?, capacity = ? WHERE session_id = ?";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            LocalDateTime scheduledDateTime = session.getScheduledDateTime();
+            int eventId = session.getEventId() != null ? Integer.parseInt(session.getEventId()) : 1;
             
-            ps.setString(1, session.getTitle());
-            ps.setString(2, session.getDescription());
-            ps.setDate(3, java.sql.Date.valueOf(scheduledDateTime.toLocalDate()));
-            ps.setTime(4, java.sql.Time.valueOf(scheduledDateTime.toLocalTime()));
-            ps.setTime(5, java.sql.Time.valueOf(scheduledDateTime.toLocalTime().plusHours(1)));
+            ps.setInt(1, eventId);
+            ps.setString(2, session.getTitle());
+            ps.setString(3, session.getDescription());
+            ps.setTimestamp(4, java.sql.Timestamp.valueOf(session.getStartTime()));
+            ps.setTimestamp(5, java.sql.Timestamp.valueOf(session.getEndTime() != null ? session.getEndTime() : session.getStartTime().plusHours(1)));
             ps.setString(6, session.getVenue());
             ps.setInt(7, session.getCapacity());
             ps.setInt(8, Integer.parseInt(session.getSessionId()));
@@ -222,39 +220,28 @@ public class SessionDAOImpl implements SessionDAO {
      */
     private Session mapRowToSession(ResultSet rs) throws SQLException {
         int id = rs.getInt("session_id");
+        int eventId = rs.getInt("event_id");
         String title = rs.getString("title");
         String description = rs.getString("description");
-        java.sql.Date scheduledDate = rs.getDate("scheduled_date");
-        Time startTime = rs.getTime("start_time");
+        java.sql.Timestamp startTimeSql = rs.getTimestamp("start_time");
+        java.sql.Timestamp endTimeSql = rs.getTimestamp("end_time");
         String venue = rs.getString("venue");
         int capacity = rs.getInt("capacity");
 
-        LocalDateTime scheduledDateTime = LocalDateTime.of(
-                scheduledDate.toLocalDate(),
-                startTime.toLocalTime()
-        );
+        LocalDateTime startTime = startTimeSql != null ? startTimeSql.toLocalDateTime() : LocalDateTime.now();
+        LocalDateTime endTime = endTimeSql != null ? endTimeSql.toLocalDateTime() : startTime.plusHours(1);
 
         Session session = new Session(
                 String.valueOf(id),
+                String.valueOf(eventId),
                 title,
                 description,
-                scheduledDateTime,
+                startTime,
+                endTime,
                 venue,
                 capacity
         );
         return session;
     }
-
-    /**
-     * Helper method to extract event ID from session (placeholder implementation).
-     * In a real scenario, this might require a database lookup or be passed differently.
-     * @param sessionId the session ID
-     * @return the event ID (default: 1 for now)
-     */
-    @SuppressWarnings("unused")
-    private int extractEventIdFromSessionId(String sessionId) {
-        // This is a simplified implementation - in production, you'd likely have
-        // event_id available or need to query the database
-        return 1;
-    }
 }
+
