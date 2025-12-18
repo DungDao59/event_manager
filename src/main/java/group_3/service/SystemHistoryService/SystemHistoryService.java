@@ -4,7 +4,7 @@ import group_3.model.SystemHistory;
 import java.util.*;
 
 public interface SystemHistoryService {
-    void logAction(int adminId, String action, String entity, int entityId, String description);
+    void logAction(Integer user_id, String operationType, String details);
 
     List<SystemHistory> getAllHistory();
 }
