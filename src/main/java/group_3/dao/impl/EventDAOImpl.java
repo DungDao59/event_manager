@@ -1,9 +1,5 @@
 package group_3.dao.impl;
 
-import group_3.model.Event;
-import group_3.dao.EventDAO;
-import group_3.util.DatabaseConnection;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,6 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import group_3.dao.EventDAO;
+import group_3.model.Event;
+import group_3.model.enums.EventStatus;
+import group_3.model.enums.EventType;
+import group_3.util.DatabaseConnection;
 /**
  * Implementation of EventDAO interface.
  * Handles database operations for Event entities.
@@ -28,17 +29,18 @@ public class EventDAOImpl implements EventDAO {
 
     @Override
     public void create(Event event) {
-        String sql = "INSERT INTO event (name, type, start_date, end_date, location, duration, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO event (name, type, start_date, end_date, location, duration, status, event_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, event.getName());
             ps.setString(2, event.getType() != null ? event.getType().name() : null);
-            ps.setDate(3, java.sql.Date.valueOf(event.getDate().toLocalDate()));
-            ps.setDate(4, java.sql.Date.valueOf(event.getDate().toLocalDate().plusDays(event.getDuration())));
+            ps.setTimestamp(3, java.sql.Timestamp.valueOf(event.getStartDate()));
+            ps.setTimestamp(4, java.sql.Timestamp.valueOf(event.getEndDate()));
             ps.setString(5, event.getLocation());
             ps.setInt(6, event.getDuration());
-            ps.setString(7, "SCHEDULED");
+            ps.setString(7, event.getStatus() != null ? event.getStatus().name() : "SCHEDULED");
+            ps.setString(8, event.getEventImage());
 
             ps.executeUpdate();
             ResultSet rs = ps.getGeneratedKeys();
@@ -106,17 +108,19 @@ public class EventDAOImpl implements EventDAO {
 
     @Override
     public void update(Event event) {
-        String sql = "UPDATE event SET name = ?, type = ?, start_date = ?, end_date = ?, location = ?, duration = ? WHERE event_id = ?";
+        String sql = "UPDATE event SET name = ?, type = ?, start_date = ?, end_date = ?, location = ?, duration = ?, status = ?, event_image = ? WHERE event_id = ?";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, event.getName());
             ps.setString(2, event.getType() != null ? event.getType().name() : null);
-            ps.setDate(3, java.sql.Date.valueOf(event.getDate().toLocalDate()));
-            ps.setDate(4, java.sql.Date.valueOf(event.getDate().toLocalDate().plusDays(event.getDuration())));
+            ps.setTimestamp(3, java.sql.Timestamp.valueOf(event.getStartDate()));
+            ps.setTimestamp(4, java.sql.Timestamp.valueOf(event.getEndDate()));
             ps.setString(5, event.getLocation());
             ps.setInt(6, event.getDuration());
-            ps.setString(7, event.getEventId());
+            ps.setString(7, event.getStatus() != null ? event.getStatus().name() : "SCHEDULED");
+            ps.setString(8, event.getEventImage());
+            ps.setInt(9, Integer.parseInt(event.getEventId()));
 
             ps.executeUpdate();
         } catch (Exception e) {
@@ -177,22 +181,35 @@ public class EventDAOImpl implements EventDAO {
         int id = rs.getInt("event_id");
         String name = rs.getString("name");
         String typeStr = rs.getString("type");
-        java.sql.Date startDate = rs.getDate("start_date");
+        java.sql.Timestamp startDateSql = rs.getTimestamp("start_date");
+        java.sql.Timestamp endDateSql = rs.getTimestamp("end_date");
         String location = rs.getString("location");
         int duration = rs.getInt("duration");
+        String statusStr = rs.getString("status");
+        String eventImage = rs.getString("event_image");
 
-        Event.Type type = null;
+        EventType type = null;
         if (typeStr != null) {
             try {
-                type = Event.Type.valueOf(typeStr);
+                type = EventType.valueOf(typeStr);
             } catch (IllegalArgumentException e) {
-                // Default to CONFERENCE if invalid
-                type = Event.Type.CONFERENCE;
+                type = EventType.CONFERENCE;
             }
         }
 
-        LocalDateTime dateTime = startDate != null ? startDate.toLocalDate().atStartOfDay() : LocalDateTime.now();
-        Event event = new Event(String.valueOf(id), name, type, dateTime, location, duration);
+        EventStatus status = EventStatus.SCHEDULED;
+        if (statusStr != null) {
+            try {
+                status = EventStatus.valueOf(statusStr);
+            } catch (IllegalArgumentException e) {
+                status = EventStatus.SCHEDULED;
+            }
+        }
+
+        LocalDateTime startDate = startDateSql != null ? startDateSql.toLocalDateTime() : LocalDateTime.now();
+        LocalDateTime endDate = endDateSql != null ? endDateSql.toLocalDateTime() : startDate.plusDays(duration);
+
+        Event event = new Event(String.valueOf(id), name, type, startDate, endDate, location, duration, status, eventImage);
         return event;
     }
 }
