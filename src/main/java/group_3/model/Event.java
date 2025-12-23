@@ -7,37 +7,55 @@ package group_3.model;
  * Author: <Tram Anh Tuan - s4075376>
  */
 
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import group_3.model.enums.EventStatus;
+import group_3.model.enums.EventType;
+
 /** Simple Event class representing an event with multiple sessions. */
 public class Event {
-    /** High-level event types. */
-    public enum Type {
-        CONFERENCE,
-        WORKSHOP,
-        CONCERT,
-        EXHIBITION
-    }
+   
 
     private String eventId;
     private String name;
-    private Type type;
-    private LocalDateTime date;
+    private EventType type;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
     private String location;
     private int duration; // duration in days
+    private EventStatus status;
+    private String eventImage; // URL or path to event image
     private final List<String> sessionIds = new ArrayList<>();
 
-    public Event(String eventId, String name, Type type, LocalDateTime dt, String location, int duration) {
+    /**
+     * Full constructor with all attributes.
+     */
+    public Event(String eventId, String name, EventType type, LocalDateTime startDate, LocalDateTime endDate,
+                 String location, int duration, EventStatus status, String eventImage) {
         this.eventId = eventId;
         this.name = name;
         this.type = type;
-        this.date = dt;
+        this.startDate = startDate;
+        this.endDate = endDate;
         this.location = location;
         this.duration = duration;
+        this.status = status;
+        this.eventImage = eventImage;
     }
+
+    /**
+     * Simplified constructor with default status and no image.
+     */
+    public Event(String eventId, String name, EventType type, LocalDateTime startDate, LocalDateTime endDate,
+                 String location, int duration, EventStatus eventStatus) {
+        this(eventId, name, type, startDate, endDate, location, duration, eventStatus, null);
+    }
+
+    // Getters and Setters
 
     public String getEventId() {
         return eventId;
@@ -55,20 +73,28 @@ public class Event {
         this.name = name;
     }
 
-    public Type getType() {
+    public EventType getType() {
         return type;
     }
 
-    public void setType(Type type) {
+    public void setType(EventType type) {
         this.type = type;
     }
 
-    public LocalDateTime getDate() {
-        return date;
+    public LocalDateTime getStartDate() {
+        return startDate;
     }
 
-    public void setDate(LocalDateTime date) {
-        this.date = date;
+    public void setStartDate(LocalDateTime startDate) {
+        this.startDate = startDate;
+    }
+
+    public LocalDateTime getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDateTime endDate) {
+        this.endDate = endDate;
     }
 
     public String getLocation() {
@@ -86,6 +112,24 @@ public class Event {
     public void setDuration(int duration) {
         this.duration = duration;
     }
+
+    public EventStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(EventStatus status) {
+        this.status = status;
+    }
+
+    public String getEventImage() {
+        return eventImage;
+    }
+
+    public void setEventImage(String eventImage) {
+        this.eventImage = eventImage;
+    }
+
+    // Session management
 
     public void addSession(String sessionId) {
         if (sessionId != null && !sessionId.isEmpty()) {
@@ -109,9 +153,12 @@ public class Event {
                 "eventId='" + eventId + '\'' +
                 ", name='" + name + '\'' +
                 ", type=" + type +
-                ", date=" + date +
+                ", startDate=" + startDate +
+                ", endDate=" + endDate +
                 ", location='" + location + '\'' +
                 ", duration=" + duration +
+                ", status=" + status +
+                ", eventImage='" + eventImage + '\'' +
                 ", sessions=" + sessionIds +
                 '}';
     }
