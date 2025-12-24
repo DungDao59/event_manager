@@ -38,4 +38,9 @@ public abstract class Person {
     public LocalDate getDateOfBirth() { return dateOfBirth; }
     public String getContactInformation() { return contactInformation; }
     public Role getRole() { return role; }
+
+    public void setFullName(String fullName) { this.fullName = fullName; }
+    public void setDateOfBirth(LocalDate dateOfBirth) { this.dateOfBirth = dateOfBirth; }
+    public void setContactInformation(String contactInformation) { this.contactInformation = contactInformation; }
+    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
 }
