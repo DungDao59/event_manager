@@ -42,7 +42,7 @@ public class SystemHistoryDaoImpl implements SystemHistoryDAO {
 
     @Override
     public List<SystemHistory> findAll(){
-        String sql = "SELECT log_id, timestamp, user_id, operation_type, details FROM audit_log ORDER_BY timestamp DESC ";
+        String sql = "SELECT log_id, timestamp, user_id, operation_type, details FROM audit_log ORDER BY timestamp DESC ";
         List<SystemHistory> historyList = new ArrayList<>();
         try(Connection conn = DatabaseConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
