@@ -4,10 +4,13 @@ import group_3.model.Person;
 import group_3.model.Attendee;
 import group_3.model.Presenter;
 import group_3.dao.PersonDAO;
+import group_3.dao.AttendeeDAO;
+import group_3.dao.PresenterDAO;
 import group_3.dao.impl.PersonDAOImpl;
+import group_3.dao.impl.AttendeeDAOImpl;
+import group_3.dao.impl.PresenterDAOImpl;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of UserService for managing all Person types.
@@ -18,13 +21,19 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
     
     private PersonDAO personDAO;
+    private AttendeeDAO attendeeDAO;
+    private PresenterDAO presenterDAO;
     
     public UserServiceImpl() {
         this.personDAO = new PersonDAOImpl();
+        this.attendeeDAO = new AttendeeDAOImpl();
+        this.presenterDAO = new PresenterDAOImpl();
     }
     
-    public UserServiceImpl(PersonDAO personDAO) {
+    public UserServiceImpl(PersonDAO personDAO, AttendeeDAO attendeeDAO, PresenterDAO presenterDAO) {
         this.personDAO = personDAO;
+        this.attendeeDAO = attendeeDAO;
+        this.presenterDAO = presenterDAO;
     }
     
     @Override
@@ -32,8 +41,8 @@ public class UserServiceImpl implements UserService {
         if (attendee == null) {
             throw new IllegalArgumentException("Attendee cannot be null");
         }
-        personDAO.create(attendee);
-        return attendee;
+        int id = attendeeDAO.create(attendee);
+        return attendeeDAO.findById(id).orElse(attendee);
     }
     
     @Override
@@ -41,8 +50,8 @@ public class UserServiceImpl implements UserService {
         if (presenter == null) {
             throw new IllegalArgumentException("Presenter cannot be null");
         }
-        personDAO.create(presenter);
-        return presenter;
+        int id = presenterDAO.create(presenter);
+        return presenterDAO.findById(id).orElse(presenter);
     }
     
     @Override
@@ -74,36 +83,22 @@ public class UserServiceImpl implements UserService {
     
     @Override
     public List<Attendee> getAllAttendees() {
-        return personDAO.findAll().stream()
-            .filter(person -> person instanceof Attendee)
-            .map(person -> (Attendee) person)
-            .collect(Collectors.toList());
+        return attendeeDAO.findAll();
     }
     
     @Override
     public List<Presenter> getAllPresenters() {
-        return personDAO.findAll().stream()
-            .filter(person -> person instanceof Presenter)
-            .map(person -> (Presenter) person)
-            .collect(Collectors.toList());
+        return presenterDAO.findAll();
     }
     
     @Override
     public Optional<Attendee> getAttendeeById(int attendeeId) {
-        Optional<Person> person = personDAO.findById(attendeeId);
-        if (person.isPresent() && person.get() instanceof Attendee) {
-            return Optional.of((Attendee) person.get());
-        }
-        return Optional.empty();
+        return attendeeDAO.findById(attendeeId);
     }
     
     @Override
     public Optional<Presenter> getPresenterById(int presenterId) {
-        Optional<Person> person = personDAO.findById(presenterId);
-        if (person.isPresent() && person.get() instanceof Presenter) {
-            return Optional.of((Presenter) person.get());
-        }
-        return Optional.empty();
+        return presenterDAO.findById(presenterId);
     }
     
     @Override
@@ -119,7 +114,7 @@ public class UserServiceImpl implements UserService {
         if (attendee == null) {
             throw new IllegalArgumentException("Attendee cannot be null");
         }
-        personDAO.update(attendee);
+        attendeeDAO.update(attendee);
     }
     
     @Override
@@ -127,7 +122,7 @@ public class UserServiceImpl implements UserService {
         if (presenter == null) {
             throw new IllegalArgumentException("Presenter cannot be null");
         }
-        personDAO.update(presenter);
+        presenterDAO.update(presenter);
     }
     
     @Override
@@ -137,12 +132,12 @@ public class UserServiceImpl implements UserService {
     
     @Override
     public void deleteAttendee(int attendeeId) {
-        personDAO.delete(attendeeId);
+        attendeeDAO.delete(attendeeId);
     }
     
     @Override
     public void deletePresenter(int presenterId) {
-        personDAO.delete(presenterId);
+        presenterDAO.delete(presenterId);
     }
     
     @Override
@@ -160,15 +155,11 @@ public class UserServiceImpl implements UserService {
     
     @Override
     public int getTotalAttendeeCount() {
-        return (int) personDAO.findAll().stream()
-            .filter(person -> person instanceof Attendee)
-            .count();
+        return attendeeDAO.findAll().size();
     }
     
     @Override
     public int getTotalPresenterCount() {
-        return (int) personDAO.findAll().stream()
-            .filter(person -> person instanceof Presenter)
-            .count();
+        return presenterDAO.findAll().size();
     }
 }

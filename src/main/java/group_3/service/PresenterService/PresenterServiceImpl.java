@@ -4,10 +4,10 @@ import group_3.model.Presenter;
 import group_3.model.Session;
 import group_3.model.Ticket;
 import group_3.model.enums.TicketStatus;
-import group_3.dao.PersonDAO;
+import group_3.dao.PresenterDAO;
 import group_3.dao.SessionDAO;
 import group_3.dao.TicketDAO;
-import group_3.dao.impl.PersonDAOImpl;
+import group_3.dao.impl.PresenterDAOImpl;
 import group_3.dao.impl.SessionDAOImpl;
 import group_3.dao.impl.TicketDAOImpl;
 
@@ -22,18 +22,18 @@ import java.util.stream.Collectors;
  */
 public class PresenterServiceImpl implements PresenterService {
     
-    private PersonDAO personDAO;
+    private PresenterDAO presenterDAO;
     private SessionDAO sessionDAO;
     private TicketDAO ticketDAO;
     
     public PresenterServiceImpl() {
-        this.personDAO = new PersonDAOImpl();
+        this.presenterDAO = new PresenterDAOImpl();
         this.sessionDAO = new SessionDAOImpl();
         this.ticketDAO = new TicketDAOImpl();
     }
     
-    public PresenterServiceImpl(PersonDAO personDAO, SessionDAO sessionDAO, TicketDAO ticketDAO) {
-        this.personDAO = personDAO;
+    public PresenterServiceImpl(PresenterDAO presenterDAO, SessionDAO sessionDAO, TicketDAO ticketDAO) {
+        this.presenterDAO = presenterDAO;
         this.sessionDAO = sessionDAO;
         this.ticketDAO = ticketDAO;
     }
@@ -43,17 +43,13 @@ public class PresenterServiceImpl implements PresenterService {
         if (presenter == null) {
             throw new IllegalArgumentException("Presenter cannot be null");
         }
-        personDAO.create(presenter);
-        return presenter;
+        int id = presenterDAO.create(presenter);
+        return presenterDAO.findById(id).orElse(presenter);
     }
     
     @Override
     public Optional<Presenter> getPresenterById(int presenterId) {
-        Optional<group_3.model.Person> person = personDAO.findById(presenterId);
-        if (person.isPresent() && person.get() instanceof Presenter) {
-            return Optional.of((Presenter) person.get());
-        }
-        return Optional.empty();
+        return presenterDAO.findById(presenterId);
     }
     
     @Override
@@ -61,19 +57,12 @@ public class PresenterServiceImpl implements PresenterService {
         if (username == null || username.trim().isEmpty()) {
             throw new IllegalArgumentException("Username cannot be null or empty");
         }
-        Optional<group_3.model.Person> person = personDAO.findByUsername(username);
-        if (person.isPresent() && person.get() instanceof Presenter) {
-            return Optional.of((Presenter) person.get());
-        }
-        return Optional.empty();
+        return presenterDAO.findByUsername(username);
     }
     
     @Override
     public List<Presenter> getAllPresenters() {
-        return personDAO.findAll().stream()
-            .filter(person -> person instanceof Presenter)
-            .map(person -> (Presenter) person)
-            .collect(Collectors.toList());
+        return presenterDAO.findAll();
     }
     
     @Override
@@ -90,19 +79,12 @@ public class PresenterServiceImpl implements PresenterService {
         if (contactInformation != null) {
             p.setContactInformation(contactInformation);
         }
-        personDAO.update(p);
+        presenterDAO.update(p);
     }
     
     @Override
     public void updatePresenterRole(int presenterId, String presenterRole) {
-        Optional<Presenter> presenter = getPresenterById(presenterId);
-        if (!presenter.isPresent()) {
-            throw new IllegalArgumentException("Presenter with ID " + presenterId + " not found");
-        }
-        
-        Presenter p = presenter.get();
-        p.setPresenterRole(presenterRole);
-        personDAO.update(p);
+        presenterDAO.updatePresenterRole(presenterId, presenterRole);
     }
     
     @Override
@@ -110,12 +92,12 @@ public class PresenterServiceImpl implements PresenterService {
         if (presenter == null) {
             throw new IllegalArgumentException("Presenter cannot be null");
         }
-        personDAO.update(presenter);
+        presenterDAO.update(presenter);
     }
     
     @Override
     public void deletePresenter(int presenterId) {
-        personDAO.delete(presenterId);
+        presenterDAO.delete(presenterId);
     }
     
     @Override
@@ -204,7 +186,7 @@ public class PresenterServiceImpl implements PresenterService {
         
         Presenter p = presenter.get();
         p.setStatistics(jsonBuilder.toString());
-        personDAO.update(p);
+        presenterDAO.update(p);
     }
     
     @Override

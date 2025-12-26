@@ -1,12 +1,11 @@
 package group_3.service.AttendeeService;
 
 import group_3.model.Attendee;
-import group_3.dao.PersonDAO;
-import group_3.dao.impl.PersonDAOImpl;
+import group_3.dao.AttendeeDAO;
+import group_3.dao.impl.AttendeeDAOImpl;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of AttendeeService for managing Attendees.
@@ -16,14 +15,14 @@ import java.util.stream.Collectors;
  */
 public class AttendeeServiceImpl implements AttendeeService {
     
-    private PersonDAO personDAO;
+    private AttendeeDAO attendeeDAO;
     
     public AttendeeServiceImpl() {
-        this.personDAO = new PersonDAOImpl();
+        this.attendeeDAO = new AttendeeDAOImpl();
     }
     
-    public AttendeeServiceImpl(PersonDAO personDAO) {
-        this.personDAO = personDAO;
+    public AttendeeServiceImpl(AttendeeDAO attendeeDAO) {
+        this.attendeeDAO = attendeeDAO;
     }
     
     @Override
@@ -31,17 +30,13 @@ public class AttendeeServiceImpl implements AttendeeService {
         if (attendee == null) {
             throw new IllegalArgumentException("Attendee cannot be null");
         }
-        personDAO.create(attendee);
-        return attendee;
+        int id = attendeeDAO.create(attendee);
+        return attendeeDAO.findById(id).orElse(attendee);
     }
     
     @Override
     public Optional<Attendee> getAttendeeById(int attendeeId) {
-        Optional<group_3.model.Person> person = personDAO.findById(attendeeId);
-        if (person.isPresent() && person.get() instanceof Attendee) {
-            return Optional.of((Attendee) person.get());
-        }
-        return Optional.empty();
+        return attendeeDAO.findById(attendeeId);
     }
     
     @Override
@@ -49,19 +44,12 @@ public class AttendeeServiceImpl implements AttendeeService {
         if (username == null || username.trim().isEmpty()) {
             throw new IllegalArgumentException("Username cannot be null or empty");
         }
-        Optional<group_3.model.Person> person = personDAO.findByUsername(username);
-        if (person.isPresent() && person.get() instanceof Attendee) {
-            return Optional.of((Attendee) person.get());
-        }
-        return Optional.empty();
+        return attendeeDAO.findByUsername(username);
     }
     
     @Override
     public List<Attendee> getAllAttendees() {
-        return personDAO.findAll().stream()
-            .filter(person -> person instanceof Attendee)
-            .map(person -> (Attendee) person)
-            .collect(Collectors.toList());
+        return attendeeDAO.findAll();
     }
     
     @Override
@@ -77,7 +65,7 @@ public class AttendeeServiceImpl implements AttendeeService {
         
         Attendee a = attendee.get();
         a.setFullName(fullName);
-        personDAO.update(a);
+        attendeeDAO.update(a);
     }
     
     @Override
@@ -93,7 +81,7 @@ public class AttendeeServiceImpl implements AttendeeService {
         
         Attendee a = attendee.get();
         a.setDateOfBirth(dateOfBirth);
-        personDAO.update(a);
+        attendeeDAO.update(a);
     }
     
     @Override
@@ -105,7 +93,7 @@ public class AttendeeServiceImpl implements AttendeeService {
         
         Attendee a = attendee.get();
         a.setContactInformation(contactInformation);
-        personDAO.update(a);
+        attendeeDAO.update(a);
     }
     
     @Override
@@ -129,19 +117,12 @@ public class AttendeeServiceImpl implements AttendeeService {
             a.setContactInformation(contactInformation);
         }
         
-        personDAO.update(a);
+        attendeeDAO.update(a);
     }
     
     @Override
     public void updateHistory(int attendeeId, String history) {
-        Optional<Attendee> attendee = getAttendeeById(attendeeId);
-        if (!attendee.isPresent()) {
-            throw new IllegalArgumentException("Attendee with ID " + attendeeId + " not found");
-        }
-        
-        Attendee a = attendee.get();
-        a.setHistory(history);
-        personDAO.update(a);
+        attendeeDAO.updateHistory(attendeeId, history);
     }
     
     @Override
@@ -149,12 +130,12 @@ public class AttendeeServiceImpl implements AttendeeService {
         if (attendee == null) {
             throw new IllegalArgumentException("Attendee cannot be null");
         }
-        personDAO.update(attendee);
+        attendeeDAO.update(attendee);
     }
     
     @Override
     public void deleteAttendee(int attendeeId) {
-        personDAO.delete(attendeeId);
+        attendeeDAO.delete(attendeeId);
     }
     
     @Override
@@ -164,8 +145,6 @@ public class AttendeeServiceImpl implements AttendeeService {
     
     @Override
     public int getTotalAttendeeCount() {
-        return (int) personDAO.findAll().stream()
-            .filter(person -> person instanceof Attendee)
-            .count();
+        return attendeeDAO.findAll().size();
     }
 }
