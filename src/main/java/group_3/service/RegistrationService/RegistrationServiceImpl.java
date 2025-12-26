@@ -7,38 +7,41 @@ import group_3.model.enums.TicketStatus;
 import group_3.model.enums.TicketType;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public class RegistrationServiceImpl implements RegistrationService{
     private final TicketDAO ticketDAO =  new TicketDAOImpl();
     private final ScheduleDAO scheduleDAO = new ScheduleDAOImpl();
+    private final SessionDAO sessionDAO = new SessionDAOImpl();
 
+    @Override
     public boolean checkPersonConflict (int PersonId, int newSessionId) {
         ArrayList<Schedule_entry> PersonSchedule = scheduleDAO.findAllScheduleByUserId(PersonId);
-        Session s = getSessionById(newSessionId);
+        Optional sessionOptional = sessionDAO.findById(newSessionId);
+        Session s = (Session) sessionOptional.get();
+
         for (int i = 0; i < PersonSchedule.size(); i++) {
             Schedule_entry currentEntry = PersonSchedule.get(i);
-            if (s.getStartDateTime().isAfter(currentEntry.getStartDateTime()) &&
-                    s.getStartDateTime().isBefore(currentEntry.getEndDateTime())) { //checking session start in the middle of assigned session
+            if (s.getStartTime().isAfter(currentEntry.getStartTime()) && s.getStartTime().isBefore(currentEntry.getEndTime())) { //checking session start in the middle of assigned session
                 return true; //there is conflict
-            } if (s.getEndDateTime().isAfter(currentEntry.getStartDateTime()) &&
-                    s.getEndDateTime().isBefore(currentEntry.getEndDateTime())) { //checking session end in the middle of assigned session
+            } if (s.getEndTime().isAfter(currentEntry.getStartTime()) && s.getEndTime().isBefore(currentEntry.getEndTime())) { //checking session end in the middle of assigned session
                 return true; //there is conflict
-            } if (s.getStartDateTime().isBefore(currentEntry.getStartDateTime()) && //checking session overlap the assigned session
-                    s.getEndDateTime().isAfter(currentEntry.getEndDateTime())) {
+            } if (s.getStartTime().isBefore(currentEntry.getStartTime()) && s.getEndTime().isAfter(currentEntry.getEndTime())) { //checking session overlap the assigned
                 return true; //there is conflict
             }
         } return false;
     }
 
-    @Override
     public boolean registerAttendee(int AttendeeId, int newSessionId, TicketType ticketType, double ticketPrice) {
         if (checkPersonConflict (AttendeeId, newSessionId)) {return false;}
-        Session s = getSessionById(newSessionId);
+        Optional sessionOptional = sessionDAO.findById(newSessionId);
+        Session s = (Session) sessionOptional.get();
 
         Ticket ticket = new Ticket();
         ticket.setSessionID(newSessionId);
         ticket.setAttendeeID(AttendeeId);
-        ticket.setEventID(s.eventId);
+        ticket.setEventID(Integer.parseInt(s.getEventId()));
         ticket.setPrice(ticketPrice);
         ticket.setType(ticketType);
         String qrPath = generateTicketCode(AttendeeId, newSessionId);
@@ -56,8 +59,8 @@ public class RegistrationServiceImpl implements RegistrationService{
     }
 
     @Override
-    public boolean cancelTicket(int id)  {
-        Ticket ticket = ticketDAO.findById(id);
+    public boolean cancelRegistration(int ticketId) {
+        Ticket ticket = ticketDAO.findById(ticketId);
         if (ticket == null) {
             return false;
         }
@@ -67,6 +70,11 @@ public class RegistrationServiceImpl implements RegistrationService{
 
         scheduleDAO.deleteByUserAndSession(ticket.getAttendeeID(), ticket.getSessionID());
         return true;
+    }
+
+    @Override
+    public List<Ticket> getTicketsForAttendee(int attendeeId) {
+        return ticketDAO.findTicketByAttendeeId(attendeeId);
     }
 
     public static String generateTicketCode(int attendeeId, int sessionId) {

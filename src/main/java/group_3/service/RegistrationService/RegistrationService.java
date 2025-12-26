@@ -5,7 +5,9 @@ import group_3.model.enums.TicketType;
 import java.util.*;
 
 public interface RegistrationService {
-    boolean checkPersonConflict(int attendeeId, int sessionId, TicketType type, double price);
+    boolean checkPersonConflict(int attendeeId, int sessionId);
+
+    boolean registerAttendee(int AttendeeId, int newSessionId, TicketType ticketType, double ticketPrice);
 
     boolean cancelRegistration(int ticketId);
 
