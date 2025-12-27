@@ -1,6 +1,7 @@
 package group_3.service.AuthService;
 
 import group_3.model.Person;
+import group_3.model.enums.Role;
 
 import java.util.Optional;
 
@@ -11,7 +12,7 @@ public interface AuthService {
 
     boolean isAuthenticated();
 
-    boolean hasRole();
+    boolean hasRole( Role role );
 
     Person getCurrentUser();
 }

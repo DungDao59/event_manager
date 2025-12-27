@@ -44,36 +44,6 @@ public interface AttendeeService {
     
     // Update operations - Personal Information
     /**
-     * Update Attendee's full name
-     * @param attendeeId the Attendee ID
-     * @param fullName new full name
-     */
-    void updateFullName(int attendeeId, String fullName);
-    
-    /**
-     * Update Attendee's date of birth
-     * @param attendeeId the Attendee ID
-     * @param dateOfBirth new date of birth
-     */
-    void updateDateOfBirth(int attendeeId, LocalDate dateOfBirth);
-    
-    /**
-     * Update Attendee's contact information
-     * @param attendeeId the Attendee ID
-     * @param contactInformation new contact information (JSON)
-     */
-    void updateContactInformation(int attendeeId, String contactInformation);
-    
-    /**
-     * Update Attendee's personal information (name, DOB, contact)
-     * @param attendeeId the Attendee ID
-     * @param fullName new full name
-     * @param dateOfBirth new date of birth
-     * @param contactInformation new contact information (JSON)
-     */
-    void updatePersonalInfo(int attendeeId, String fullName, LocalDate dateOfBirth, String contactInformation);
-    
-    /**
      * Update Attendee's history
      * @param attendeeId the Attendee ID
      * @param history new history (JSON)

@@ -4,7 +4,7 @@ import group_3.dao.ScheduleDAO;
 import group_3.dao.SessionDAO;
 import group_3.dao.impl.ScheduleDAOImpl;
 import group_3.dao.impl.SessionDAOImpl;
-import group_3.model.Schedule_entry;
+import group_3.model.ScheduleEntry;
 import group_3.model.Session;
 
 import java.time.*;
@@ -17,9 +17,9 @@ public class ScheduleServiceImpl implements ScheduleService {
 
     @Override
     public boolean hasConflict(int personId, LocalDateTime startTime, LocalDateTime endTime){
-        List<Schedule_entry> existingSchedules = scheduleDAO.findAllScheduleByUserId(personId);
+        List<ScheduleEntry> existingSchedules = scheduleDAO.findAllScheduleByUserId(personId);
 
-        for(Schedule_entry entry: existingSchedules){
+        for(ScheduleEntry entry: existingSchedules){
             boolean overlap = startTime.isBefore(entry.getEndTime()) && endTime.isAfter(entry.getStartTime());
 
             if(overlap){
@@ -46,7 +46,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     @Override
-    public void addScheduleEntry(Schedule_entry entry){
+    public void addScheduleEntry(ScheduleEntry entry){
         scheduleDAO.create(entry);
     }
 
@@ -56,7 +56,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     @Override
-    public List<Schedule_entry> getScheduleForPerson(int personId){
+    public List<ScheduleEntry> getScheduleForPerson(int personId){
         return scheduleDAO.findAllScheduleByUserId(personId);
     }
 }
