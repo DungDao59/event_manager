@@ -17,12 +17,12 @@ public class RegistrationServiceImpl implements RegistrationService{
 
     @Override
     public boolean checkPersonConflict (int PersonId, int newSessionId) {
-        ArrayList<Schedule_entry> PersonSchedule = scheduleDAO.findAllScheduleByUserId(PersonId);
+        ArrayList<ScheduleEntry> PersonSchedule = scheduleDAO.findAllScheduleByUserId(PersonId);
         Optional sessionOptional = sessionDAO.findById(newSessionId);
         Session s = (Session) sessionOptional.get();
 
         for (int i = 0; i < PersonSchedule.size(); i++) {
-            Schedule_entry currentEntry = PersonSchedule.get(i);
+            ScheduleEntry currentEntry = PersonSchedule.get(i);
             if (s.getStartTime().isAfter(currentEntry.getStartTime()) && s.getStartTime().isBefore(currentEntry.getEndTime())) { //checking session start in the middle of assigned session
                 return true; //there is conflict
             } if (s.getEndTime().isAfter(currentEntry.getStartTime()) && s.getEndTime().isBefore(currentEntry.getEndTime())) { //checking session end in the middle of assigned session
@@ -48,7 +48,7 @@ public class RegistrationServiceImpl implements RegistrationService{
         ticket.setQRpath(qrPath);
         ticketDAO.create(ticket);
 
-        Schedule_entry entry = new Schedule_entry();
+        ScheduleEntry entry = new ScheduleEntry();
         entry.setSessionID(newSessionId);
         entry.setPersonID(AttendeeId);
         entry.setStartTime(s.getStartTime());

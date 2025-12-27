@@ -2,21 +2,21 @@ package group_3.model;
 
 import java.time.LocalDateTime;
 
-public class Schedule_entry {
+public class ScheduleEntry {
     private int id;
     private int personID;
     private int sessionID;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
 
-    public Schedule_entry() {
+    public ScheduleEntry() {
         this.sessionID = 0;
         this.personID = 0;
         this.startTime = null;
         this.endTime = null;
     }
 
-    public Schedule_entry(int id, int personID, int sessionID, LocalDateTime startTime, LocalDateTime endTime) {
+    public ScheduleEntry(int id, int personID, int sessionID, LocalDateTime startTime, LocalDateTime endTime) {
         this.id = id;
         this.personID = personID;
         this.sessionID = sessionID;
