@@ -3,6 +3,7 @@ package group_3.service.AuthService;
 import group_3.dao.PersonDAO;
 import group_3.dao.impl.PersonDAOImpl;
 import group_3.model.Person;
+import group_3.model.enums.Role;
 import group_3.util.PasswordUtil;
 
 import java.util.Optional;
@@ -13,18 +14,39 @@ import java.util.Optional;
 public class AuthServiceImpl implements AuthService {
 
     private final PersonDAO personDAO = new PersonDAOImpl();
+    private Person currentUser = null;
 
     @Override
     public Optional<Person> login(String username, String rawPassword) {
-
         Optional<Person> userOpt = personDAO.findByUsername(username);
 
         if (userOpt.isPresent()) {
             Person user = userOpt.get();
             if (PasswordUtil.verifyPassword(rawPassword, user.getPasswordHash())) {
+                this.currentUser = user;
                 return Optional.of(user);
             }
         }
         return Optional.empty();
+    }
+
+    @Override
+    public void logout() {
+        this.currentUser = null;
+    }
+
+    @Override
+    public boolean isAuthenticated() {
+        return this.currentUser != null;
+    }
+
+    @Override
+    public boolean hasRole(Role role) {
+        return isAuthenticated() && this.currentUser.getRole() == role;
+    }
+
+    @Override
+    public Person getCurrentUser() {
+        return this.currentUser;
     }
 }
