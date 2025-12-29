@@ -193,21 +193,11 @@ public class EventFormController {
         sessionListView.setPrefHeight(100);
         form.getChildren().add(sessionListView);
         
-        HBox sessionInputBox = new HBox(10);
-        newSessionField = new TextField();
-        newSessionField.setPromptText("Enter session ID...");
-        newSessionField.setPrefWidth(400);
-        
-        Button addSessionBtn = new Button("Add Session");
-        addSessionBtn.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-padding: 8px 15px;");
-        addSessionBtn.setOnAction(e -> handleAddSession());
-        
+        // Session input and management removed - sessions are read-only in edit view
         Button removeSessionBtn = new Button("Remove Selected");
         removeSessionBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-padding: 8px 15px;");
         removeSessionBtn.setOnAction(e -> handleRemoveSession());
-        
-        sessionInputBox.getChildren().addAll(newSessionField, addSessionBtn, removeSessionBtn);
-        form.getChildren().add(sessionInputBox);
+        form.getChildren().add(removeSessionBtn);
         
         // Error Label
         errorLabel = new Label();
@@ -370,7 +360,22 @@ public class EventFormController {
             endMinuteCombo.setValue(eventToEdit.getEndDate().getMinute());
         }
         
-        sessionListView.setItems(FXCollections.observableArrayList(eventToEdit.getSessionIds()));
+        // Populate sessions with names instead of just IDs
+        group_3.dao.SessionDAO sessionDAO = DaoProvider.getSessionDAO();
+        java.util.List<String> sessionDisplayList = eventToEdit.getSessionIds().stream()
+            .map(sessionId -> {
+                try {
+                    int sId = Integer.parseInt(sessionId);
+                    return sessionDAO.findById(sId)
+                        .map(s -> s.getTitle() + " (ID: " + sessionId + ")")
+                        .orElse("Session #" + sessionId);
+                } catch (Exception e) {
+                    return "Session #" + sessionId;
+                }
+            })
+            .collect(java.util.stream.Collectors.toList());
+        
+        sessionListView.setItems(FXCollections.observableArrayList(sessionDisplayList));
     }
     
     private void handleAddSession() {

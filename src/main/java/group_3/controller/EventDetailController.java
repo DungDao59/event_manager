@@ -206,24 +206,62 @@ public class EventDetailController {
         Label title = new Label("Associated Sessions");
         title.setFont(new Font("System Bold", 18));
         
+        // Get SessionDAO to fetch session details
+        SessionDAO sessionDAO = DaoProvider.getSessionDAO();
+        
+        // Build session display list with titles
+        java.util.List<String> sessionDisplayList = currentEvent.getSessionIds().stream()
+            .map(sessionId -> {
+                try {
+                    int sId = Integer.parseInt(sessionId);
+                    return sessionDAO.findById(sId)
+                        .map(s -> s.getTitle() + " (ID: " + sessionId + ")")
+                        .orElse("Session #" + sessionId);
+                } catch (Exception e) {
+                    return "Session #" + sessionId;
+                }
+            })
+            .collect(java.util.stream.Collectors.toList());
+        
         ListView<String> sessionList = new ListView<>(
-            FXCollections.observableArrayList(currentEvent.getSessionIds()));
+            FXCollections.observableArrayList(sessionDisplayList));
         sessionList.setPrefHeight(150);
         sessionList.setStyle("-fx-border-color: #bbb; -fx-border-radius: 3;");
         
         HBox buttons = new HBox(10);
         buttons.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
         
-        Button viewBtn = createButton("View Session Details", "#95a5a6");
-        viewBtn.setOnAction(e -> handleViewSession());
+        Button editBtn = createButton("View/Edit Session", "#3498db");
+        editBtn.setOnAction(e -> {
+            int idx = sessionList.getSelectionModel().getSelectedIndex();
+            if (idx >= 0) {
+                String sessionId = currentEvent.getSessionIds().get(idx);
+                try {
+                    int sId = Integer.parseInt(sessionId);
+                    java.util.Optional<group_3.model.Session> sessionOpt = 
+                        sessionDAO.findById(sId);
+                    if (sessionOpt.isPresent()) {
+                        SessionEditorController editor = new SessionEditorController(sessionOpt.get(), this);
+                        editor.show();
+                    } else {
+                        showError("Session Not Found", "Session with ID " + sessionId + " not found.");
+                    }
+                } catch (Exception ex) {
+                    showError("Error", "Failed to open session editor: " + ex.getMessage());
+                }
+            } else {
+                showError("No Selection", "Please select a session from the list first.");
+            }
+        });
         
-        Button manageBtn = createButton("Manage Sessions", "#95a5a6");
-        manageBtn.setOnAction(e -> handleManageSessions());
-        
-        buttons.getChildren().addAll(viewBtn, manageBtn);
+        buttons.getChildren().addAll(editBtn);
         
         section.getChildren().addAll(title, sessionList, buttons);
         return section;
+    }
+    
+    public void refreshSessions() {
+        // Refresh logic if needed
     }
     
     private VBox createStatisticsSection() {
