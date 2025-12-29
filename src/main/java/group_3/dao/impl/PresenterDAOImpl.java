@@ -212,7 +212,7 @@ public class PresenterDAOImpl implements PresenterDAO {
         String username = rs.getString("username");
         String passwordHash = rs.getString("password_hash");
         String fullName = rs.getString("full_name");
-        Date dobDate = rs.getDate("date_of_birth");
+        java.sql.Date dobDate = rs.getDate("date_of_birth");
         LocalDate dob = dobDate != null ? dobDate.toLocalDate() : null;
         String contact = rs.getString("contact_information");
         String presenterRole = rs.getString("presenter_role");
