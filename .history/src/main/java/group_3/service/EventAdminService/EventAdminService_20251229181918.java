@@ -1,9 +1,9 @@
 package group_3.service.EventAdminService;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
+
+import group_3.model.Event;
 import group_3.model.Event;
 import group_3.model.Session;
 import group_3.model.Ticket;
