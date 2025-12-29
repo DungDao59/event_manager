@@ -57,7 +57,9 @@ public final class MockData {
         int id = EVENT_SEQ.incrementAndGet();
         LocalDateTime start = LocalDateTime.now().plusDays(3);
         LocalDateTime end = start.plusDays(durationDays);
-        Event ev = new Event(String.valueOf(id), name, type, start, end, location, durationDays, status, null);
+        // Placeholder image URL (public domain image)
+        String imageUrl = "https://via.placeholder.com/600x300?text=" + name.replace(" ", "+");
+        Event ev = new Event(String.valueOf(id), name, type, start, end, location, durationDays, status, imageUrl);
         EVENTS.put(id, ev);
         return id;
     }

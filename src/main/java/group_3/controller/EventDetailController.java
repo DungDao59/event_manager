@@ -112,6 +112,8 @@ public class EventDetailController {
     private VBox createImageSection() {
         VBox section = new VBox(10);
         section.setAlignment(javafx.geometry.Pos.CENTER);
+        section.setStyle("-fx-border-color: #e0e0e0; -fx-border-width: 1; -fx-padding: 15; -fx-background-color: #f8f9fa;");
+        section.setPrefHeight(350);
         
         if (currentEvent.getEventImage() != null && !currentEvent.getEventImage().isEmpty()) {
             try {
@@ -126,6 +128,10 @@ public class EventDetailController {
                 placeholder.setStyle("-fx-text-fill: #999; -fx-font-size: 16px;");
                 section.getChildren().add(placeholder);
             }
+        } else {
+            Label placeholder = new Label("📷 No Event Image");
+            placeholder.setStyle("-fx-text-fill: #bbb; -fx-font-size: 18px; -fx-font-weight: bold;");
+            section.getChildren().add(placeholder);
         }
         
         return section;
