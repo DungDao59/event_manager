@@ -132,10 +132,10 @@ public class EventAdminServiceImpl implements EventAdminService {
         if (event == null) {
             throw new IllegalArgumentException("Event cannot be null");
         }
-        if (event.getEventId() == null || event.getEventId().trim().isEmpty()) {
-            throw new IllegalArgumentException("Event ID cannot be null or empty");
+        if (event.getEventId() <= 0) {
+            throw new IllegalArgumentException("Event ID must be positive");
         }
-        if (!eventExists(Integer.parseInt(event.getEventId()))) {
+        if (!eventExists(event.getEventId())) {
             throw new IllegalArgumentException("Event with ID " + event.getEventId() + " does not exist");
         }
         eventDAO.update(event);
@@ -153,7 +153,7 @@ public class EventAdminServiceImpl implements EventAdminService {
         // Delete all sessions associated with the event first
         List<Session> sessions = sessionDAO.findByEventId(eventId);
         for (Session session : sessions) {
-            sessionDAO.delete(Integer.parseInt(session.getSessionId()));
+            sessionDAO.delete(session.getSessionId());
         }
         eventDAO.delete(eventId);
     }
@@ -212,10 +212,10 @@ public class EventAdminServiceImpl implements EventAdminService {
         if (session == null) {
             throw new IllegalArgumentException("Session cannot be null");
         }
-        if (session.getSessionId() == null || session.getSessionId().trim().isEmpty()) {
-            throw new IllegalArgumentException("Session ID cannot be null or empty");
+        if (session.getSessionId() <= 0) {
+            throw new IllegalArgumentException("Session ID must be positive");
         }
-        if (!sessionExists(Integer.parseInt(session.getSessionId()))) {
+        if (!sessionExists(session.getSessionId())) {
             throw new IllegalArgumentException("Session with ID " + session.getSessionId() + " does not exist");
         }
         sessionDAO.update(session);
@@ -266,7 +266,7 @@ public class EventAdminServiceImpl implements EventAdminService {
         Optional<Session> sessionOpt = sessionDAO.findById(sessionId);
         if (sessionOpt.isPresent()) {
             Session session = sessionOpt.get();
-            session.setEventId(String.valueOf(eventId));
+            session.setEventId(eventId);
             sessionDAO.update(session);
         }
     }
@@ -289,8 +289,8 @@ public class EventAdminServiceImpl implements EventAdminService {
         Optional<Session> sessionOpt = sessionDAO.findById(sessionId);
         if (sessionOpt.isPresent()) {
             Session session = sessionOpt.get();
-            if (session.getEventId() != null && session.getEventId().equals(String.valueOf(eventId))) {
-                session.setEventId(null);
+            if (session.getEventId() == eventId) {
+                session.setEventId(0);
                 sessionDAO.update(session);
             }
         }
@@ -307,12 +307,12 @@ public class EventAdminServiceImpl implements EventAdminService {
     // ==================== PRESENTER ASSIGNMENT OPERATIONS ====================
 
     @Override
-    public boolean assignPresenterToSession(int sessionId, String presenterId) {
+    public boolean assignPresenterToSession(int sessionId, int presenterId) {
         if (sessionId <= 0) {
             throw new IllegalArgumentException("Session ID must be positive");
         }
-        if (presenterId == null || presenterId.trim().isEmpty()) {
-            throw new IllegalArgumentException("Presenter ID cannot be null or empty");
+        if (presenterId <= 0) {
+            throw new IllegalArgumentException("Presenter ID must be positive");
         }
         if (!sessionExists(sessionId)) {
             return false;
@@ -324,7 +324,7 @@ public class EventAdminServiceImpl implements EventAdminService {
         }
         
         Session session = sessionOpt.get();
-        List<String> presenters = session.getPresenterIds();
+        List<Integer> presenters = session.getPresenterIds();
         
         if (!presenters.contains(presenterId)) {
             session.addPresenter(presenterId);
@@ -335,12 +335,12 @@ public class EventAdminServiceImpl implements EventAdminService {
     }
 
     @Override
-    public boolean unassignPresenterFromSession(int sessionId, String presenterId) {
+    public boolean unassignPresenterFromSession(int sessionId, int presenterId) {
         if (sessionId <= 0) {
             throw new IllegalArgumentException("Session ID must be positive");
         }
-        if (presenterId == null || presenterId.trim().isEmpty()) {
-            throw new IllegalArgumentException("Presenter ID cannot be null or empty");
+        if (presenterId <= 0) {
+            throw new IllegalArgumentException("Presenter ID must be positive");
         }
         if (!sessionExists(sessionId)) {
             return false;
@@ -361,7 +361,7 @@ public class EventAdminServiceImpl implements EventAdminService {
     }
 
     @Override
-    public List<String> getPresentersBySessionId(int sessionId) {
+    public List<Integer> getPresentersBySessionId(int sessionId) {
         if (sessionId <= 0) {
             return new ArrayList<>();
         }
@@ -371,17 +371,17 @@ public class EventAdminServiceImpl implements EventAdminService {
             return new ArrayList<>();
         }
         
-        List<String> presenters = sessionOpt.get().getPresenterIds();
+        List<Integer> presenters = sessionOpt.get().getPresenterIds();
         return presenters != null ? new ArrayList<>(presenters) : new ArrayList<>();
     }
 
     @Override
-    public boolean isPresenterAssignedToSession(int sessionId, String presenterId) {
-        if (sessionId <= 0 || presenterId == null || presenterId.trim().isEmpty()) {
+    public boolean isPresenterAssignedToSession(int sessionId, int presenterId) {
+        if (sessionId <= 0 || presenterId <= 0) {
             return false;
         }
         
-        List<String> presenters = getPresentersBySessionId(sessionId);
+        List<Integer> presenters = getPresentersBySessionId(sessionId);
         return presenters.contains(presenterId);
     }
 
@@ -522,7 +522,7 @@ public class EventAdminServiceImpl implements EventAdminService {
         Map<String, Integer> sessionAttendance = new HashMap<>();
         for (Session session : sessions) {
             int sessionAttendeeCount = (int) tickets.stream()
-                    .filter(t -> t.getSessionID() == Integer.parseInt(session.getSessionId()))
+                    .filter(t -> t.getSessionID() == session.getSessionId())
                     .filter(t -> t.getStatus() == TicketStatus.ACTIVE || t.getStatus() == TicketStatus.USED)
                     .count();
             sessionAttendance.put(session.getTitle(), sessionAttendeeCount);
@@ -607,17 +607,10 @@ public class EventAdminServiceImpl implements EventAdminService {
 
             try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
                 switch (reportType.toUpperCase()) {
-                    case "ATTENDANCE":
-                        writeAttendanceReport(writer, eventId);
-                        break;
-                    case "TICKET_USAGE":
-                        writeTicketUsageReport(writer, eventId);
-                        break;
-                    case "FULL":
-                        writeFullReport(writer, eventId);
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Invalid report type: " + reportType);
+                    case "ATTENDANCE" -> writeAttendanceReport(writer, eventId);
+                    case "TICKET_USAGE" -> writeTicketUsageReport(writer, eventId);
+                    case "FULL" -> writeFullReport(writer, eventId);
+                    default -> throw new IllegalArgumentException("Invalid report type: " + reportType);
                 }
             }
 

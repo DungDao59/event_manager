@@ -1,25 +1,33 @@
 package group_3.controller;
 
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Optional;
+
 import group_3.dao.EventDAO;
-import group_3.util.DaoProvider;
 import group_3.model.Event;
 import group_3.model.enums.EventStatus;
 import group_3.model.enums.EventType;
+import group_3.util.DaoProvider;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
-
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * Controller for Event List View (Pure JavaFX Implementation).
@@ -188,7 +196,9 @@ public class EventListController {
             }
         });
         
-        eventTable.getColumns().addAll(idCol, nameCol, typeCol, locationCol, startDateCol, statusCol, actionsCol);
+        @SuppressWarnings("unchecked")
+        TableColumn<Event, ?>[] columns = new TableColumn[] {idCol, nameCol, typeCol, locationCol, startDateCol, statusCol, actionsCol};
+        eventTable.getColumns().addAll(columns);
         eventTable.setItems(filteredList);
         eventTable.setStyle("-fx-font-size: 13px;");
         
@@ -252,7 +262,7 @@ public class EventListController {
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
-                int eventId = Integer.parseInt(event.getEventId());
+                int eventId = event.getEventId();
                 eventDAO.delete(eventId);
                 loadEvents();
                 updateStatus("Event deleted successfully", filteredList.size());
@@ -292,7 +302,7 @@ public class EventListController {
             boolean matchesSearch = searchText.isEmpty() || 
                 event.getName().toLowerCase().contains(searchText) ||
                 event.getLocation().toLowerCase().contains(searchText) ||
-                event.getEventId().toLowerCase().contains(searchText);
+                String.valueOf(event.getEventId()).contains(searchText);
             
             boolean matchesStatus = selectedStatus == null || event.getStatus() == selectedStatus;
             boolean matchesType = selectedType == null || event.getType() == selectedType;

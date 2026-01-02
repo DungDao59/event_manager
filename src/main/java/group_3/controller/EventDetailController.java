@@ -1,17 +1,25 @@
 package group_3.controller;
 
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
+
 import group_3.dao.EventDAO;
 import group_3.dao.SessionDAO;
 import group_3.dao.TicketDAO;
-import group_3.util.DaoProvider;
 import group_3.model.Event;
 import group_3.model.EventStatistics;
 import group_3.service.EventStatisticsService.EventStatisticsService;
 import group_3.service.EventStatisticsService.EventStatisticsServiceImpl;
+import group_3.util.DaoProvider;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -21,9 +29,6 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
-
-import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 
 /**
  * Controller for Event Detail View.
@@ -149,7 +154,7 @@ public class EventDetailController {
         grid.setVgap(10);
         
         grid.add(createDetailLabel("Event ID:"), 0, 0);
-        grid.add(createValueLabel(currentEvent.getEventId()), 1, 0);
+        grid.add(createValueLabel(String.valueOf(currentEvent.getEventId())), 1, 0);
         
         grid.add(createDetailLabel("Event Name:"), 0, 1);
         grid.add(createValueLabel(currentEvent.getName()), 1, 1);
@@ -217,7 +222,7 @@ public class EventDetailController {
                     return sessionDAO.findById(sId)
                         .map(s -> s.getTitle() + " (ID: " + sessionId + ")")
                         .orElse("Session #" + sessionId);
-                } catch (Exception e) {
+                } catch (RuntimeException e) {
                     return "Session #" + sessionId;
                 }
             })
@@ -246,7 +251,7 @@ public class EventDetailController {
                     } else {
                         showError("Session Not Found", "Session with ID " + sessionId + " not found.");
                     }
-                } catch (Exception ex) {
+                } catch (RuntimeException ex) {
                     showError("Error", "Failed to open session editor: " + ex.getMessage());
                 }
             } else {
@@ -277,7 +282,7 @@ public class EventDetailController {
         stats.setStyle("-fx-padding: 15;");
         
         try {
-            int eventId = Integer.parseInt(currentEvent.getEventId());
+            int eventId = currentEvent.getEventId();
             Optional<EventStatistics> statsOpt = statisticsService.getEventStatistics(eventId);
             
             if (statsOpt.isPresent()) {
@@ -378,7 +383,7 @@ public class EventDetailController {
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
-                int eventId = Integer.parseInt(currentEvent.getEventId());
+                int eventId = currentEvent.getEventId();
                 eventDAO.delete(eventId);
                 
                 if (listController != null) {
@@ -392,17 +397,9 @@ public class EventDetailController {
         }
     }
     
-    private void handleViewSession() {
-        showInfo("View Session", "Session detail view not yet implemented.");
-    }
-    
-    private void handleManageSessions() {
-        showInfo("Manage Sessions", "Session management view not yet implemented.");
-    }
-    
     private void handleViewFullStatistics() {
         try {
-            int eventId = Integer.parseInt(currentEvent.getEventId());
+            int eventId = currentEvent.getEventId();
             Optional<EventStatistics> statsOpt = statisticsService.getEventStatistics(eventId);
             
             if (statsOpt.isPresent()) {

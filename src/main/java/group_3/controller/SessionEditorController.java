@@ -9,12 +9,10 @@ import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,11 +38,7 @@ public class SessionEditorController {
     private ListView<String> assignedPresentersListView;
     private ComboBox<Presenter> presenterCombo;
     
-    private static final DateTimeFormatter DATE_TIME_FORMAT = 
-        DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy 'at' HH:mm");
-    
     public SessionEditorController(Session session, EventDetailController parentController) {
-        this.session = session;
         this.parentController = parentController;
         this.presenterDAO = DaoProvider.getPresenterDAO();
     }
@@ -172,8 +166,7 @@ public class SessionEditorController {
         List<String> presentersDisplay = session.getPresenterIds().stream()
                 .map(id -> {
                     try {
-                        int pId = Integer.parseInt(id);
-                        return presenterDAO.findById(pId)
+                        return presenterDAO.findById(id)
                                 .map(p -> p.getFullName() + " (" + p.getPresenterRole() + ")")
                                 .orElse("Unknown Presenter #" + id);
                     } catch (Exception e) {
@@ -245,7 +238,7 @@ public class SessionEditorController {
             return;
         }
         
-        String presenterId = String.valueOf(selected.getId());
+        int presenterId = selected.getId();
         if (!session.getPresenterIds().contains(presenterId)) {
             session.addPresenter(presenterId);
             refreshPresentersList();
@@ -262,7 +255,7 @@ public class SessionEditorController {
             return;
         }
         
-        String presenterId = session.getPresenterIds().get(selectedIdx);
+        int presenterId = session.getPresenterIds().get(selectedIdx);
         session.removePresenter(presenterId);
         refreshPresentersList();
     }
@@ -271,8 +264,7 @@ public class SessionEditorController {
         List<String> presentersDisplay = session.getPresenterIds().stream()
                 .map(id -> {
                     try {
-                        int pId = Integer.parseInt(id);
-                        return presenterDAO.findById(pId)
+                        return presenterDAO.findById(id)
                                 .map(p -> p.getFullName() + " (" + p.getPresenterRole() + ")")
                                 .orElse("Unknown Presenter #" + id);
                     } catch (Exception e) {

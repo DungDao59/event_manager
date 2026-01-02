@@ -45,7 +45,7 @@ public class EventDAOImpl implements EventDAO {
             ps.executeUpdate();
             ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
-                event.setEventId(String.valueOf(rs.getInt(1)));
+                event.setEventId(rs.getInt(1));
             }
         } catch (Exception e) {
             throw new RuntimeException("Error creating event: " + e.getMessage(), e);
@@ -120,7 +120,7 @@ public class EventDAOImpl implements EventDAO {
             ps.setInt(6, event.getDuration());
             ps.setString(7, event.getStatus() != null ? event.getStatus().name() : "SCHEDULED");
             ps.setString(8, event.getEventImage());
-            ps.setInt(9, Integer.parseInt(event.getEventId()));
+            ps.setInt(9, event.getEventId());
 
             ps.executeUpdate();
         } catch (Exception e) {
@@ -209,7 +209,7 @@ public class EventDAOImpl implements EventDAO {
         LocalDateTime startDate = startDateSql != null ? startDateSql.toLocalDateTime() : LocalDateTime.now();
         LocalDateTime endDate = endDateSql != null ? endDateSql.toLocalDateTime() : startDate.plusDays(duration);
 
-        Event event = new Event(String.valueOf(id), name, type, startDate, endDate, location, duration, status, eventImage);
+        Event event = new Event(id, name, type, startDate, endDate, location, duration, status, eventImage);
         return event;
     }
 }

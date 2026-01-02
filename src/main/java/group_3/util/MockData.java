@@ -1,20 +1,19 @@
 package group_3.util;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import group_3.model.Event;
 import group_3.model.Presenter;
 import group_3.model.Session;
 import group_3.model.Ticket;
 import group_3.model.enums.EventStatus;
 import group_3.model.enums.EventType;
-import group_3.model.enums.Role;
 import group_3.model.enums.TicketStatus;
 import group_3.model.enums.TicketType;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Shared in-memory mock storage for DAOInMemory classes.
@@ -64,6 +63,9 @@ public final class MockData {
         
         int s5 = nextSession(e4, "Robotics Showcase", 150);
         addPresenterToSession(s5, p4); // Dave also presents
+        
+        int s6 = nextSession(e3, "Product Demo", 100);
+        addPresenterToSession(s6, p1); // Alice presents
 
         // Seed Tickets (some used, some active)
         addTickets(e1, s1, 200, 149.0, 120, 60); // 120 used, 60 active
@@ -86,7 +88,7 @@ public final class MockData {
         LocalDateTime end = start.plusDays(durationDays);
         // Placeholder image URL (public domain image)
         String imageUrl = "https://via.placeholder.com/600x300?text=" + name.replace(" ", "+");
-        Event ev = new Event(String.valueOf(id), name, type, start, end, location, durationDays, status, imageUrl);
+        Event ev = new Event(id, name, type, start, end, location, durationDays, status, imageUrl);
         EVENTS.put(id, ev);
         return id;
     }
@@ -95,7 +97,7 @@ public final class MockData {
         int id = SESSION_SEQ.incrementAndGet();
         LocalDateTime start = LocalDateTime.now().plusDays(3).withHour(9);
         LocalDateTime end = start.plusHours(2);
-        Session s = new Session(String.valueOf(id), String.valueOf(eventId), title, title + " description", start, end, "Hall A", capacity);
+        Session s = new Session(id, eventId, title, title + " description", start, end, "Hall A", capacity);
         SESSIONS.put(id, s);
         // Link to event
         Event ev = EVENTS.get(eventId);
@@ -108,7 +110,7 @@ public final class MockData {
     private static void addPresenterToSession(int sessionId, int presenterId) {
         Session s = SESSIONS.get(sessionId);
         if (s != null) {
-            s.addPresenter(String.valueOf(presenterId));
+            s.addPresenter(presenterId);
         }
     }
 
