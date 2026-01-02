@@ -4,7 +4,10 @@ import group_3.dao.PersonDAO;
 import group_3.dao.impl.PersonDAOImpl;
 import group_3.model.Person;
 import group_3.model.enums.Role;
+import group_3.service.SystemHistoryService.SystemHistoryService;
+import group_3.service.SystemHistoryService.SystemHistoryServiceImpl;
 import group_3.util.PasswordUtil;
+import group_3.security.AuthContext;
 
 import java.util.Optional;
 
@@ -15,6 +18,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final PersonDAO personDAO = new PersonDAOImpl();
     private Person currentUser = null;
+    private final SystemHistoryService historyService = new SystemHistoryServiceImpl();
 
     @Override
     public Optional<Person> login(String username, String rawPassword) {
@@ -23,7 +27,14 @@ public class AuthServiceImpl implements AuthService {
         if (userOpt.isPresent()) {
             Person user = userOpt.get();
             if (PasswordUtil.verifyPassword(rawPassword, user.getPasswordHash())) {
-                this.currentUser = user;
+                AuthContext.setCurrentUser(user);
+
+                historyService.logAction(
+                        user.getId(),
+                        "LOGIN",
+                        "User logged in: " +  user.getUsername()
+                );
+
                 return Optional.of(user);
             }
         }
@@ -32,21 +43,28 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void logout() {
-        this.currentUser = null;
+        Integer userId = AuthContext.getCurrentUserId();
+        AuthContext.clear();
+
+        historyService.logAction(
+                userId,
+                "LOGOUT",
+                "User logged out"
+        );
     }
 
     @Override
     public boolean isAuthenticated() {
-        return this.currentUser != null;
+        return AuthContext.getCurrentUser() != null;
     }
 
     @Override
     public boolean hasRole(Role role) {
-        return isAuthenticated() && this.currentUser.getRole() == role;
+        return isAuthenticated() && AuthContext.getCurrentUser().getRole() == role;
     }
 
     @Override
     public Person getCurrentUser() {
-        return this.currentUser;
+        return AuthContext.getCurrentUser();
     }
 }
