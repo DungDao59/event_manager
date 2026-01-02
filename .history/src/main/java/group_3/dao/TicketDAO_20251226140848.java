@@ -1,8 +1,10 @@
 package group_3.dao;
 
-import java.util.ArrayList;
-
+import group_3.model.Person;
 import group_3.model.Ticket;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
 
 public interface TicketDAO {
     void create(Ticket ticket);
