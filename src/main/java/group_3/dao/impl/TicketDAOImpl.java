@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 public class TicketDAOImpl implements TicketDAO {
     @Override
-    public void create(Ticket ticket) { //create new row in ticket table
+    public int create(Ticket ticket) { //create new row in ticket table
         String sql = "INSERT INTO ticket (attendee_id, event_id, session_id, type, price, status, qr_code_data) " +
                 "VALUES (?,?,?,?,?,?,?)";
 
@@ -24,10 +24,21 @@ public class TicketDAOImpl implements TicketDAO {
             ps.setDouble(5, ticket.getPrice());
             ps.setString(6, ticket.getStatus().toString());
             ps.setString(7, ticket.getQRpath());
-            ps.executeUpdate();
+
+            int affectedRows = ps.executeUpdate();
+
+            if (affectedRows > 0) {
+                try (ResultSet generatedID = ps.getGeneratedKeys()) {
+                    if (generatedID.next()) {
+                        int newId = generatedID.getInt(1);
+                        ticket.setTicketID(newId); // set the ticket ID as the auto generated one
+                        return newId; // Return the generated ID of the ticket
+                    }
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-        }
+        } return -1; // False to create ticket in the database
     }
 
     @Override

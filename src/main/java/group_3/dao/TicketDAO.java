@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import group_3.model.Ticket;
 
 public interface TicketDAO {
-    void create(Ticket ticket);
+    int create(Ticket ticket);
     void update(Ticket ticket);
     boolean delete(int id);
     ArrayList<Ticket> findAll();
