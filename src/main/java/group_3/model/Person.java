@@ -27,7 +27,6 @@ public abstract class Person {
         this.fullName = fullName;
         this.dateOfBirth = dateOfBirth;
         this.contactInformation = contactInformation;
-        this.role = role;
     }
 
     // Getters & setters
@@ -39,6 +38,7 @@ public abstract class Person {
     public String getContactInformation() { return contactInformation; }
     public Role getRole() { return role; }
 
+    public void setUsername(String username){ this.username = username; }
     public void setFullName(String fullName) { this.fullName = fullName; }
     public void setDateOfBirth(LocalDate dateOfBirth) { this.dateOfBirth = dateOfBirth; }
     public void setContactInformation(String contactInformation) { this.contactInformation = contactInformation; }

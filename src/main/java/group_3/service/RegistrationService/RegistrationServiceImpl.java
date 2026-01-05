@@ -15,16 +15,23 @@ import group_3.model.Session;
 import group_3.model.Ticket;
 import group_3.model.enums.TicketStatus;
 import group_3.model.enums.TicketType;
+import group_3.security.AuthContext;
+import group_3.service.SystemHistoryService.SystemHistoryService;
+import group_3.service.SystemHistoryService.SystemHistoryServiceImpl;
 
 public class RegistrationServiceImpl implements RegistrationService{
     private final TicketDAO ticketDAO =  new TicketDAOImpl();
     private final ScheduleDAO scheduleDAO = new ScheduleDAOImpl();
     private final SessionDAO sessionDAO = new SessionDAOImpl();
+    private final SystemHistoryService historyService = new SystemHistoryServiceImpl();
 
     @Override
     public boolean checkPersonConflict (int PersonId, int newSessionId) {
         ArrayList<ScheduleEntry> PersonSchedule = scheduleDAO.findAllScheduleByUserId(PersonId);
         Optional<Session> sessionOptional = sessionDAO.findById(newSessionId);
+        if(sessionOptional.isEmpty()){
+            return false;
+        }
         Session s = sessionOptional.get();
 
         for (int i = 0; i < PersonSchedule.size(); i++) {
@@ -43,6 +50,10 @@ public class RegistrationServiceImpl implements RegistrationService{
     public boolean registerAttendee(int AttendeeId, int newSessionId, TicketType ticketType, double ticketPrice) {
         if (checkPersonConflict (AttendeeId, newSessionId)) {return false;}
         Optional<Session> sessionOptional = sessionDAO.findById(newSessionId);
+
+        if(sessionOptional.isEmpty()){
+            return false;
+        }
         Session s = sessionOptional.get();
 
         Ticket ticket = new Ticket();
@@ -62,6 +73,21 @@ public class RegistrationServiceImpl implements RegistrationService{
         entry.setEndTime(s.getEndTime());
 
         scheduleDAO.create(entry);
+
+        String detail = String.format(
+                "{\"attendeeId\": %d, \"sessionId\": %d, \"ticketType\": \"%s\", \"price\": %.2f}",
+                AttendeeId,
+                newSessionId,
+                ticketType.name(),
+                ticketPrice
+        );
+
+        historyService.logAction(
+                AuthContext.getCurrentUserId(),
+                "REGISTER ATTENDEE",
+                detail
+        );
+
         return true;
     }
 
@@ -76,6 +102,12 @@ public class RegistrationServiceImpl implements RegistrationService{
         ticketDAO.update(ticket);
 
         scheduleDAO.deleteByUserAndSession(ticket.getAttendeeID(), ticket.getSessionID());
+
+        historyService.logAction(
+                AuthContext.getCurrentUserId(),
+                "CANCEL REGISTRATION",
+                "Cancel ticket ID = " + ticketId
+        );
         return true;
     }
 
