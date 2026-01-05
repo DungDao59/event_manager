@@ -10,6 +10,8 @@ import group_3.model.Event;
 import group_3.model.EventStatistics;
 import group_3.service.EventStatisticsService.EventStatisticsService;
 import group_3.service.EventStatisticsService.EventStatisticsServiceImpl;
+import group_3.service.EventAdminService.EventAdminService;
+import group_3.service.EventAdminService.EventAdminServiceImpl;
 import group_3.util.DaoProvider;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -41,6 +43,7 @@ public class EventDetailController {
     private EventListController listController;
     private EventDAO eventDAO;
     private EventStatisticsService statisticsService;
+    private EventAdminService eventAdminService;
     
     private static final DateTimeFormatter DATE_FORMATTER = 
         DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy 'at' HH:mm");
@@ -49,6 +52,7 @@ public class EventDetailController {
         this.currentEvent = event;
         this.listController = listController;
         this.eventDAO = DaoProvider.getEventDAO();
+        this.eventAdminService = new EventAdminServiceImpl();
 
         SessionDAO sessionDAO = DaoProvider.getSessionDAO();
         TicketDAO ticketDAO = DaoProvider.getTicketDAO();
@@ -122,7 +126,11 @@ public class EventDetailController {
         
         if (currentEvent.getEventImage() != null && !currentEvent.getEventImage().isEmpty()) {
             try {
-                Image image = new Image(currentEvent.getEventImage(), 600, 300, true, true);
+                    // Convert file path to proper file URL for JavaFX
+                    java.io.File imageFile = new java.io.File(currentEvent.getEventImage());
+                    String imageUrl = imageFile.toURI().toString();
+                
+                    Image image = new Image(imageUrl, 600, 300, true, true);
                 ImageView imageView = new ImageView(image);
                 imageView.setFitWidth(600);
                 imageView.setFitHeight(300);
@@ -132,6 +140,7 @@ public class EventDetailController {
                 Label placeholder = new Label("Image not available");
                 placeholder.setStyle("-fx-text-fill: #999; -fx-font-size: 16px;");
                 section.getChildren().add(placeholder);
+                    System.err.println("Error loading image: " + e.getMessage());
             }
         } else {
             Label placeholder = new Label("📷 No Event Image");
@@ -266,7 +275,19 @@ public class EventDetailController {
     }
     
     public void refreshSessions() {
-        // Refresh logic if needed
+        try {
+            // Reload the current event from database to get updated session data
+            int eventId = currentEvent.getEventId();
+            Optional<Event> updatedEvent = eventDAO.findById(eventId);
+            
+            if (updatedEvent.isPresent()) {
+                this.currentEvent = updatedEvent.get();
+                // Refresh the entire view to show updated data
+                stage.setScene(createScene());
+            }
+        } catch (Exception e) {
+            showError("Refresh Error", "Failed to refresh sessions: " + e.getMessage());
+        }
     }
     
     private VBox createStatisticsSection() {
@@ -378,14 +399,16 @@ public class EventDetailController {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirm Delete");
         alert.setHeaderText("Delete Event: " + currentEvent.getName());
-        alert.setContentText("Are you sure? This action cannot be undone.");
+        alert.setContentText("Are you sure? This will also delete all associated sessions. This action cannot be undone.");
         
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
                 int eventId = currentEvent.getEventId();
-                eventDAO.delete(eventId);
+                // Use EventAdminService which handles cascade deletion
+                eventAdminService.deleteEvent(eventId);
                 
+                // Automatically refresh parent list view
                 if (listController != null) {
                     listController.refreshEvents();
                 }

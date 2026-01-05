@@ -29,7 +29,7 @@ public class EventDAOImpl implements EventDAO {
 
     @Override
     public void create(Event event) {
-        String sql = "INSERT INTO event (name, type, start_date, end_date, location, duration, status, event_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO event (name, type, start_date, end_date, location, duration, status, event_image) VALUES (?, ?, ?, ?, ?, ?, CAST(? AS event_status), ?)";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -41,6 +41,9 @@ public class EventDAOImpl implements EventDAO {
             ps.setInt(6, event.getDuration());
             ps.setString(7, event.getStatus() != null ? event.getStatus().name() : "SCHEDULED");
             ps.setString(8, event.getEventImage());
+            
+            // Debug output
+            System.out.println("DEBUG: Saving event with image path: " + event.getEventImage());
 
             ps.executeUpdate();
             ResultSet rs = ps.getGeneratedKeys();
@@ -108,7 +111,7 @@ public class EventDAOImpl implements EventDAO {
 
     @Override
     public void update(Event event) {
-        String sql = "UPDATE event SET name = ?, type = ?, start_date = ?, end_date = ?, location = ?, duration = ?, status = ?, event_image = ? WHERE event_id = ?";
+        String sql = "UPDATE event SET name = ?, type = ?, start_date = ?, end_date = ?, location = ?, duration = ?, status = CAST(? AS event_status), event_image = ? WHERE event_id = ?";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
