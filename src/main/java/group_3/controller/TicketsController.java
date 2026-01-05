@@ -88,7 +88,7 @@ public class TicketsController {
 
         SplitPane splitPane = new SplitPane();
         splitPane.getItems().addAll(leftBox, rightBox);
-        splitPane.setDividerPositions(0.4); // 40% Left, 60% Right
+        splitPane.setDividerPositions(0.4);
 
         root.setCenter(splitPane);
 

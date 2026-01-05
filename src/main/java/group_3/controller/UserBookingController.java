@@ -7,6 +7,7 @@ import group_3.service.EventAdminService.EventAdminService;
 import group_3.service.EventAdminService.EventAdminServiceImpl;
 import group_3.service.RegistrationService.RegistrationService;
 import group_3.service.RegistrationService.RegistrationServiceImpl;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -16,9 +17,7 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class UserBookingController {
     private final EventAdminService eventService = new EventAdminServiceImpl();
@@ -30,16 +29,16 @@ public class UserBookingController {
 
     private Stage stage;
     private TableView<Event> eventTable;
-    private ListView<Session> sessionList;
+    private TableView<Session> sessionTable;
     private Button registerBtn;
     private Label statusLabel;
 
     public void show() {
         stage = new Stage();
-        stage.setTitle("Attendee Dashboard");
+        stage.setTitle("Booking System");
         stage.setScene(createScene());
-        stage.setWidth(1000);
-        stage.setHeight(600);
+        stage.setWidth(1500);
+        stage.setHeight(1000);
         stage.show();
     }
 
@@ -68,10 +67,9 @@ public class UserBookingController {
         Label sessionLabel = new Label("2. Select an Session");
         sessionLabel.setFont(new Font("System Bold", 14));
 
-        sessionList = new ListView<>();
-        VBox.setVgrow(sessionList, Priority.ALWAYS);
-
-        rightBox.getChildren().addAll(sessionLabel, sessionList);
+        sessionTable = new TableView<>();
+        setupSessionTable();
+        VBox.setVgrow(sessionTable, Priority.ALWAYS);
 
         Label typeLabel = new Label("3. Choose Ticket Type");
         typeLabel.setFont(new Font("System Bold", 14));
@@ -89,10 +87,12 @@ public class UserBookingController {
         Button myTicketsBtn = new Button("View My Tickets");
         myTicketsBtn.setStyle("-fx-background-color: #3498db; -fx-text-fill: white;");
         myTicketsBtn.setMaxWidth(Double.MAX_VALUE);
-//        myTicketsBtn.setOnAction(e -> new MyTicketsController().show());
+        myTicketsBtn.setOnAction(e -> new TicketsController().show());
+
+        statusLabel = new Label("");
 
         rightBox.getChildren().addAll(
-                sessionLabel, sessionList,
+                sessionLabel, sessionTable,
                 new Separator(),
                 typeLabel, ticketTypeCombo, // Added here
                 registerBtn, myTicketsBtn, statusLabel
@@ -103,20 +103,18 @@ public class UserBookingController {
         splitPane.setDividerPositions(0.65);
 
         root.setCenter(splitPane);
-//        loadEvents();
+        loadEvents();
 
         return new Scene(root);
     }
 
     private void setupEventTable() {
-        TableColumn<Event, String> colTitle = new TableColumn<>("Title");
+        TableColumn<Event, String> colTitle = new TableColumn<>("Event Name");
         colTitle.setCellValueFactory(new PropertyValueFactory<>("name"));
+        colTitle.setPrefWidth(150);
 
-        TableColumn<Event, String> colLoc = new TableColumn<>("Location");
-        colLoc.setCellValueFactory(new PropertyValueFactory<>("location"));
-
-        TableColumn<Event, String> colDate = new TableColumn<>("Date");
-        colDate.setCellValueFactory(cell -> {
+        TableColumn<Event, String> colStartDate = new TableColumn<>("Start Date");
+        colStartDate.setCellValueFactory(cell -> {
             if (cell.getValue().getStartDate() != null) {
                 return new javafx.beans.property.SimpleStringProperty(
                         cell.getValue().getStartDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
@@ -124,34 +122,104 @@ public class UserBookingController {
             }
             return new javafx.beans.property.SimpleStringProperty("");
         });
+        colStartDate.setPrefWidth(100);
 
-        eventTable.getColumns().addAll(colTitle, colDate, colLoc);
+        TableColumn<Event, String> colEndDate = new TableColumn<>("End Date");
+        colEndDate.setCellValueFactory(cell -> {
+            if (cell.getValue().getEndDate() != null) {
+                return new javafx.beans.property.SimpleStringProperty(
+                        cell.getValue().getEndDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                );
+            }
+            return new javafx.beans.property.SimpleStringProperty("");
+        });
+        colEndDate.setPrefWidth(100);
+
+        TableColumn<Event, String> colDuration = new TableColumn<>("Duration");
+        colDuration.setCellValueFactory(cell ->
+                new javafx.beans.property.SimpleStringProperty(cell.getValue().getDuration() + " days")
+        );
+        colDuration.setPrefWidth(70);
+
+
+        TableColumn<Event, String> colLoc = new TableColumn<>("Location");
+        colLoc.setCellValueFactory(new PropertyValueFactory<>("location"));
+        colLoc.setPrefWidth(100);
+
+        eventTable.getColumns().addAll(colTitle, colStartDate, colEndDate, colLoc, colDuration);
+
+        eventTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY); //remove blank column
 
         eventTable.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newEvent) -> {
             if (newEvent != null) {
-//                loadSessions(newEvent.getEventId());
+                loadSessions(newEvent.getEventId());
             }
         });
     }
+
+    private void setupSessionTable() {
+        // Session Name
+        TableColumn<Session, String> colName = new TableColumn<>("Session Name");
+        colName.setCellValueFactory(new PropertyValueFactory<>("title"));
+        colName.setPrefWidth(150);
+
+        // Venue
+        TableColumn<Session, String> colVenue = new TableColumn<>("Venue");
+        colVenue.setCellValueFactory(new PropertyValueFactory<>("venue"));
+        colVenue.setPrefWidth(100);
+
+
+        // Start Time
+        TableColumn<Session, String> colStart = new TableColumn<>("Start Time");
+        colStart.setCellValueFactory(cell -> {
+            if (cell.getValue().getStartTime() != null) {
+                return new SimpleStringProperty(cell.getValue().getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")));
+            }
+            return new SimpleStringProperty("");
+        });
+        colStart.setPrefWidth(80);
+
+        // End Time
+        TableColumn<Session, String> colEnd = new TableColumn<>("End Time");
+        colEnd.setCellValueFactory(cell -> {
+            if (cell.getValue().getEndTime() != null) {
+                return new SimpleStringProperty(cell.getValue().getEndTime().format(DateTimeFormatter.ofPattern("HH:mm")));
+            }
+            return new SimpleStringProperty("");
+        });
+        colEnd.setPrefWidth(80);
+
+        // Description
+        TableColumn<Session, String> colDesc = new TableColumn<>("Description");
+        colDesc.setCellValueFactory(new PropertyValueFactory<>("description"));
+        colDesc.setPrefWidth(200);
+
+        // Add all columns to the table
+        sessionTable.getColumns().setAll(colName, colVenue, colStart, colEnd, colDesc);
+
+        // --- MATCHING STYLE: Remove the blank extra column ---
+        sessionTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+    }
+
+
 
     private void loadEvents() {
         eventTable.getItems().setAll(eventService.getAllEvents());
     }
 
     private void loadSessions(int eventId) {
-        sessionList.getItems().clear();
+        sessionTable.getItems().clear();
         List<Session> sessions = sessionService.getSessionsByEventId(eventId);
         if (sessions.isEmpty()) {
             statusLabel.setText("No sessions found.");
         } else {
-            sessionList.getItems().addAll(sessions);
+            sessionTable.getItems().addAll(sessions);
             statusLabel.setText("Found " + sessions.size() + " sessions.");
         }
     }
 
     private void handleRegister() {
-        Session selectedSession = sessionList.getSelectionModel().getSelectedItem();
-        // 3. GET SELECTED TYPE
+        Session selectedSession = sessionTable.getSelectionModel().getSelectedItem();
         TicketType selectedType = ticketTypeCombo.getValue();
 
         if (selectedSession == null) {
@@ -164,9 +232,8 @@ public class UserBookingController {
             return;
         }
 
-        // 4. CALCULATE PRICE (Simple Logic)
-        // You can make this complex later (e.g., fetch from DB)
-        double price = 50.00; // Default Standard Price
+
+        double price = 50.00; // Default Price for Standard
         if (selectedType.toString().equalsIgnoreCase("VIP")) {
             price = 100.00;
         }
@@ -174,7 +241,7 @@ public class UserBookingController {
         boolean success = registrationService.registerAttendee(
                 currentUserId,
                 selectedSession.getSessionId(),
-                selectedType, // Pass the user's choice here!
+                selectedType,
                 price
         );
 

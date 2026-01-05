@@ -13,10 +13,10 @@ public class TicketDAOImpl implements TicketDAO {
     @Override
     public int create(Ticket ticket) { //create new row in ticket table
         String sql = "INSERT INTO ticket (attendee_id, event_id, session_id, type, price, status, qr_code_data) " +
-                "VALUES (?,?,?,?,?,?,?)";
+                "VALUES (?,?,?,?,?,?::ticket_status,?)";
 
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
+             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) { // Ask the database to return generated key
             ps.setInt(1, ticket.getAttendeeID());
             ps.setInt(2, ticket.getEventID());
             ps.setInt(3, ticket.getSessionID());
@@ -43,8 +43,8 @@ public class TicketDAOImpl implements TicketDAO {
 
     @Override
     public void update(Ticket ticket) { //update the exist row in ticket table
-        String sql = "UPDATE ticket" +
-                "SET attendee_id = ?, event_id = ?, session_id = ?, type = ?, status = ?, qr_code_data = ? " +
+        String sql = "UPDATE ticket " +
+                "SET attendee_id = ?, event_id = ?, session_id = ?, type = ?, price = ?, status = ?::ticket_status, qr_code_data = ? " +
                 "WHERE ticket_id = ?";
 
         try (Connection connection = DatabaseConnection.getConnection();
@@ -99,7 +99,9 @@ public class TicketDAOImpl implements TicketDAO {
             PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
-            return mapRowToTicket(rs);
+            if (rs.next()) {
+                return mapRowToTicket(rs);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         } return null;
