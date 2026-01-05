@@ -34,6 +34,9 @@ public class Event {
     /**
      * Full constructor with all attributes.
      */
+
+    public Event(){};
+
     public Event(int eventId, String name, EventType type, LocalDateTime startDate, LocalDateTime endDate,
                  String location, int duration, EventStatus status, String eventImage) {
         this.eventId = eventId;

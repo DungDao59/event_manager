@@ -3,6 +3,8 @@ package group_3.service.EventAdminService;
 import java.io.*;
 import java.time.*;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.time.format.DateTimeFormatter;
 
 import group_3.dao.EventDAO;
 import group_3.dao.SessionDAO;
@@ -355,7 +357,6 @@ public class EventAdminServiceImpl implements EventAdminService {
                     "Add session #" + sessionId + "to event #" + eventId
             );
         }
-
     }
 
     @Override
@@ -633,8 +634,6 @@ public class EventAdminServiceImpl implements EventAdminService {
         );
 
         return ticketDAO.delete(ticketId);
-
-
     }
 
     // ==================== REPORT GENERATION OPERATIONS ====================
