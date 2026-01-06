@@ -71,7 +71,7 @@
           name VARCHAR(255) NOT NULL,
           type VARCHAR(100),
           start_date DATE NOT NULL,
-          end_date DATE,
+          end_date DATE NOT NULL,
           location VARCHAR(255) NOT NULL,
           duration INT,
           status event_status NOT NULL,

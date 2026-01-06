@@ -1,27 +1,20 @@
-    DROP TABLE IF EXISTS audit_log CASCADE;
+    DROP TABLE IF EXISTS audit_log;
 
-    DROP TABLE IF EXISTS schedule_entry CASCADE;
+    DROP TABLE IF EXISTS schedule_entry;
 
-    DROP TABLE IF EXISTS ticket CASCADE;
+    DROP TABLE IF EXISTS ticket;
 
-    DROP TABLE IF EXISTS session_presenter CASCADE;
+    DROP TABLE IF EXISTS session_presenter;
 
-    DROP TABLE IF EXISTS session_material CASCADE;
+    DROP TABLE IF EXISTS session;
 
-    DROP TABLE IF EXISTS session CASCADE;
+    DROP TABLE IF EXISTS event;
 
-    DROP TABLE IF EXISTS event CASCADE;
+    DROP TABLE IF EXISTS presenter;
 
-    DROP TABLE IF EXISTS presenter CASCADE;
+    DROP TABLE IF EXISTS attendee;
 
-    DROP TABLE IF EXISTS attendee CASCADE;
-
-    DROP TABLE IF EXISTS person CASCADE;
-
-    -- Drop existing types if they exist
-    DROP TYPE IF EXISTS user_role CASCADE;
-    DROP TYPE IF EXISTS event_status CASCADE;
-    DROP TYPE IF EXISTS ticket_status CASCADE;
+    DROP TABLE IF EXISTS person;
 
     -- ENUMS --
     CREATE TYPE user_role AS ENUM (
@@ -71,7 +64,7 @@
           name VARCHAR(255) NOT NULL,
           type VARCHAR(100),
           start_date DATE NOT NULL,
-          end_date DATE,
+          end_date DATE NOT NULL,
           location VARCHAR(255) NOT NULL,
           duration INT,
           status event_status NOT NULL,
@@ -85,9 +78,8 @@
           event_id INT NOT NULL,
           title VARCHAR(255) NOT NULL,
           description TEXT NOT NULL,
-          scheduled_date DATE,
-          start_time TIME NOT NULL,
-          end_time TIME NOT NULL,
+          start_time TIMESTAMP NOT NULL,
+          end_time TIMESTAMP NOT NULL,
           venue VARCHAR(100),
           capacity INT,
           FOREIGN KEY (event_id) REFERENCES event (event_id) ON DELETE CASCADE

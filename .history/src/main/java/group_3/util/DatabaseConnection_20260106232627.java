@@ -136,7 +136,8 @@ public class DatabaseConnection {
 
     public static void loadInitialData() throws SQLException {
         Connection conn = getConnection();
-        executeSQLScript(conn, "sql/initial_data.sql");
-        System.out.println("✅ Initial data loaded");
+            executeSQLScript(conn, "sql/initial_data.sql");
+            System.out.println("✅ Initial data loaded");
+        }
     }
 }

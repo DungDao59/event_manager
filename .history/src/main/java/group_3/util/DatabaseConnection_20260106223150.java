@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -20,44 +19,14 @@ public class DatabaseConnection {
     private static final String URL  = dotenv.get("DB_URL");
     private static final String USER = dotenv.get("DB_USER");
     private static final String PASS = dotenv.get("DB_PASS");
-    
-    // Cached connection for better performance
-    private static Connection cachedConnection = null;
-    
-    static {
+
+    public static Connection getConnection() throws SQLException {
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
-            System.err.println("PostgreSQL JDBC Driver not found");
+            throw new SQLException("PostgreSQL JDBC Driver not found", e);
         }
-    }
-
-    public static Connection getConnection() throws SQLException {
-        // Reuse connection if valid
-        if (cachedConnection != null && !cachedConnection.isClosed()) {
-            return cachedConnection;
-        }
-        cachedConnection = DriverManager.getConnection(URL, USER, PASS);
-        return cachedConnection;
-    }
-    
-    /**
-     * Check if database schema already exists
-     */
-    private static boolean isDatabaseInitialized() {
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
-             Statement stmt = conn.createStatement()) {
-            // Check if person table exists
-            ResultSet rs = stmt.executeQuery(
-                "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'person')"
-            );
-            if (rs.next()) {
-                return rs.getBoolean(1);
-            }
-        } catch (SQLException e) {
-            // Table doesn't exist or connection failed
-        }
-        return false;
+        return DriverManager.getConnection(URL, USER, PASS);
     }
 
     private static void executeSQLScript(Connection conn, String scriptPath)
@@ -100,12 +69,6 @@ public class DatabaseConnection {
     // ==================================================
 
     public static void setUpDatabase() {
-        // Skip setup if database is already initialized
-        if (isDatabaseInitialized()) {
-            System.out.println("✅ Database already initialized, skipping setup");
-            return;
-        }
-        
         try {
             setupSchema();
             loadInitialData();
@@ -114,29 +77,18 @@ public class DatabaseConnection {
             e.printStackTrace();
         }
     }
-    
-    /**
-     * Force re-initialize database (drop and recreate all tables)
-     */
-    public static void resetDatabase() {
-        try {
-            setupSchema();
-            loadInitialData();
-        } catch (SQLException e) {
-            System.err.println("[Error] Database reset failed: " + e.getMessage());
-            e.printStackTrace();
+
+    public static void setupSchema() throws SQLException {
+        try (Connection conn = getConnection()) {
+            executeSQLScript(conn, "sql/schema.sql");
+            System.out.println("✅ Schema setup completed");
         }
     }
 
-    public static void setupSchema() throws SQLException {
-        Connection conn = getConnection();
-        executeSQLScript(conn, "sql/schema.sql");
-        System.out.println("✅ Schema setup completed");
-    }
-
     public static void loadInitialData() throws SQLException {
-        Connection conn = getConnection();
-        executeSQLScript(conn, "sql/initial_data.sql");
-        System.out.println("✅ Initial data loaded");
+        try (Connection conn = getConnection()) {
+            executeSQLScript(conn, "sql/initial_data.sql");
+            System.out.println("✅ Initial data loaded");
+        }
     }
 }
