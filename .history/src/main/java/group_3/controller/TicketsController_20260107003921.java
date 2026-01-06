@@ -109,6 +109,8 @@ public class TicketsController {
 
     private void loadTickets() {
         int userId = getCurrentUserId();
+        System.out.println("DEBUG: Loading tickets for user ID: " + userId);
+        System.out.println("DEBUG: Current user: " + (AuthContext.getCurrentUser() != null ? AuthContext.getCurrentUser().getUsername() : "null"));
         
         if (userId == -1) {
             ticketList.getItems().clear();
@@ -118,11 +120,12 @@ public class TicketsController {
         }
         try {
             java.util.List<Ticket> tickets = registrationService.getTicketsForAttendee(userId);
+            System.out.println("DEBUG: Found " + (tickets != null ? tickets.size() : 0) + " tickets");
             if (tickets != null && !tickets.isEmpty()) {
                 ticketList.getItems().setAll(tickets);
             } else {
                 ticketList.getItems().clear();
-                qrPlaceholder.setText("You have no tickets yet. Register for a session to get tickets.");
+                qrPlaceholder.setText("You have no tickets yet. Register for a session to get tickets. (User ID: " + userId + ")");
                 qrPlaceholder.setStyle("-fx-text-fill: #adb5bd;");
             }
         } catch (Exception e) {

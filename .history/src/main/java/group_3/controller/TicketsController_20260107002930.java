@@ -109,7 +109,6 @@ public class TicketsController {
 
     private void loadTickets() {
         int userId = getCurrentUserId();
-        
         if (userId == -1) {
             ticketList.getItems().clear();
             qrPlaceholder.setText("Please log in to view your tickets.");

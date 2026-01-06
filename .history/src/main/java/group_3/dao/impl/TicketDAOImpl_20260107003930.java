@@ -110,6 +110,7 @@ public class TicketDAOImpl implements TicketDAO {
     @Override
     public ArrayList<Ticket> findTicketByAttendeeId(int id) {
         String sql = "SELECT * FROM ticket WHERE attendee_id = ?";
+        System.out.println("DEBUG TicketDAO: Querying tickets for attendee_id = " + id);
         ArrayList<Ticket> tickets = new ArrayList<>();
         try (Connection connection = DatabaseConnection.getConnection();
             PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -118,7 +119,9 @@ public class TicketDAOImpl implements TicketDAO {
             while (rs.next()) {
                 tickets.add(mapRowToTicket(rs));
             }
+            System.out.println("DEBUG TicketDAO: Found " + tickets.size() + " tickets");
         } catch (SQLException e) {
+            System.err.println("DEBUG TicketDAO: Error - " + e.getMessage());
             e.printStackTrace();
         }
         return tickets;

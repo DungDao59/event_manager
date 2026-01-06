@@ -82,6 +82,7 @@ public class DatabaseConnection {
                 sql.append(line).append("\n");
                 if (line.endsWith(";")) {
                     String sqlStr = sql.toString().trim();
+                    System.out.println("DEBUG SQL: " + sqlStr.substring(0, Math.min(100, sqlStr.length())) + "...");
                     try (Statement stmt = conn.createStatement()) {
                         stmt.execute(sqlStr);
                     }
@@ -98,13 +99,8 @@ public class DatabaseConnection {
     // ==================================================
 
     public static void setUpDatabase() {
-        // Check if ALL required tables exist
-        if (isDatabaseFullyInitialized()) {
-            System.out.println("✅ Database already initialized, skipping setup");
-            return;
-        }
-        
-        System.out.println("🔄 Database incomplete or missing tables, running setup...");
+        // TEMPORARY: Force reset database to fix schema issues
+        System.out.println("🔄 Force resetting database...");
         try {
             setupSchema();
             loadInitialData();

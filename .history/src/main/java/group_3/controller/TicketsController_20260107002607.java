@@ -8,15 +8,10 @@ import group_3.util.QRCode;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.SplitPane;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
@@ -108,28 +103,7 @@ public class TicketsController {
     }
 
     private void loadTickets() {
-        int userId = getCurrentUserId();
-        
-        if (userId == -1) {
-            ticketList.getItems().clear();
-            qrPlaceholder.setText("Please log in to view your tickets.");
-            qrPlaceholder.setStyle("-fx-text-fill: red;");
-            return;
-        }
-        try {
-            java.util.List<Ticket> tickets = registrationService.getTicketsForAttendee(userId);
-            if (tickets != null && !tickets.isEmpty()) {
-                ticketList.getItems().setAll(tickets);
-            } else {
-                ticketList.getItems().clear();
-                qrPlaceholder.setText("You have no tickets yet. Register for a session to get tickets.");
-                qrPlaceholder.setStyle("-fx-text-fill: #adb5bd;");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            qrPlaceholder.setText("Error loading tickets: " + e.getMessage());
-            qrPlaceholder.setStyle("-fx-text-fill: red;");
-        }
+        ticketList.getItems().setAll(registrationService.getTicketsForAttendee(currentUserId));
     }
 
     private void showQRCode(Ticket ticket) {

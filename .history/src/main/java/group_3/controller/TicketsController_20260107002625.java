@@ -109,27 +109,13 @@ public class TicketsController {
 
     private void loadTickets() {
         int userId = getCurrentUserId();
-        
         if (userId == -1) {
             ticketList.getItems().clear();
             qrPlaceholder.setText("Please log in to view your tickets.");
             qrPlaceholder.setStyle("-fx-text-fill: red;");
             return;
         }
-        try {
-            java.util.List<Ticket> tickets = registrationService.getTicketsForAttendee(userId);
-            if (tickets != null && !tickets.isEmpty()) {
-                ticketList.getItems().setAll(tickets);
-            } else {
-                ticketList.getItems().clear();
-                qrPlaceholder.setText("You have no tickets yet. Register for a session to get tickets.");
-                qrPlaceholder.setStyle("-fx-text-fill: #adb5bd;");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            qrPlaceholder.setText("Error loading tickets: " + e.getMessage());
-            qrPlaceholder.setStyle("-fx-text-fill: red;");
-        }
+        ticketList.getItems().setAll(registrationService.getTicketsForAttendee(userId));
     }
 
     private void showQRCode(Ticket ticket) {

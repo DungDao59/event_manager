@@ -79,11 +79,10 @@ public class DatabaseConnection {
 
                 if (line.isEmpty() || line.startsWith("--")) continue;
 
-                sql.append(line).append("\n");
+                sql.append(line).append(" ");
                 if (line.endsWith(";")) {
-                    String sqlStr = sql.toString().trim();
                     try (Statement stmt = conn.createStatement()) {
-                        stmt.execute(sqlStr);
+                        stmt.execute(sql.toString());
                     }
                     sql.setLength(0);
                 }
@@ -98,7 +97,7 @@ public class DatabaseConnection {
     // ==================================================
 
     public static void setUpDatabase() {
-        // Check if ALL required tables exist
+        // Check if ALL required tables exist, not just person table
         if (isDatabaseFullyInitialized()) {
             System.out.println("✅ Database already initialized, skipping setup");
             return;
@@ -153,30 +152,6 @@ public class DatabaseConnection {
 
     public static void setupSchema() throws SQLException {
         try (Connection conn = DriverManager.getConnection(URL, USER, PASS)) {
-            // Force drop all tables with CASCADE to ensure clean slate
-            String[] dropStatements = {
-                "DROP TABLE IF EXISTS audit_log CASCADE",
-                "DROP TABLE IF EXISTS schedule_entry CASCADE",
-                "DROP TABLE IF EXISTS ticket CASCADE",
-                "DROP TABLE IF EXISTS session_presenter CASCADE",
-                "DROP TABLE IF EXISTS session_material CASCADE",
-                "DROP TABLE IF EXISTS session CASCADE",
-                "DROP TABLE IF EXISTS event CASCADE",
-                "DROP TABLE IF EXISTS presenter CASCADE",
-                "DROP TABLE IF EXISTS attendee CASCADE",
-                "DROP TABLE IF EXISTS person CASCADE",
-                "DROP TYPE IF EXISTS user_role CASCADE",
-                "DROP TYPE IF EXISTS event_status CASCADE",
-                "DROP TYPE IF EXISTS ticket_status CASCADE"
-            };
-            
-            for (String dropSql : dropStatements) {
-                try (Statement stmt = conn.createStatement()) {
-                    stmt.execute(dropSql);
-                }
-            }
-            System.out.println("✅ All tables dropped");
-            
             executeSQLScript(conn, "sql/schema.sql");
             System.out.println("✅ Schema setup completed");
         }

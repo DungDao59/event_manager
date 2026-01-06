@@ -6,9 +6,10 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            DatabaseConnection.setUpDatabase();
+            // Force reset database - this runs schema first, then initial data
+            DatabaseConnection.forceResetDatabase();
         } catch (Exception e) {
-            System.err.println("❌ Failed to set up database");
+            System.err.println("❌ Failed to setup database");
             e.printStackTrace();
         }
     }

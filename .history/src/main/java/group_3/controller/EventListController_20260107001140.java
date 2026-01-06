@@ -350,13 +350,8 @@ public class EventListController {
     }
     
     private void handleMyTickets() {
-        try {
-            TicketsController ticketsController = new TicketsController();
-            ticketsController.show();
-        } catch (Exception e) {
-            e.printStackTrace();
-            showError("Error", "Could not open My Tickets: " + e.getMessage());
-        }
+        TicketsController ticketsController = new TicketsController();
+        ticketsController.show();
     }
     
     private void handleMyProfile() {

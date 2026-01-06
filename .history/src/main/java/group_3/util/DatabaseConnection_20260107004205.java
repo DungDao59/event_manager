@@ -79,11 +79,10 @@ public class DatabaseConnection {
 
                 if (line.isEmpty() || line.startsWith("--")) continue;
 
-                sql.append(line).append("\n");
+                sql.append(line).append(" ");
                 if (line.endsWith(";")) {
-                    String sqlStr = sql.toString().trim();
                     try (Statement stmt = conn.createStatement()) {
-                        stmt.execute(sqlStr);
+                        stmt.execute(sql.toString());
                     }
                     sql.setLength(0);
                 }
@@ -98,7 +97,7 @@ public class DatabaseConnection {
     // ==================================================
 
     public static void setUpDatabase() {
-        // Check if ALL required tables exist
+        // Check if ALL required tables exist, not just person table
         if (isDatabaseFullyInitialized()) {
             System.out.println("✅ Database already initialized, skipping setup");
             return;

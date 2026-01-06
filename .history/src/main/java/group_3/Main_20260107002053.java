@@ -6,9 +6,9 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            DatabaseConnection.setUpDatabase();
+            DatabaseConnection.loadInitialData();
         } catch (Exception e) {
-            System.err.println("❌ Failed to set up database");
+            System.err.println("❌ Failed to seed data");
             e.printStackTrace();
         }
     }

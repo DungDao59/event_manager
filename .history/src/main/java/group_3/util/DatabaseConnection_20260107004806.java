@@ -82,6 +82,7 @@ public class DatabaseConnection {
                 sql.append(line).append("\n");
                 if (line.endsWith(";")) {
                     String sqlStr = sql.toString().trim();
+                    System.out.println("DEBUG SQL: " + sqlStr.substring(0, Math.min(100, sqlStr.length())) + "...");
                     try (Statement stmt = conn.createStatement()) {
                         stmt.execute(sqlStr);
                     }
