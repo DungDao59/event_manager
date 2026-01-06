@@ -1,36 +1,31 @@
 package group_3.controller;
 
-import java.io.File;
-import java.time.LocalDateTime;
-
+import group_3.util.DaoProvider;
 import group_3.model.Event;
 import group_3.model.enums.EventStatus;
 import group_3.model.enums.EventType;
 import group_3.service.EventAdminService.EventAdminService;
 import group_3.service.EventAdminService.EventAdminServiceImpl;
-import group_3.util.DaoProvider;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Spinner;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+
+import java.io.File;
+import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.util.Optional;
 
 /**
  * Controller for Event Form (Create/Edit).
@@ -156,9 +151,7 @@ public class EventFormController {
         HBox endDateTimeBox = new HBox(15);
         endDatePicker = new DatePicker();
         endDatePicker.setPrefWidth(150);
-        endDatePicker.setEditable(false); // Prevent manual typing
-        
-        endHourCombo = new ComboBox<>();
+        endDatePicker.setEditable(false); // Prevent manual typing        endHourCombo = new ComboBox<>();
         for (int i = 0; i < 24; i++) endHourCombo.getItems().add(i);
         endHourCombo.setPrefWidth(80);
         
@@ -331,7 +324,7 @@ public class EventFormController {
         saveBtn.setOnAction(e -> handleSave());
         
         Button cancelBtn = new Button("Cancel");
-        cancelBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-padding: 10px 30px;");
+        cancelBtn.setStyle("-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-padding: 10px 30px;");
         cancelBtn.setOnAction(e -> stage.close());
         
         buttonBar.getChildren().addAll(saveBtn, cancelBtn);

@@ -331,7 +331,7 @@ public class EventFormController {
         saveBtn.setOnAction(e -> handleSave());
         
         Button cancelBtn = new Button("Cancel");
-        cancelBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-padding: 10px 30px;");
+        cancelBtn.setStyle("-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-padding: 10px 30px;");
         cancelBtn.setOnAction(e -> stage.close());
         
         buttonBar.getChildren().addAll(saveBtn, cancelBtn);

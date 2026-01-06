@@ -9,9 +9,9 @@ import group_3.model.Event;
 import group_3.model.enums.EventStatus;
 import group_3.model.enums.EventType;
 import group_3.security.AuthContext;
+import group_3.util.DaoProvider;
 import group_3.service.EventAdminService.EventAdminService;
 import group_3.service.EventAdminService.EventAdminServiceImpl;
-import group_3.util.DaoProvider;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -95,16 +95,13 @@ public class EventListController {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         
-        Button ticketsBtn = createStyledButton("My Tickets", "#9b59b6");
-        ticketsBtn.setOnAction(e -> handleMyTickets());
-        
         Button profileBtn = createStyledButton("My Profile", "#27ae60");
         profileBtn.setOnAction(e -> handleMyProfile());
         
         Button logoutBtn = createStyledButton("Logout", "#e74c3c");
         logoutBtn.setOnAction(e -> handleLogout());
         
-        headerBar.getChildren().addAll(titleLabel, spacer, ticketsBtn, profileBtn, logoutBtn);
+        headerBar.getChildren().addAll(titleLabel, spacer, profileBtn, logoutBtn);
         
         // Title Bar with action buttons
         HBox titleBar = new HBox(10);
@@ -251,14 +248,26 @@ public class EventListController {
     }
     
     private void loadEvents() {
-        try {
-            List<Event> events = eventDAO.findAll();
-            eventList.setAll(events);
-            applyFilters();
-            updateStatus("Events loaded successfully", events.size());
-        } catch (Exception e) {
-            showError("Error loading events", e.getMessage());
-        }
+        // Show loading indicator
+        updateStatus("Loading events...", 0);
+        
+        // Load events in background thread to avoid UI freeze
+        new Thread(() -> {
+            try {
+                List<Event> events = eventDAO.findAll();
+                
+                // Update UI on JavaFX Application Thread
+                javafx.application.Platform.runLater(() -> {
+                    eventList.setAll(events);
+                    applyFilters();
+                    updateStatus("Events loaded successfully", events.size());
+                });
+            } catch (Exception e) {
+                javafx.application.Platform.runLater(() -> {
+                    showError("Error loading events", e.getMessage());
+                });
+            }
+        }).start();
     }
     
     private void handleCreateEvent() {
@@ -347,16 +356,6 @@ public class EventListController {
     private void updateStatus(String message, int count) {
         statusLabel.setText(message);
         eventCountLabel.setText("Total Events: " + count);
-    }
-    
-    private void handleMyTickets() {
-        try {
-            TicketsController ticketsController = new TicketsController();
-            ticketsController.show();
-        } catch (Exception e) {
-            e.printStackTrace();
-            showError("Error", "Could not open My Tickets: " + e.getMessage());
-        }
     }
     
     private void handleMyProfile() {

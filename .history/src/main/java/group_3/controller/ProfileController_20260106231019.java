@@ -241,29 +241,6 @@ public class ProfileController {
         return field;
     }
 
-    /**
-     * Configure the DatePicker to:
-     * 1. Not allow dates after today
-     * 2. Not allow manual text input (force calendar selection)
-     */
-    private void configureDatePicker(DatePicker datePicker) {
-        // Disable future dates
-        datePicker.setDayCellFactory(picker -> new javafx.scene.control.DateCell() {
-            @Override
-            public void updateItem(LocalDate date, boolean empty) {
-                super.updateItem(date, empty);
-                // Disable dates after today
-                if (date.isAfter(LocalDate.now())) {
-                    setDisable(true);
-                    setStyle("-fx-background-color: #ffc0cb;");
-                }
-            }
-        });
-        
-        // Make the text field non-editable to prevent invalid input
-        datePicker.setEditable(false);
-    }
-
     private void loadUserData() {
         if (currentUser == null) {
             showError("No user logged in");

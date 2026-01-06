@@ -156,9 +156,7 @@ public class EventFormController {
         HBox endDateTimeBox = new HBox(15);
         endDatePicker = new DatePicker();
         endDatePicker.setPrefWidth(150);
-        endDatePicker.setEditable(false); // Prevent manual typing
-        
-        endHourCombo = new ComboBox<>();
+        endDatePicker.setEditable(false); // Prevent manual typing        endHourCombo = new ComboBox<>();
         for (int i = 0; i < 24; i++) endHourCombo.getItems().add(i);
         endHourCombo.setPrefWidth(80);
         
@@ -331,7 +329,7 @@ public class EventFormController {
         saveBtn.setOnAction(e -> handleSave());
         
         Button cancelBtn = new Button("Cancel");
-        cancelBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-padding: 10px 30px;");
+        cancelBtn.setStyle("-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-padding: 10px 30px;");
         cancelBtn.setOnAction(e -> stage.close());
         
         buttonBar.getChildren().addAll(saveBtn, cancelBtn);

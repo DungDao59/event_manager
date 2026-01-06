@@ -95,16 +95,13 @@ public class EventListController {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         
-        Button ticketsBtn = createStyledButton("My Tickets", "#9b59b6");
-        ticketsBtn.setOnAction(e -> handleMyTickets());
-        
         Button profileBtn = createStyledButton("My Profile", "#27ae60");
         profileBtn.setOnAction(e -> handleMyProfile());
         
         Button logoutBtn = createStyledButton("Logout", "#e74c3c");
         logoutBtn.setOnAction(e -> handleLogout());
         
-        headerBar.getChildren().addAll(titleLabel, spacer, ticketsBtn, profileBtn, logoutBtn);
+        headerBar.getChildren().addAll(titleLabel, spacer, profileBtn, logoutBtn);
         
         // Title Bar with action buttons
         HBox titleBar = new HBox(10);
@@ -347,16 +344,6 @@ public class EventListController {
     private void updateStatus(String message, int count) {
         statusLabel.setText(message);
         eventCountLabel.setText("Total Events: " + count);
-    }
-    
-    private void handleMyTickets() {
-        try {
-            TicketsController ticketsController = new TicketsController();
-            ticketsController.show();
-        } catch (Exception e) {
-            e.printStackTrace();
-            showError("Error", "Could not open My Tickets: " + e.getMessage());
-        }
     }
     
     private void handleMyProfile() {

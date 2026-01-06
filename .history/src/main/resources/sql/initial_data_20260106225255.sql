@@ -21,18 +21,15 @@ INSERT INTO person (username, password, full_name, date_of_birth, contact_inform
 ('admin_mallory', 'pass123', 'Mallory Admin', '1983-02-14', '{"email": "mallory@event.com"}', 'EVENT_ADMIN'),
 ('admin_trent', 'pass123', 'Trent Admin', '1990-03-03', '{"email": "trent@event.com"}', 'EVENT_ADMIN'),
 ('sys_root', 'pass123', 'Root User', '1970-01-01', '{"email": "root@system.com"}', 'SYSTEM_ADMIN'),
-('sys_dev', 'pass123', 'Dev Ops', '1992-05-05', '{"email": "dev@system.com"}', 'SYSTEM_ADMIN')
-ON CONFLICT (username) DO NOTHING;
+('sys_dev', 'pass123', 'Dev Ops', '1992-05-05', '{"email": "dev@system.com"}', 'SYSTEM_ADMIN');
 
 -- 2. ATTENDEE DATA
 INSERT INTO attendee (person_id, history)
-SELECT id, '{"joined_events": []}' FROM person WHERE role = 'ATTENDEE'
-ON CONFLICT (person_id) DO NOTHING;
+SELECT id, '{"joined_events": []}' FROM person WHERE role = 'ATTENDEE';
 
 -- 3. PRESENTER DATA
 INSERT INTO presenter (person_id, presenter_role, statistics)
-SELECT id, 'Guest Speaker', '{"rating": 5.0}' FROM person WHERE role = 'PRESENTER'
-ON CONFLICT (person_id) DO NOTHING;
+SELECT id, 'Guest Speaker', '{"rating": 5.0}' FROM person WHERE role = 'PRESENTER';
 
 -- 4. EVENT DATA (20 Records)
 INSERT INTO event (name, type, start_date, end_date, location, duration, status) VALUES
@@ -57,7 +54,7 @@ INSERT INTO event (name, type, start_date, end_date, location, duration, status)
 ('Space Explorers', 'Seminar', '2026-09-05', '2026-09-05', 'Houston', 1, 'SCHEDULED'),
 ('LegalTech Meetup', 'Conference', '2026-10-10', '2026-10-11', 'Sydney', 2, 'SCHEDULED');
 
--- 5. SESSION DATA
+-- 5. SESSION DATA (Addresses the NOT NULL scheduled_date error)
 INSERT INTO session (event_id, title, description, scheduled_date, start_time, end_time, venue, capacity)
 SELECT
     event_id,
@@ -74,14 +71,23 @@ FROM event;
 INSERT INTO session_material (session_id, title, description, file_type, content_url)
 SELECT session_id, 'Resource ' || session_id, 'PDF Notes', 'PDF', 'http://example.com' FROM session;
 
--- 7. SESSION PRESENTER
+-- 7. SESSION PRESENTER (Maps the 5 presenters to 20 sessions)
 INSERT INTO session_presenter (session_id, presenter_id)
 SELECT s.session_id, p.person_id
 FROM session s, presenter p
 WHERE p.person_id = (SELECT person_id FROM presenter OFFSET (s.session_id % 5) LIMIT 1);
 
--- 8. TICKET DATA (Only for valid attendees: person IDs 1-10)
-INSERT INTO ticket (attendee_id, event_id, session_id, type, price, status, qr_code_data) VALUES
+-- 8. TICKET DATA
+INSERT INTO ticket (
+    attendee_id,
+    event_id,
+    session_id,
+    type,
+    price,
+    status,
+    qr_code_data
+)
+VALUES
 (1, 1, 1, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":1,"attendeeId":1,"eventId":1,"sessionId":1}'),
 (2, 1, 1, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":2,"attendeeId":2,"eventId":1,"sessionId":1}'),
 (3, 2, 2, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":3,"attendeeId":3,"eventId":2,"sessionId":2}'),

@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -28,8 +29,36 @@ public class DatabaseConnection {
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
-            throw new SQLException("PostgreSQL JDBC Driver not found", e);
+            System.err.println("PostgreSQL JDBC Driver not found");
         }
+    }
+
+    public static Connection getConnection() throws SQLException {
+        // Reuse connection if valid
+        if (cachedConnection != null && !cachedConnection.isClosed()) {
+            return cachedConnection;
+        }
+        cachedConnection = DriverManager.getConnection(URL, USER, PASS);
+        return cachedConnection;
+    }
+    
+    /**
+     * Check if database schema already exists
+     */
+    private static boolean isDatabaseInitialized() {
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
+             Statement stmt = conn.createStatement()) {
+            // Check if person table exists
+            ResultSet rs = stmt.executeQuery(
+                "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'person')"
+            );
+            if (rs.next()) {
+                return rs.getBoolean(1);
+            }
+        } catch (SQLException e) {
+            // Table doesn't exist or connection failed
+        }
+        return false;
         
         // Return cached connection if valid
         if (cachedConnection != null && !cachedConnection.isClosed()) {

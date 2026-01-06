@@ -13,6 +13,7 @@ DROP TYPE IF EXISTS user_role CASCADE;
 DROP TYPE IF EXISTS event_status CASCADE;
 DROP TYPE IF EXISTS ticket_status CASCADE;
 
+-- ENUMS --
 CREATE TYPE user_role AS ENUM (
    'ATTENDEE',
    'PRESENTER',
@@ -24,6 +25,7 @@ CREATE TYPE event_status AS ENUM ('SCHEDULED', 'ONGOING', 'COMPLETED', 'CANCELLE
 
 CREATE TYPE ticket_status AS ENUM ('ACTIVE', 'USED', 'CANCELLED');
 
+-- PERSON TABLE --
 CREATE TABLE person (
    id SERIAL PRIMARY KEY,
    username VARCHAR(100) UNIQUE NOT NULL,
@@ -34,12 +36,14 @@ CREATE TABLE person (
    role user_role NOT NULL
 );
 
+-- ATTENDEE TABLE --
 CREATE TABLE attendee (
    person_id INT PRIMARY KEY,
    history JSONB,
    FOREIGN KEY (person_id) REFERENCES person (id) ON DELETE CASCADE
 );
 
+-- PRESENTER TABLE --
 CREATE TABLE presenter (
    person_id INT PRIMARY KEY,
    presenter_role VARCHAR(64),
@@ -47,6 +51,7 @@ CREATE TABLE presenter (
    FOREIGN KEY (person_id) REFERENCES person (id) ON DELETE CASCADE
 );
 
+-- EVENT TABLE --
 CREATE TABLE event (
    event_id SERIAL PRIMARY KEY,
    name VARCHAR(255) NOT NULL,
@@ -59,6 +64,7 @@ CREATE TABLE event (
    event_image TEXT
 );
 
+-- SESSION TABLE --
 CREATE TABLE session (
    session_id SERIAL PRIMARY KEY,
    event_id INT NOT NULL,
@@ -72,6 +78,7 @@ CREATE TABLE session (
    FOREIGN KEY (event_id) REFERENCES event (event_id) ON DELETE CASCADE
 );
 
+-- SESSION MATERIAL TABLE --
 CREATE TABLE session_material (
    material_id SERIAL PRIMARY KEY,
    session_id INT NOT NULL,
@@ -83,6 +90,7 @@ CREATE TABLE session_material (
    FOREIGN KEY (session_id) REFERENCES session (session_id) ON DELETE CASCADE
 );
 
+-- SESSION PRESENTER TABLE --
 CREATE TABLE session_presenter (
    session_id INT NOT NULL,
    presenter_id INT NOT NULL,
@@ -91,6 +99,7 @@ CREATE TABLE session_presenter (
    FOREIGN KEY (presenter_id) REFERENCES presenter (person_id)
 );
 
+-- TICKET TABLE --
 CREATE TABLE ticket (
    ticket_id SERIAL PRIMARY KEY,
    attendee_id INT NOT NULL,
@@ -105,6 +114,7 @@ CREATE TABLE ticket (
    FOREIGN KEY (session_id) REFERENCES session (session_id) ON DELETE CASCADE
 );
 
+-- SCHEDULE-ENTRY TABLE --
 CREATE TABLE schedule_entry (
    schedule_id SERIAL PRIMARY KEY,
    person_id INT NOT NULL,
@@ -115,6 +125,7 @@ CREATE TABLE schedule_entry (
    FOREIGN KEY (session_id) REFERENCES session (session_id) ON DELETE CASCADE
 );
 
+-- AUDIT LOGGING TABLE --
 CREATE TABLE audit_log (
    log_id BIGSERIAL PRIMARY KEY,
    timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,

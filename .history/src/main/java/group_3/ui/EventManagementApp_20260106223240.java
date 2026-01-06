@@ -13,12 +13,7 @@ import javafx.stage.Stage;
 public class EventManagementApp extends Application {
     @Override
     public void start(Stage stage) {
-        EventListController controller = new EventListController();
-        stage.setScene(controller.getScene());
-        stage.setTitle("Event Management System");
-        stage.setWidth(1200);
-        stage.setHeight(800);
-        stage.show();
+        new UserBookingController().show();
     }
 
     public static void main(String[] args) {
