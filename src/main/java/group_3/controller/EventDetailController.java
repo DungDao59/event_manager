@@ -1,6 +1,10 @@
 package group_3.controller;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
@@ -32,6 +36,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import javafx.stage.FileChooser;
 
 /**
  * Controller for Event Detail View.
@@ -337,8 +342,14 @@ public class EventDetailController {
         
         Button viewStatsBtn = createButton("View Full Statistics", "#3498db");
         viewStatsBtn.setOnAction(e -> handleViewFullStatistics());
+
+        Button downloadReportBtn = createButton("Download PDF Report", "#27ae60");
+        downloadReportBtn.setOnAction(e -> handleDownloadReport());
+
+        HBox actions = new HBox(10, viewStatsBtn, downloadReportBtn);
+        actions.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
         
-        section.getChildren().addAll(title, stats, viewStatsBtn);
+        section.getChildren().addAll(title, stats, actions);
         return section;
     }
     
@@ -451,6 +462,34 @@ public class EventDetailController {
             }
         } catch (Exception e) {
             showError("Error", e.getMessage());
+        }
+    }
+
+    private void handleDownloadReport() {
+        try {
+            int eventId = currentEvent.getEventId();
+            String generatedPath = eventAdminService.exportEventReportPdf(eventId);
+
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Save Event Report");
+            fileChooser.getExtensionFilters().add(
+                    new FileChooser.ExtensionFilter("PDF files (*.pdf)", "*.pdf"));
+            fileChooser.setInitialFileName("event_" + eventId + "_report.pdf");
+
+            File target = fileChooser.showSaveDialog(stage);
+            if (target != null) {
+                Path destination = target.toPath();
+                Path parent = destination.getParent();
+                if (parent != null) {
+                    Files.createDirectories(parent);
+                }
+                Files.copy(Paths.get(generatedPath), destination, StandardCopyOption.REPLACE_EXISTING);
+                showInfo("Report Saved", "Report saved to: " + destination.toAbsolutePath());
+            } else {
+                showInfo("Report Generated", "Report created at: " + Paths.get(generatedPath).toAbsolutePath());
+            }
+        } catch (Exception e) {
+            showError("Report Error", e.getMessage());
         }
     }
     
