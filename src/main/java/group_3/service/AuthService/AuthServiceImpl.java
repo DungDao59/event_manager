@@ -6,6 +6,7 @@ import group_3.model.Person;
 import group_3.model.enums.Role;
 import group_3.service.SystemHistoryService.SystemHistoryService;
 import group_3.service.SystemHistoryService.SystemHistoryServiceImpl;
+import group_3.util.NotificationUtil;
 import group_3.util.PasswordUtil;
 import group_3.security.AuthContext;
 
@@ -33,6 +34,12 @@ public class AuthServiceImpl implements AuthService {
                         user.getId(),
                         "LOGIN",
                         "User logged in: " +  user.getUsername()
+                );
+
+                NotificationUtil.notify(
+                        user,
+                        "Login Successfully",
+                        "You have successfully logged in"
                 );
 
                 return Optional.of(user);

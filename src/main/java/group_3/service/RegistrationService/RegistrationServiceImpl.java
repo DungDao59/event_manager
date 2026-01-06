@@ -18,6 +18,7 @@ import group_3.model.enums.TicketType;
 import group_3.security.AuthContext;
 import group_3.service.SystemHistoryService.SystemHistoryService;
 import group_3.service.SystemHistoryService.SystemHistoryServiceImpl;
+import group_3.util.NotificationUtil;
 
 public class RegistrationServiceImpl implements RegistrationService{
     private final TicketDAO ticketDAO =  new TicketDAOImpl();
@@ -88,6 +89,11 @@ public class RegistrationServiceImpl implements RegistrationService{
                 detail
         );
 
+        NotificationUtil.notifyRegistrationSuccess(
+                AuthContext.getCurrentUser(),
+                newSessionId
+        );
+
         return true;
     }
 
@@ -107,6 +113,11 @@ public class RegistrationServiceImpl implements RegistrationService{
                 AuthContext.getCurrentUserId(),
                 "CANCEL REGISTRATION",
                 "Cancel ticket ID = " + ticketId
+        );
+
+        NotificationUtil.notifyRegistrationCancelled(
+                AuthContext.getCurrentUser(),
+                ticketId
         );
         return true;
     }

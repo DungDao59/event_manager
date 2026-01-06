@@ -17,7 +17,6 @@ import group_3.util.DatabaseConnection;
 /**
  * Implementation of SessionDAO interface.
  * Handles database operations for Session entities.
- * 
  * Author: Tram Anh Tuan - s4075376 
  */
 public class SessionDAOImpl implements SessionDAO {
@@ -232,7 +231,7 @@ public class SessionDAOImpl implements SessionDAO {
         LocalDateTime startTime = startTimeSql != null ? startTimeSql.toLocalDateTime() : LocalDateTime.now();
         LocalDateTime endTime = endTimeSql != null ? endTimeSql.toLocalDateTime() : startTime.plusHours(1);
 
-        Session session = new Session(
+        return new Session(
                 id,
                 eventId,
                 title,
@@ -242,7 +241,6 @@ public class SessionDAOImpl implements SessionDAO {
                 venue,
                 capacity
         );
-        return session;
     }
 }
 
