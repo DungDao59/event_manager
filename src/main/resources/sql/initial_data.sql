@@ -33,26 +33,26 @@ SELECT id, 'Guest Speaker', '{"rating": 5.0}' FROM person WHERE role = 'PRESENTE
 
 -- 4. EVENT DATA (20 Records)
 INSERT INTO event (name, type, start_date, end_date, location, duration, status) VALUES
-                                                                                     ('TechConf 2026', 'Conference', '2026-03-01', '2026-03-03', 'San Francisco', 3, 'SCHEDULED'),
-                                                                                     ('Design Summit', 'Workshop', '2026-04-10', '2026-04-11', 'New York', 2, 'SCHEDULED'),
-                                                                                     ('AI Expo', 'Exhibition', '2026-05-20', '2026-05-22', 'London', 3, 'SCHEDULED'),
-                                                                                     ('Cyber Security Forum', 'Conference', '2026-06-15', '2026-06-16', 'Berlin', 2, 'SCHEDULED'),
-                                                                                     ('HealthTech 2026', 'Summit', '2026-07-01', '2026-07-02', 'Tokyo', 2, 'SCHEDULED'),
-                                                                                     ('Green Energy Meet', 'Seminar', '2026-08-05', '2026-08-05', 'Oslo', 1, 'SCHEDULED'),
-                                                                                     ('FinTech Days', 'Conference', '2026-09-10', '2026-09-12', 'Singapore', 3, 'SCHEDULED'),
-                                                                                     ('Mobile Dev Week', 'Workshop', '2026-10-01', '2026-10-05', 'Austin', 5, 'SCHEDULED'),
-                                                                                     ('Cloud Native Con', 'Conference', '2026-11-12', '2026-11-14', 'Seattle', 3, 'SCHEDULED'),
-                                                                                     ('Game Dev Gala', 'Expo', '2026-12-01', '2026-12-03', 'Los Angeles', 3, 'SCHEDULED'),
-                                                                                     ('Open Source Summit', 'Conference', '2026-01-15', '2026-01-17', 'Paris', 3, 'COMPLETED'),
-                                                                                     ('Blockchain Blast', 'Seminar', '2026-02-10', '2026-02-10', 'Dubai', 1, 'COMPLETED'),
-                                                                                     ('UX Masters', 'Workshop', '2026-03-20', '2026-03-21', 'Toronto', 2, 'SCHEDULED'),
-                                                                                     ('Data Science Day', 'Seminar', '2026-04-05', '2026-04-05', 'Boston', 1, 'SCHEDULED'),
-                                                                                     ('E-commerce Expo', 'Exhibition', '2026-05-12', '2026-05-13', 'Madrid', 2, 'SCHEDULED'),
-                                                                                     ('IoT World', 'Conference', '2026-06-25', '2026-06-27', 'Seoul', 3, 'SCHEDULED'),
-                                                                                     ('Robotics Rally', 'Workshop', '2026-07-15', '2026-07-17', 'Pittsburgh', 3, 'SCHEDULED'),
-                                                                                     ('Future of Food', 'Summit', '2026-08-20', '2026-08-21', 'Amsterdam', 2, 'SCHEDULED'),
-                                                                                     ('Space Explorers', 'Seminar', '2026-09-05', '2026-09-05', 'Houston', 1, 'SCHEDULED'),
-                                                                                     ('LegalTech Meetup', 'Conference', '2026-10-10', '2026-10-11', 'Sydney', 2, 'SCHEDULED');
+('TechConf 2026', 'Conference', '2026-03-01', '2026-03-03', 'San Francisco', 3, 'SCHEDULED'),
+('Design Summit', 'Workshop', '2026-04-10', '2026-04-11', 'New York', 2, 'SCHEDULED'),
+('AI Expo', 'Exhibition', '2026-05-20', '2026-05-22', 'London', 3, 'SCHEDULED'),
+('Cyber Security Forum', 'Conference', '2026-06-15', '2026-06-16', 'Berlin', 2, 'SCHEDULED'),
+('HealthTech 2026', 'Summit', '2026-07-01', '2026-07-02', 'Tokyo', 2, 'SCHEDULED'),
+('Green Energy Meet', 'Seminar', '2026-08-05', '2026-08-05', 'Oslo', 1, 'SCHEDULED'),
+('FinTech Days', 'Conference', '2026-09-10', '2026-09-12', 'Singapore', 3, 'SCHEDULED'),
+('Mobile Dev Week', 'Workshop', '2026-10-01', '2026-10-05', 'Austin', 5, 'SCHEDULED'),
+('Cloud Native Con', 'Conference', '2026-11-12', '2026-11-14', 'Seattle', 3, 'SCHEDULED'),
+('Game Dev Gala', 'Expo', '2026-12-01', '2026-12-03', 'Los Angeles', 3, 'SCHEDULED'),
+('Open Source Summit', 'Conference', '2026-01-15', '2026-01-17', 'Paris', 3, 'COMPLETED'),
+('Blockchain Blast', 'Seminar', '2026-02-10', '2026-02-10', 'Dubai', 1, 'COMPLETED'),
+('UX Masters', 'Workshop', '2026-03-20', '2026-03-21', 'Toronto', 2, 'SCHEDULED'),
+('Data Science Day', 'Seminar', '2026-04-05', '2026-04-05', 'Boston', 1, 'SCHEDULED'),
+('E-commerce Expo', 'Exhibition', '2026-05-12', '2026-05-13', 'Madrid', 2, 'SCHEDULED'),
+('IoT World', 'Conference', '2026-06-25', '2026-06-27', 'Seoul', 3, 'SCHEDULED'),
+('Robotics Rally', 'Workshop', '2026-07-15', '2026-07-17', 'Pittsburgh', 3, 'SCHEDULED'),
+('Future of Food', 'Summit', '2026-08-20', '2026-08-21', 'Amsterdam', 2, 'SCHEDULED'),
+('Space Explorers', 'Seminar', '2026-09-05', '2026-09-05', 'Houston', 1, 'SCHEDULED'),
+('LegalTech Meetup', 'Conference', '2026-10-10', '2026-10-11', 'Sydney', 2, 'SCHEDULED');
 
 -- 5. SESSION DATA (Addresses the NOT NULL scheduled_date error)
 INSERT INTO session (event_id, title, description, scheduled_date, start_time, end_time, venue, capacity)
@@ -78,15 +78,36 @@ FROM session s, presenter p
 WHERE p.person_id = (SELECT person_id FROM presenter OFFSET (s.session_id % 5) LIMIT 1);
 
 -- 8. TICKET DATA
-INSERT INTO ticket (attendee_id, event_id, type, price, status, qr_code_data)
-SELECT
-    (SELECT person_id FROM attendee OFFSET (i % 10) LIMIT 1),
-    (SELECT event_id FROM event OFFSET (i % 20) LIMIT 1),
-    'General Admission',
-    49.99,
-    'ACTIVE',
-    'TICKET_QR_' || i
-FROM generate_series(1, 20) AS i;
+INSERT INTO ticket (
+    attendee_id,
+    event_id,
+    session_id,
+    type,
+    price,
+    status,
+    qr_code_data
+)
+VALUES
+(1, 4, 4, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":1,"attendeeId":1,"eventId":4,"sessionId":4}'),
+(2, 4, 4, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":2,"attendeeId":2,"eventId":4,"sessionId":4}'),
+(3, 4, 4, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":3,"attendeeId":3,"eventId":4,"sessionId":4}'),
+(4, 4, 4, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":4,"attendeeId":4,"eventId":4,"sessionId":4}'),
+(5, 4, 4, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":5,"attendeeId":5,"eventId":4,"sessionId":4}'),
+(6, 4, 4, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":6,"attendeeId":6,"eventId":4,"sessionId":4}'),
+(7, 4, 4, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":7,"attendeeId":7,"eventId":4,"sessionId":4}'),
+(8, 4, 4, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":8,"attendeeId":8,"eventId":4,"sessionId":4}'),
+(9, 4, 4, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":9,"attendeeId":9,"eventId":4,"sessionId":4}'),
+(10, 4, 4, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":10,"attendeeId":10,"eventId":4,"sessionId":4}'),
+(11, 4, 4, 'VIP', 120.00, 'ACTIVE', '{"ticketId":11,"attendeeId":11,"eventId":4,"sessionId":4}'),
+(12, 4, 4, 'VIP', 120.00, 'ACTIVE', '{"ticketId":12,"attendeeId":12,"eventId":4,"sessionId":4}'),
+(13, 4, 4, 'VIP', 120.00, 'ACTIVE', '{"ticketId":13,"attendeeId":13,"eventId":4,"sessionId":4}'),
+(14, 4, 4, 'VIP', 120.00, 'ACTIVE', '{"ticketId":14,"attendeeId":14,"eventId":4,"sessionId":4}'),
+(15, 4, 4, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":15,"attendeeId":15,"eventId":4,"sessionId":4}'),
+(16, 4, 4, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":16,"attendeeId":16,"eventId":4,"sessionId":4}'),
+(17, 4, 4, 'VIP', 120.00, 'ACTIVE', '{"ticketId":17,"attendeeId":17,"eventId":4,"sessionId":4}'),
+(18, 4, 4, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":18,"attendeeId":18,"eventId":4,"sessionId":4}'),
+(19, 4, 4, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":19,"attendeeId":19,"eventId":4,"sessionId":4}'),
+(20, 4, 4, 'VIP', 120.00, 'ACTIVE', '{"ticketId":20,"attendeeId":20,"eventId":4,"sessionId":4}');
 
 -- 9. SCHEDULE ENTRY
 INSERT INTO schedule_entry (person_id, session_id, start_time, end_time)
