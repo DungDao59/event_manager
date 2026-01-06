@@ -100,12 +100,6 @@ public class DatabaseConnection {
     // ==================================================
 
     public static void setUpDatabase() {
-        // Skip setup if database is already initialized
-        if (isDatabaseInitialized()) {
-            System.out.println("✅ Database already initialized, skipping setup");
-            return;
-        }
-        
         try {
             setupSchema();
             loadInitialData();
@@ -114,29 +108,18 @@ public class DatabaseConnection {
             e.printStackTrace();
         }
     }
-    
-    /**
-     * Force re-initialize database (drop and recreate all tables)
-     */
-    public static void resetDatabase() {
-        try {
-            setupSchema();
-            loadInitialData();
-        } catch (SQLException e) {
-            System.err.println("[Error] Database reset failed: " + e.getMessage());
-            e.printStackTrace();
+
+    public static void setupSchema() throws SQLException {
+        try (Connection conn = getConnection()) {
+            executeSQLScript(conn, "sql/schema.sql");
+            System.out.println("✅ Schema setup completed");
         }
     }
 
-    public static void setupSchema() throws SQLException {
-        Connection conn = getConnection();
-        executeSQLScript(conn, "sql/schema.sql");
-        System.out.println("✅ Schema setup completed");
-    }
-
     public static void loadInitialData() throws SQLException {
-        Connection conn = getConnection();
-        executeSQLScript(conn, "sql/initial_data.sql");
-        System.out.println("✅ Initial data loaded");
+        try (Connection conn = getConnection()) {
+            executeSQLScript(conn, "sql/initial_data.sql");
+            System.out.println("✅ Initial data loaded");
+        }
     }
 }

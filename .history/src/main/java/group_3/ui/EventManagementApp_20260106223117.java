@@ -1,5 +1,6 @@
 package group_3.ui;
 
+import group_3.controller.EventListController;
 import group_3.controller.UserBookingController;
 import javafx.application.Application;
 import javafx.stage.Stage;

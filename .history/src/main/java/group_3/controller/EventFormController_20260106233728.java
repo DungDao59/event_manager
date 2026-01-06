@@ -156,9 +156,7 @@ public class EventFormController {
         HBox endDateTimeBox = new HBox(15);
         endDatePicker = new DatePicker();
         endDatePicker.setPrefWidth(150);
-        endDatePicker.setEditable(false); // Prevent manual typing
-        
-        endHourCombo = new ComboBox<>();
+        endDatePicker.setEditable(false); // Prevent manual typing        endHourCombo = new ComboBox<>();
         for (int i = 0; i < 24; i++) endHourCombo.getItems().add(i);
         endHourCombo.setPrefWidth(80);
         
