@@ -60,6 +60,4 @@ public class SystemHistory {
     public void setDetails(String details) {
         this.details = details;
     }
-
-
 }

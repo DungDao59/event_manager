@@ -1,17 +1,10 @@
 package group_3.service.EventAdminService;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.io.*;
+import java.time.*;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.time.format.DateTimeFormatter;
 
 import group_3.dao.EventDAO;
 import group_3.dao.SessionDAO;
@@ -25,6 +18,10 @@ import group_3.model.Ticket;
 import group_3.model.enums.EventStatus;
 import group_3.model.enums.TicketStatus;
 import group_3.model.enums.TicketType;
+import group_3.security.AuthContext;
+import group_3.service.SystemHistoryService.SystemHistoryService;
+import group_3.service.SystemHistoryService.SystemHistoryServiceImpl;
+import group_3.util.NotificationUtil;
 import group_3.util.QRCode;
 
 /**
@@ -39,6 +36,7 @@ public class EventAdminServiceImpl implements EventAdminService {
     private final EventDAO eventDAO;
     private final SessionDAO sessionDAO;
     private final TicketDAO ticketDAO;
+    private final SystemHistoryService historyService;
 
     /**
      * Default constructor using DAO implementations.
@@ -47,6 +45,7 @@ public class EventAdminServiceImpl implements EventAdminService {
         this.eventDAO = new EventDAOImpl();
         this.sessionDAO = new SessionDAOImpl();
         this.ticketDAO = new TicketDAOImpl();
+        this.historyService = new SystemHistoryServiceImpl();
     }
 
     /**
@@ -58,6 +57,7 @@ public class EventAdminServiceImpl implements EventAdminService {
         this.eventDAO = eventDAO;
         this.sessionDAO = sessionDAO;
         this.ticketDAO = new TicketDAOImpl();
+        this.historyService = new SystemHistoryServiceImpl();
     }
 
     /**
@@ -70,6 +70,7 @@ public class EventAdminServiceImpl implements EventAdminService {
         this.eventDAO = eventDAO;
         this.sessionDAO = sessionDAO;
         this.ticketDAO = ticketDAO;
+        this.historyService = new SystemHistoryServiceImpl();
     }
 
     // ==================== EVENT OPERATIONS ====================
@@ -84,6 +85,40 @@ public class EventAdminServiceImpl implements EventAdminService {
             throw new IllegalArgumentException("Event name cannot be null or empty");
         }
         eventDAO.create(event);
+
+        String detail = String.format("""
+            {
+                "entity": "Event",
+                "eventId": %d,
+                "name": "%s",
+                "type": "%s",
+                "location": "%s",
+                "startDate": "%s",
+                "endDate": "%s",
+                "status": "%s"
+            }
+            """,
+            event.getEventId(),
+            event.getName(),
+            event.getType().name(),
+            event.getLocation(),
+            event.getStartDate(),
+            event.getEndDate(),
+            event.getStatus().name()
+        );
+
+        historyService.logAction(
+            AuthContext.getCurrentUserId(),
+            "CREATE EVENT",
+            detail
+        );
+
+        NotificationUtil.notify(
+                AuthContext.getCurrentUser(),
+                "Event Created",
+                "The event \"" + event.getName() + "\" has been successfully created"
+        );
+
         return event;
     }
 
@@ -139,6 +174,18 @@ public class EventAdminServiceImpl implements EventAdminService {
             throw new IllegalArgumentException("Event with ID " + event.getEventId() + " does not exist");
         }
         eventDAO.update(event);
+
+        historyService.logAction(
+                AuthContext.getCurrentUserId(),
+                "UPDATE EVENT",
+                "Updated event ID = " + event.getEventId()
+        );
+
+        NotificationUtil.notify(
+                AuthContext.getCurrentUser(),
+                "Update Successfully",
+                "The event \"" + event.getName() + "\" has been successfully updated"
+        );
     }
 
     
@@ -155,7 +202,25 @@ public class EventAdminServiceImpl implements EventAdminService {
         for (Session session : sessions) {
             sessionDAO.delete(session.getSessionId());
         }
+        Optional<Event> event = eventDAO.findById(eventId);
+
+        if(event.isEmpty()){
+            return;
+        }
         eventDAO.delete(eventId);
+
+
+        historyService.logAction(
+                AuthContext.getCurrentUserId(),
+                "CREATE EVENT",
+                "Delete event ID = " + eventId
+        );
+
+        NotificationUtil.notify(
+                AuthContext.getCurrentUser(),
+                "Delete successfully",
+                "The event \"" + event.get().getName() + "\" has been deleted"
+        );
     }
 
    
@@ -175,6 +240,42 @@ public class EventAdminServiceImpl implements EventAdminService {
             throw new IllegalArgumentException("Session title cannot be null or empty");
         }
         sessionDAO.create(session);
+
+        String detail = String.format("""
+            {
+                "entity": "Session",
+                "sessionId": %d,
+                "eventId": "%d",
+                "title": "%s",
+                "description": "%s",
+                "startTime": "%s",
+                "endTime": "%s",
+                "venue": "%s",
+                "capacity": "%d"
+            }
+            """,
+                session.getSessionId(),
+                session.getEventId(),
+                session.getTitle(),
+                session.getDescription(),
+                session.getStartTime(),
+                session.getEndTime(),
+                session.getVenue(),
+                session.getCapacity()
+        );
+
+        historyService.logAction(
+                AuthContext.getCurrentUserId(),
+                "CREATE SESSION",
+                detail
+        );
+
+        NotificationUtil.notify(
+                AuthContext.getCurrentUser(),
+                "Session Created",
+                "The session \"" + session.getTitle() + "\" has been successfully created"
+        );
+
         return session;
     }
 
@@ -219,6 +320,18 @@ public class EventAdminServiceImpl implements EventAdminService {
             throw new IllegalArgumentException("Session with ID " + session.getSessionId() + " does not exist");
         }
         sessionDAO.update(session);
+
+        historyService.logAction(
+                AuthContext.getCurrentUserId(),
+                "UPDATE SESSION",
+                "Update session ID = " + session.getSessionId()
+        );
+
+        NotificationUtil.notify(
+                AuthContext.getCurrentUser(),
+                "Session Updated",
+                "The session \"" + session.getTitle() + "\" has been successfully updated"
+        );
     }
 
     @Override
@@ -229,7 +342,23 @@ public class EventAdminServiceImpl implements EventAdminService {
         if (!sessionExists(sessionId)) {
             throw new IllegalArgumentException("Session with ID " + sessionId + " does not exist");
         }
+        Optional<Session> session = sessionDAO.findById(sessionId);
+        if(session.isEmpty()){
+            return;
+        }
         sessionDAO.delete(sessionId);
+
+        historyService.logAction(
+                AuthContext.getCurrentUserId(),
+                "UPDATE SESSION",
+                "Delete session ID = " + sessionId
+        );
+
+        NotificationUtil.notify(
+                AuthContext.getCurrentUser(),
+                "Session Deleted",
+                "The session \"" + session.get().getTitle() + "\" has been deleted"
+        );
     }
 
     @Override
@@ -268,6 +397,12 @@ public class EventAdminServiceImpl implements EventAdminService {
             Session session = sessionOpt.get();
             session.setEventId(eventId);
             sessionDAO.update(session);
+
+            historyService.logAction(
+                    AuthContext.getCurrentUserId(),
+                    "LINK SESSION EVENT",
+                    "Add session #" + sessionId + "to event #" + eventId
+            );
         }
     }
 
@@ -292,6 +427,12 @@ public class EventAdminServiceImpl implements EventAdminService {
             if (session.getEventId() == eventId) {
                 session.setEventId(0);
                 sessionDAO.update(session);
+
+                historyService.logAction(
+                        AuthContext.getCurrentUserId(),
+                        "UNLINK SESSION EVENT",
+                        "Remove session #" + sessionId + " from event #" + eventId
+                );
             }
         }
     }
@@ -329,6 +470,18 @@ public class EventAdminServiceImpl implements EventAdminService {
         if (!presenters.contains(presenterId)) {
             session.addPresenter(presenterId);
             sessionDAO.update(session);
+
+            historyService.logAction(
+                    AuthContext.getCurrentUserId(),
+                    "ASSIGN PRESENTER",
+                    "Assign presenter #" + presenterId + " to session #" +  sessionId
+            );
+
+            NotificationUtil.notify(
+                    AuthContext.getCurrentUser(),
+                    "Assign Presenter Successfully",
+                    "Assign presenter to session \"" + session.getTitle() + "\" successfully"
+            );
             return true;
         }
         return false;
@@ -354,7 +507,21 @@ public class EventAdminServiceImpl implements EventAdminService {
         Session session = sessionOpt.get();
         if (session.getPresenterIds().contains(presenterId)) {
             session.removePresenter(presenterId);
+
             sessionDAO.update(session);
+
+            historyService.logAction(
+                    AuthContext.getCurrentUserId(),
+                    "UNASSIGN PRESENTER",
+                    "Unassign presenter #" + presenterId + "from session #" + sessionId
+            );
+
+            NotificationUtil.notify(
+                    AuthContext.getCurrentUser(),
+                    "Unassign Presenter Successfully",
+                    "Unassign presenter to session \"" + session.getTitle() + "\" successfully"
+            );
+
             return true;
         }
         return false;
@@ -421,6 +588,32 @@ public class EventAdminServiceImpl implements EventAdminService {
         ticket.setQRpath(qrPath);
         
         ticketDAO.create(ticket);
+
+        String detail = String.format("""
+            {
+                "entity": "Ticket",
+                "ticketId": %d",
+                "sessionId": "%d",
+                "type": "%s",
+                "price": "%f",
+                "status": "%s",
+                "QRPath": "%s",
+            }
+            """,
+                ticket.getTicketID(),
+                ticket.getSessionID(),
+                ticket.getType().name(),
+                ticket.getPrice(),
+                ticket.getStatus().name(),
+                ticket.getQRpath()
+        );
+
+        historyService.logAction(
+                AuthContext.getCurrentUserId(),
+                "CREATE TICKET",
+                detail
+        );
+
         return ticket;
     }
 
@@ -440,6 +633,12 @@ public class EventAdminServiceImpl implements EventAdminService {
 
         ticket.setStatus(newStatus);
         ticketDAO.update(ticket);
+
+        historyService.logAction(
+                AuthContext.getCurrentUserId(),
+                "UPDATE TICKET STATUS",
+                "Update ticket #" + ticketId + " status to " + newStatus.name()
+        );
         return true;
     }
 
@@ -486,6 +685,13 @@ public class EventAdminServiceImpl implements EventAdminService {
         if (ticketId <= 0) {
             return false;
         }
+
+        historyService.logAction(
+                AuthContext.getCurrentUserId(),
+                "DELETE TICKET",
+                "Delete ticket ID = " + ticketId
+        );
+
         return ticketDAO.delete(ticketId);
     }
 
@@ -613,6 +819,24 @@ public class EventAdminServiceImpl implements EventAdminService {
                     default -> throw new IllegalArgumentException("Invalid report type: " + reportType);
                 }
             }
+
+            String detail =  String.format(
+                    "{\"eventId\": %d, \"reportType\": \"%s\", \"filePath\": \"%s\"}",
+                    eventId,
+                    reportType.toUpperCase(),
+                    filePath
+            );
+
+            historyService.logAction(
+                    AuthContext.getCurrentUserId(),
+                    "EXPORT EVENT REPORT",
+                    detail
+            );
+
+            NotificationUtil.notifyReportExported(
+                    AuthContext.getCurrentUser(),
+                    reportType
+            );
 
             return filePath;
         } catch (IOException e) {
