@@ -18,6 +18,8 @@ import group_3.model.enums.TicketType;
 import group_3.security.AuthContext;
 import group_3.service.SystemHistoryService.SystemHistoryService;
 import group_3.service.SystemHistoryService.SystemHistoryServiceImpl;
+import group_3.util.NotificationUtil;
+import group_3.util.QRCode;
 
 public class RegistrationServiceImpl implements RegistrationService{
     private final TicketDAO ticketDAO =  new TicketDAOImpl();
@@ -62,9 +64,18 @@ public class RegistrationServiceImpl implements RegistrationService{
         ticket.setEventID(s.getEventId());
         ticket.setPrice(ticketPrice);
         ticket.setType(ticketType);
-        String qrPath = generateTicketCode(AttendeeId, newSessionId);
-        ticket.setQRpath(qrPath);
-        ticketDAO.create(ticket);
+        ticket.setQRpath(""); //temporarily hold blank value
+        ticket.setStatus(TicketStatus.ACTIVE);
+
+        int TicketID = ticketDAO.create(ticket); //create new ticket, hold the return generated ID
+
+        if (TicketID == -1) {
+            return false;
+        }
+
+        String qrPayload = QRCode.generateTicketQRPayload(ticket); //generate QRpath
+        ticket.setQRpath(qrPayload);
+        ticketDAO.update(ticket); //update into the database
 
         ScheduleEntry entry = new ScheduleEntry();
         entry.setSessionID(newSessionId);
@@ -88,6 +99,11 @@ public class RegistrationServiceImpl implements RegistrationService{
                 detail
         );
 
+        NotificationUtil.notifyRegistrationSuccess(
+                AuthContext.getCurrentUser(),
+                newSessionId
+        );
+
         return true;
     }
 
@@ -108,6 +124,11 @@ public class RegistrationServiceImpl implements RegistrationService{
                 "CANCEL REGISTRATION",
                 "Cancel ticket ID = " + ticketId
         );
+
+        NotificationUtil.notifyRegistrationCancelled(
+                AuthContext.getCurrentUser(),
+                ticketId
+        );
         return true;
     }
 
@@ -116,7 +137,4 @@ public class RegistrationServiceImpl implements RegistrationService{
         return ticketDAO.findTicketByAttendeeId(attendeeId);
     }
 
-    public static String generateTicketCode(int attendeeId, int sessionId) {
-        return "TKT-" + attendeeId + "-" + sessionId + "-" + System.currentTimeMillis();
-    }
 }

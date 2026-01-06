@@ -72,6 +72,18 @@
             <version>2.10.1</version>
         </dependency>
 
+        <!-- PDF generation (iText 7) -->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>kernel</artifactId>
+            <version>7.2.5</version>
+        </dependency>
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>layout</artifactId>
+            <version>7.2.5</version>
+        </dependency>
+
         <!-- dotenv for Java -->
         <dependency>
             <groupId>io.github.cdimascio</groupId>

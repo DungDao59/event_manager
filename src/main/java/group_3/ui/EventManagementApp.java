@@ -11,22 +11,30 @@ import javafx.stage.Stage;
  * @author Group 3
  */
 public class EventManagementApp extends Application {
-    
     @Override
-    public void start(Stage primaryStage) throws Exception {
-        EventListController listController = new EventListController();
-        javafx.scene.Scene scene = listController.getScene();
-        
-        primaryStage.setTitle("Event Management System");
-        primaryStage.setScene(scene);
-        primaryStage.setWidth(1200);
-        primaryStage.setHeight(800);
-        primaryStage.setMinWidth(1000);
-        primaryStage.setMinHeight(600);
-        primaryStage.show();
+    public void start(Stage stage) {
+        new UserBookingController().show();
     }
-    
+
     public static void main(String[] args) {
         launch(args);
     }
+
+//    @Override
+//    public void start(Stage primaryStage) throws Exception {
+//        EventListController listController = new EventListController();
+//        javafx.scene.Scene scene = listController.getScene();
+//
+//        primaryStage.setTitle("Event Management System");
+//        primaryStage.setScene(scene);
+//        primaryStage.setWidth(1200);
+//        primaryStage.setHeight(800);
+//        primaryStage.setMinWidth(1000);
+//        primaryStage.setMinHeight(600);
+//        primaryStage.show();
+//    }
+//
+//    public static void main(String[] args) {
+//        launch(args);
+//    }
 }

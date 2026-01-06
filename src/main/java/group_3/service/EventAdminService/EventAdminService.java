@@ -273,6 +273,13 @@ public interface EventAdminService {
      */
     String exportEventReport(int eventId, String reportType);
 
+    /**
+     * Export a consolidated PDF report for an event.
+     * @param eventId the event identifier
+     * @return the file path of the generated PDF
+     */
+    String exportEventReportPdf(int eventId);
+
     // ==================== VISITOR VIEW OPERATIONS ====================
 
     /**

@@ -1,6 +1,6 @@
 package group_3.dao.impl;
 
-/**
+/*
  * System History DAO for creating and finding activities
  *
  * Author: Group 3
@@ -27,7 +27,7 @@ public class SystemHistoryDaoImpl implements SystemHistoryDAO {
         String sql = "INSERT INTO audit_log (user_id, operation_type, details) VALUES (?,?,?::jsonb)";
 
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
+             PreparedStatement ps = conn.prepareStatement(sql)
         ){
             if(history.getUserId() != null){
                 ps.setInt(1,history.getUserId());
@@ -52,7 +52,7 @@ public class SystemHistoryDaoImpl implements SystemHistoryDAO {
         List<SystemHistory> historyList = new ArrayList<>();
         try(Connection conn = DatabaseConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
+            ResultSet rs = ps.executeQuery()
         ){
             while(rs.next()){
                 historyList.add(mapRow(rs));

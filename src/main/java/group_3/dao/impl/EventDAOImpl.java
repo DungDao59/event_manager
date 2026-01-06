@@ -11,10 +11,13 @@ import java.util.List;
 import java.util.Optional;
 
 import group_3.dao.EventDAO;
+import group_3.dao.SessionDAO;
 import group_3.model.Event;
+import group_3.model.Session;
 import group_3.model.enums.EventStatus;
 import group_3.model.enums.EventType;
 import group_3.util.DatabaseConnection;
+import group_3.util.DaoProvider;
 /**
  * Implementation of EventDAO interface.
  * Handles database operations for Event entities.
@@ -29,7 +32,7 @@ public class EventDAOImpl implements EventDAO {
 
     @Override
     public void create(Event event) {
-        String sql = "INSERT INTO event (name, type, start_date, end_date, location, duration, status, event_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO event (name, type, start_date, end_date, location, duration, status, event_image) VALUES (?, ?, ?, ?, ?, ?, CAST(? AS event_status), ?)";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -41,6 +44,9 @@ public class EventDAOImpl implements EventDAO {
             ps.setInt(6, event.getDuration());
             ps.setString(7, event.getStatus() != null ? event.getStatus().name() : "SCHEDULED");
             ps.setString(8, event.getEventImage());
+            
+            // Debug output
+            System.out.println("DEBUG: Saving event with image path: " + event.getEventImage());
 
             ps.executeUpdate();
             ResultSet rs = ps.getGeneratedKeys();
@@ -108,7 +114,7 @@ public class EventDAOImpl implements EventDAO {
 
     @Override
     public void update(Event event) {
-        String sql = "UPDATE event SET name = ?, type = ?, start_date = ?, end_date = ?, location = ?, duration = ?, status = ?, event_image = ? WHERE event_id = ?";
+        String sql = "UPDATE event SET name = ?, type = ?, start_date = ?, end_date = ?, location = ?, duration = ?, status = CAST(? AS event_status), event_image = ? WHERE event_id = ?";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -210,6 +216,19 @@ public class EventDAOImpl implements EventDAO {
         LocalDateTime endDate = endDateSql != null ? endDateSql.toLocalDateTime() : startDate.plusDays(duration);
 
         Event event = new Event(id, name, type, startDate, endDate, location, duration, status, eventImage);
+        
+        // Load associated sessions
+        try {
+            SessionDAO sessionDAO = DaoProvider.getSessionDAO();
+            List<Session> sessions = sessionDAO.findByEventId(id);
+            for (Session session : sessions) {
+                event.addSession(String.valueOf(session.getSessionId()));
+            }
+        } catch (Exception e) {
+            // Log but don't fail - sessions can be loaded separately if needed
+            System.err.println("Warning: Could not load sessions for event " + id + ": " + e.getMessage());
+        }
+        
         return event;
     }
 }
