@@ -1,5 +1,6 @@
 package group_3.controller;
 
+import java.io.File;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
@@ -126,7 +127,17 @@ public class EventDetailController {
         
         if (currentEvent.getEventImage() != null && !currentEvent.getEventImage().isEmpty()) {
             try {
-                Image image = new Image(currentEvent.getEventImage(), 600, 300, true, true);
+                String imageUrl = currentEvent.getEventImage();
+                
+                // Convert file path to proper file:// URI if it's a local file
+                if (!imageUrl.startsWith("http://") && !imageUrl.startsWith("https://") && !imageUrl.startsWith("file://")) {
+                    java.io.File file = new java.io.File(imageUrl);
+                    if (file.exists()) {
+                        imageUrl = file.toURI().toString();
+                    }
+                }
+                
+                Image image = new Image(imageUrl, 600, 300, true, true);
                 ImageView imageView = new ImageView(image);
                 imageView.setFitWidth(600);
                 imageView.setFitHeight(300);
