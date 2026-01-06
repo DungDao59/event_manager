@@ -10,10 +10,11 @@ import java.util.stream.Collectors;
 /** In-memory implementation of TicketDAO for mock mode. */
 public class TicketDAOInMemory implements TicketDAO {
     @Override
-    public void create(Ticket ticket) {
+    public int create(Ticket ticket) {
         int id = MockData.TICKET_SEQ.incrementAndGet();
         ticket.setTicketID(id);
         MockData.TICKETS.put(id, ticket);
+        return id;
     }
 
     @Override

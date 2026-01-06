@@ -63,9 +63,18 @@ public class RegistrationServiceImpl implements RegistrationService{
         ticket.setEventID(s.getEventId());
         ticket.setPrice(ticketPrice);
         ticket.setType(ticketType);
-        String qrPath = generateTicketCode(AttendeeId, newSessionId);
-        ticket.setQRpath(qrPath);
-        ticketDAO.create(ticket);
+        ticket.setQRpath(""); //temporarily hold blank value
+        ticket.setStatus(TicketStatus.ACTIVE);
+
+        int TicketID = ticketDAO.create(ticket); //create new ticket, hold the return generated ID
+
+        if (TicketID == -1) {
+            return false;
+        }
+
+        String qrPayload = QRCode.generateTicketQRPayload(ticket); //generate QRpath
+        ticket.setQRpath(qrPayload);
+        ticketDAO.update(ticket); //update into the database
 
         ScheduleEntry entry = new ScheduleEntry();
         entry.setSessionID(newSessionId);
@@ -127,7 +136,4 @@ public class RegistrationServiceImpl implements RegistrationService{
         return ticketDAO.findTicketByAttendeeId(attendeeId);
     }
 
-    public static String generateTicketCode(int attendeeId, int sessionId) {
-        return "TKT-" + attendeeId + "-" + sessionId + "-" + System.currentTimeMillis();
-    }
 }
