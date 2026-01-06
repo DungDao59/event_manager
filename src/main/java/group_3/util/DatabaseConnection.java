@@ -82,10 +82,11 @@ public class DatabaseConnection {
         }
     }
 
-    public static void loadMockData() throws SQLException {
-        try (Connection conn = getConnection()) {
-            executeSQLScript(conn, "sql/mock_data.sql");
-            System.out.println("✅ Mock data loaded");
+            executeSQLScript(conn,"sql/initial_data.sql");
+            System.out.println("[Success] Initial data loaded");
+        }catch(SQLException e){
+            System.err.println("[Error] Database setup failed: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

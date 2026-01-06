@@ -6,13 +6,19 @@ package group_3.dao.impl;
  * Author: Group 3
  */
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 import group_3.dao.SystemHistoryDAO;
 import group_3.model.SystemHistory;
 import group_3.util.DatabaseConnection;
-
-import java.sql.*;
-import java.time.OffsetDateTime;
-import java.util.*;
 
 public class SystemHistoryDaoImpl implements SystemHistoryDAO {
 
@@ -55,6 +61,59 @@ public class SystemHistoryDaoImpl implements SystemHistoryDAO {
             e.printStackTrace();
         }
 
+        return historyList;
+    }
+
+    @Override
+    public List<SystemHistory> findByUserId(int userId) {
+        String sql = "SELECT log_id, timestamp, user_id, operation_type, details FROM audit_log WHERE user_id = ? ORDER BY timestamp DESC";
+        List<SystemHistory> historyList = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                historyList.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return historyList;
+    }
+
+    @Override
+    public List<SystemHistory> findByDateRange(LocalDate startDate, LocalDate endDate) {
+        String sql = "SELECT log_id, timestamp, user_id, operation_type, details FROM audit_log " +
+                     "WHERE DATE(timestamp) >= ? AND DATE(timestamp) <= ? ORDER BY timestamp DESC";
+        List<SystemHistory> historyList = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setDate(1, java.sql.Date.valueOf(startDate));
+            ps.setDate(2, java.sql.Date.valueOf(endDate));
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                historyList.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return historyList;
+    }
+
+    @Override
+    public List<SystemHistory> findByOperationType(String operationType) {
+        String sql = "SELECT log_id, timestamp, user_id, operation_type, details FROM audit_log WHERE operation_type = ? ORDER BY timestamp DESC";
+        List<SystemHistory> historyList = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, operationType);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                historyList.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return historyList;
     }
 

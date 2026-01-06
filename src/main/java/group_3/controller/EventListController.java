@@ -8,6 +8,7 @@ import group_3.dao.EventDAO;
 import group_3.model.Event;
 import group_3.model.enums.EventStatus;
 import group_3.model.enums.EventType;
+import group_3.security.AuthContext;
 import group_3.util.DaoProvider;
 import group_3.service.EventAdminService.EventAdminService;
 import group_3.service.EventAdminService.EventAdminServiceImpl;
@@ -28,8 +29,10 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
+import javafx.stage.Stage;
 
 /**
  * Controller for Event List View (Pure JavaFX Implementation).
@@ -79,13 +82,30 @@ public class EventListController {
         top.setPadding(new Insets(20));
         top.setStyle("-fx-background-color: white; -fx-border-color: #ddd; -fx-border-width: 0 0 1 0;");
         
-        // Title Bar
-        HBox titleBar = new HBox(10);
-        titleBar.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        // Header Bar with user info
+        HBox headerBar = new HBox(10);
+        headerBar.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        headerBar.setStyle("-fx-background-color: #2c3e50; -fx-padding: 10px;");
         
         Label titleLabel = new Label("Event Management");
         titleLabel.setFont(new Font("System Bold", 24));
-        HBox.setHgrow(titleLabel, Priority.ALWAYS);
+        titleLabel.setStyle("-fx-text-fill: white;");
+        
+        // Spacer to push buttons to the right
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        
+        Button profileBtn = createStyledButton("My Profile", "#27ae60");
+        profileBtn.setOnAction(e -> handleMyProfile());
+        
+        Button logoutBtn = createStyledButton("Logout", "#e74c3c");
+        logoutBtn.setOnAction(e -> handleLogout());
+        
+        headerBar.getChildren().addAll(titleLabel, spacer, profileBtn, logoutBtn);
+        
+        // Title Bar with action buttons
+        HBox titleBar = new HBox(10);
+        titleBar.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
         
         Button createBtn = createStyledButton("+ Create Event", "#3498db");
         createBtn.setOnAction(e -> handleCreateEvent());
@@ -93,7 +113,7 @@ public class EventListController {
         Button refreshBtn = createStyledButton("Refresh", "#95a5a6");
         refreshBtn.setOnAction(e -> handleRefresh());
         
-        titleBar.getChildren().addAll(titleLabel, createBtn, refreshBtn);
+        titleBar.getChildren().addAll(createBtn, refreshBtn);
         
         // Filter Bar
         HBox filterBar = new HBox(10);
@@ -131,7 +151,7 @@ public class EventListController {
             clearBtn
         );
         
-        top.getChildren().addAll(titleBar, filterBar);
+        top.getChildren().addAll(headerBar, titleBar, filterBar);
         return top;
     }
     
@@ -324,6 +344,31 @@ public class EventListController {
     private void updateStatus(String message, int count) {
         statusLabel.setText(message);
         eventCountLabel.setText("Total Events: " + count);
+    }
+    
+    private void handleMyProfile() {
+        try {
+            Stage stage = (Stage) eventTable.getScene().getWindow();
+            ProfileController profileController = new ProfileController();
+            stage.setScene(profileController.getScene());
+            stage.setTitle("My Profile");
+        } catch (Exception e) {
+            showError("Navigation Error", "Could not load profile page: " + e.getMessage());
+        }
+    }
+    
+    private void handleLogout() {
+        try {
+            AuthContext.clear();
+            Stage stage = (Stage) eventTable.getScene().getWindow();
+            LoginController loginController = new LoginController();
+            stage.setScene(loginController.getScene());
+            stage.setTitle("Login - Event Management System");
+            stage.setWidth(500);
+            stage.setHeight(600);
+        } catch (Exception e) {
+            showError("Logout Error", "Could not logout: " + e.getMessage());
+        }
     }
     
     private void showError(String title, String message) {

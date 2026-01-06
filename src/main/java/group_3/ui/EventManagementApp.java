@@ -1,13 +1,12 @@
 package group_3.ui;
 
-import group_3.controller.UserBookingController;
+import group_3.controller.EventListController;
 import javafx.application.Application;
 import javafx.stage.Stage;
-import group_3.controller.EventListController;
 
 /**
  * Main JavaFX Application for Event Management System.
- * Launches the Event Management UI.
+ * Launches the Event Management UI (for Event Admins).
  * 
  * @author Group 3
  */
