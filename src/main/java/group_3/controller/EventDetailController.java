@@ -126,11 +126,7 @@ public class EventDetailController {
         
         if (currentEvent.getEventImage() != null && !currentEvent.getEventImage().isEmpty()) {
             try {
-                    // Convert file path to proper file URL for JavaFX
-                    java.io.File imageFile = new java.io.File(currentEvent.getEventImage());
-                    String imageUrl = imageFile.toURI().toString();
-                
-                    Image image = new Image(imageUrl, 600, 300, true, true);
+                Image image = new Image(currentEvent.getEventImage(), 600, 300, true, true);
                 ImageView imageView = new ImageView(image);
                 imageView.setFitWidth(600);
                 imageView.setFitHeight(300);
@@ -140,7 +136,6 @@ public class EventDetailController {
                 Label placeholder = new Label("Image not available");
                 placeholder.setStyle("-fx-text-fill: #999; -fx-font-size: 16px;");
                 section.getChildren().add(placeholder);
-                    System.err.println("Error loading image: " + e.getMessage());
             }
         } else {
             Label placeholder = new Label("📷 No Event Image");
