@@ -1,21 +1,13 @@
 package group_3.dao.impl;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import group_3.dao.PersonDAO;
-import group_3.model.Admin;
-import group_3.model.Attendee;
-import group_3.model.Person;
-import group_3.model.Presenter;
+import group_3.model.*;
 import group_3.model.enums.Role;
 import group_3.util.DatabaseConnection;
+import group_3.dao.PersonDAO;
+
+import java.sql.*;
+import java.time.LocalDate;
+import java.util.*;
 
 public class PersonDAOImpl implements PersonDAO {
 

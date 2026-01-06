@@ -1,12 +1,5 @@
 package group_3.integration;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.Test;
-
 import group_3.dao.PersonDAO;
 import group_3.dao.impl.PersonDAOImpl;
 import group_3.model.Admin;
@@ -21,6 +14,12 @@ import group_3.service.EventAdminService.EventAdminService;
 import group_3.service.EventAdminService.EventAdminServiceImpl;
 import group_3.util.PasswordUtil;
 
+import org.junit.jupiter.api.Test;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 public class AuditIntegrationTest {
 
     @Test
@@ -34,7 +33,7 @@ public class AuditIntegrationTest {
         admin.setPasswordHash(PasswordUtil.hash("admin123"));
         admin.setFullName("System Admin");
         admin.setDateOfBirth(LocalDate.of(1990, 1, 1));
-        admin.setContactInformation("{\"email\":\"admin@test.com\"}");
+        admin.setContactInformation("admin@test.com");
 
         personDAO.create(admin);
 
