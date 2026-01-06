@@ -1,10 +1,22 @@
 package group_3.service.EventAdminService;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.time.format.DateTimeFormatter;
+
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.properties.UnitValue;
 
 import group_3.dao.EventDAO;
 import group_3.dao.SessionDAO;
@@ -842,6 +854,169 @@ public class EventAdminServiceImpl implements EventAdminService {
         } catch (IOException e) {
             throw new RuntimeException("Failed to export report: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public String exportEventReportPdf(int eventId) {
+        if (eventId <= 0 || !eventExists(eventId)) {
+            throw new IllegalArgumentException("Invalid event ID");
+        }
+
+        Event event = eventDAO.findById(eventId)
+                .orElseThrow(() -> new IllegalArgumentException("Event not found"));
+
+        Map<String, Object> attendanceReport = generateEventAttendanceReport(eventId);
+        Map<String, Object> ticketUsageReport = generateTicketUsageReport(eventId);
+        List<Session> sessions = sessionDAO.findByEventId(eventId);
+        List<Ticket> tickets = getTicketsByEventId(eventId);
+
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+        Path reportsDir = Paths.get("reports");
+        Path pdfPath = reportsDir.resolve(String.format("event_%d_report_%s.pdf", eventId, timestamp));
+
+        try {
+            Files.createDirectories(reportsDir);
+
+            try (PdfWriter writer = new PdfWriter(pdfPath.toString());
+                 PdfDocument pdfDocument = new PdfDocument(writer);
+                 Document document = new Document(pdfDocument)) {
+
+                document.add(new Paragraph("Event Report").setBold().setFontSize(18));
+                document.add(new Paragraph(event.getName() + " (ID: " + eventId + ")"));
+                document.add(new Paragraph("Location: " + (event.getLocation() != null ? event.getLocation() : "N/A")));
+                if (event.getStartDate() != null && event.getEndDate() != null) {
+                    document.add(new Paragraph("Schedule: " + event.getStartDate() + " to " + event.getEndDate()));
+                }
+                document.add(new Paragraph("Generated At: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
+                document.add(new Paragraph(" "));
+
+                document.add(new Paragraph("Attendance Overview").setBold());
+                Table overviewTable = new Table(UnitValue.createPercentArray(new float[]{3, 1})).useAllAvailableWidth();
+                overviewTable.addHeaderCell(headerCell("Metric"));
+                overviewTable.addHeaderCell(headerCell("Value"));
+                overviewTable.addCell(bodyCell("Total Attendees"));
+                overviewTable.addCell(bodyCell(String.valueOf(attendanceReport.getOrDefault("totalAttendees", 0))));
+                overviewTable.addCell(bodyCell("Sessions"));
+                overviewTable.addCell(bodyCell(String.valueOf(sessions.size())));
+                overviewTable.addCell(bodyCell("Tickets Issued"));
+                overviewTable.addCell(bodyCell(String.valueOf(tickets.size())));
+                document.add(overviewTable);
+                document.add(new Paragraph(" "));
+
+                document.add(new Paragraph("Session Occupancy").setBold());
+                Table sessionTable = new Table(UnitValue.createPercentArray(new float[]{4, 2, 2, 2, 2})).useAllAvailableWidth();
+                sessionTable.addHeaderCell(headerCell("Session"));
+                sessionTable.addHeaderCell(headerCell("Capacity"));
+                sessionTable.addHeaderCell(headerCell("Tickets Sold"));
+                sessionTable.addHeaderCell(headerCell("Checked In"));
+                sessionTable.addHeaderCell(headerCell("Occupancy"));
+
+                if (sessions.isEmpty()) {
+                    sessionTable.addCell(new Cell(1, 5)
+                            .add(new Paragraph("No sessions available"))
+                            .setTextAlignment(TextAlignment.CENTER));
+                } else {
+                    for (Session session : sessions) {
+                        long sold = tickets.stream()
+                                .filter(t -> t.getSessionID() == session.getSessionId())
+                                .filter(t -> t.getStatus() == TicketStatus.ACTIVE || t.getStatus() == TicketStatus.USED)
+                                .count();
+                        long checkedIn = tickets.stream()
+                                .filter(t -> t.getSessionID() == session.getSessionId())
+                                .filter(t -> t.getStatus() == TicketStatus.USED)
+                                .count();
+                        double occupancy = session.getCapacity() > 0
+                                ? (sold * 100.0) / session.getCapacity()
+                                : 0.0;
+
+                        sessionTable.addCell(bodyCell(session.getTitle() != null ? session.getTitle() : "Session " + session.getSessionId()));
+                        sessionTable.addCell(bodyCell(String.valueOf(session.getCapacity())));
+                        sessionTable.addCell(bodyCell(String.valueOf(sold)));
+                        sessionTable.addCell(bodyCell(String.valueOf(checkedIn)));
+                        sessionTable.addCell(bodyCell(String.format("%.1f%%", occupancy)));
+                    }
+                }
+                document.add(sessionTable);
+                document.add(new Paragraph(" "));
+
+                document.add(new Paragraph("Attendance by Session").setBold());
+                @SuppressWarnings("unchecked")
+                Map<String, Integer> sessionAttendance = (Map<String, Integer>) attendanceReport.get("sessionAttendance");
+                Table attendanceTable = new Table(UnitValue.createPercentArray(new float[]{4, 2})).useAllAvailableWidth();
+                attendanceTable.addHeaderCell(headerCell("Session"));
+                attendanceTable.addHeaderCell(headerCell("Attendees"));
+                if (sessionAttendance != null && !sessionAttendance.isEmpty()) {
+                    sessionAttendance.forEach((sessionName, count) -> {
+                        attendanceTable.addCell(bodyCell(sessionName));
+                        attendanceTable.addCell(bodyCell(String.valueOf(count)));
+                    });
+                } else {
+                    attendanceTable.addCell(new Cell(1, 2)
+                            .add(new Paragraph("No attendance data"))
+                            .setTextAlignment(TextAlignment.CENTER));
+                }
+                document.add(attendanceTable);
+                document.add(new Paragraph(" "));
+
+                document.add(new Paragraph("Ticket Usage by Type").setBold());
+                @SuppressWarnings("unchecked")
+                Map<String, Long> ticketsByType = (Map<String, Long>) ticketUsageReport.get("ticketsByType");
+                addKeyValueTable(document, ticketsByType, "Type", "Count");
+
+                document.add(new Paragraph("Ticket Usage by Status").setBold());
+                @SuppressWarnings("unchecked")
+                Map<String, Long> ticketsByStatus = (Map<String, Long>) ticketUsageReport.get("ticketsByStatus");
+                addKeyValueTable(document, ticketsByStatus, "Status", "Count");
+            }
+
+            String detail = String.format(
+                    "{\"eventId\": %d, \"reportType\": \"PDF\", \"filePath\": \"%s\"}",
+                    eventId,
+                    pdfPath
+            );
+
+            historyService.logAction(
+                    AuthContext.getCurrentUserId(),
+                    "EXPORT EVENT REPORT PDF",
+                    detail
+            );
+
+            return pdfPath.toString();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to export PDF report: " + e.getMessage(), e);
+        }
+    }
+
+    private void addKeyValueTable(Document document, Map<String, ? extends Number> data, String keyHeader, String valueHeader) {
+        Table table = new Table(UnitValue.createPercentArray(new float[]{3, 1})).useAllAvailableWidth();
+        table.addHeaderCell(headerCell(keyHeader));
+        table.addHeaderCell(headerCell(valueHeader));
+
+        if (data != null && !data.isEmpty()) {
+            data.forEach((key, value) -> {
+                table.addCell(bodyCell(key));
+                table.addCell(bodyCell(String.valueOf(value)));
+            });
+        } else {
+            table.addCell(new Cell(1, 2)
+                    .add(new Paragraph("No data available"))
+                    .setTextAlignment(TextAlignment.CENTER));
+        }
+
+        document.add(table);
+        document.add(new Paragraph(" "));
+    }
+
+    private Cell headerCell(String text) {
+        return new Cell()
+                .add(new Paragraph(text).setBold())
+                .setTextAlignment(TextAlignment.LEFT);
+    }
+
+    private Cell bodyCell(String text) {
+        return new Cell()
+                .add(new Paragraph(text))
+                .setTextAlignment(TextAlignment.LEFT);
     }
 
     /**

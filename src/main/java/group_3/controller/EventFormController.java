@@ -1,35 +1,31 @@
 package group_3.controller;
 
-import java.io.File;
-import java.time.LocalDateTime;
-
-import group_3.dao.EventDAO;
+import group_3.util.DaoProvider;
 import group_3.model.Event;
 import group_3.model.enums.EventStatus;
 import group_3.model.enums.EventType;
-import group_3.util.DaoProvider;
+import group_3.service.EventAdminService.EventAdminService;
+import group_3.service.EventAdminService.EventAdminServiceImpl;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Spinner;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+
+import java.io.File;
+import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.util.Optional;
 
 /**
  * Controller for Event Form (Create/Edit).
@@ -40,7 +36,7 @@ public class EventFormController {
     private Stage stage;
     private Event eventToEdit;
     private EventListController listController;
-    private EventDAO eventDAO;
+    private EventAdminService eventAdminService;
     
     private TextField idField;
     private TextField nameField;
@@ -63,7 +59,7 @@ public class EventFormController {
     public EventFormController(Event event, EventListController listController) {
         this.eventToEdit = event;
         this.listController = listController;
-        this.eventDAO = DaoProvider.getEventDAO();
+        this.eventAdminService = new EventAdminServiceImpl();
     }
     
     public void show() {
@@ -405,12 +401,19 @@ public class EventFormController {
             Event event = buildEvent();
             
             if (eventToEdit == null) {
-                eventDAO.create(event);
+                // Create new event using EventAdminService
+                eventAdminService.createEvent(event);
+                showSuccess("Event Created", "Event '" + event.getName() + "' has been created successfully.");
             } else {
-                eventDAO.update(event);
+                // Update existing event using EventAdminService
+                eventAdminService.updateEvent(event);
+                showSuccess("Event Updated", "Event '" + event.getName() + "' has been updated successfully.");
             }
             
-            listController.refreshEvents();
+            // Refresh the list view to show the changes
+            if (listController != null) {
+                listController.refreshEvents();
+            }
             stage.close();
         } catch (Exception e) {
             showError("Error saving event", e.getMessage());
@@ -474,7 +477,14 @@ public class EventFormController {
             java.time.LocalTime.of(endHourCombo.getValue(), endMinuteCombo.getValue())
         );
         
-        int eventId = idField.getText().isEmpty() ? 0 : Integer.parseInt(idField.getText());
+        // Parse eventId from field or use 0 for new events
+        int eventId = 0;
+        if (eventToEdit != null) {
+            eventId = eventToEdit.getEventId();
+        }
+        
+        // Debug output
+        System.out.println("DEBUG: Building event with image path: " + selectedImagePath);
         
         Event event = new Event(
             eventId,
@@ -501,5 +511,13 @@ public class EventFormController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+    
+    private void showSuccess(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.show(); // Non-blocking
     }
 }

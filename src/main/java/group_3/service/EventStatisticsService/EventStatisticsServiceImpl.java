@@ -156,9 +156,37 @@ public class EventStatisticsServiceImpl implements EventStatisticsService {
     
     @Override
     public List<SessionStatistics> getMostPopularSessions(int eventId, int limit) {
-        List<SessionStatistics> sessionStats = getEventSessionStatistics(eventId);
-        
-        return sessionStats.stream()
+        List<Session> sessions = sessionDAO.findByEventId(eventId);
+        if (sessions == null || sessions.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<SessionStatistics> statsList = new ArrayList<>();
+        for (Session session : sessions) {
+            ArrayList<Ticket> tickets = ticketDAO.findTicketBySessionId(session.getSessionId());
+            if (tickets == null) {
+            tickets = new ArrayList<>();
+            }
+
+            int sold = (int) tickets.stream()
+                .filter(ticket -> ticket.getStatus() == TicketStatus.ACTIVE || ticket.getStatus() == TicketStatus.USED)
+                .count();
+            int checkedIn = (int) tickets.stream()
+                .filter(ticket -> ticket.getStatus() == TicketStatus.USED)
+                .count();
+
+            SessionStatistics stats = new SessionStatistics(
+                session.getSessionId(),
+                session.getTitle(),
+                session.getEventId(),
+                sold,
+                checkedIn,
+                session.getCapacity()
+            );
+            statsList.add(stats);
+        }
+
+        return statsList.stream()
             .sorted((s1, s2) -> Integer.compare(s2.getTotalTicketsSold(), s1.getTotalTicketsSold()))
             .limit(limit)
             .collect(Collectors.toList());

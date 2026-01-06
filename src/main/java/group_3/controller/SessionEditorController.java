@@ -4,6 +4,8 @@ import group_3.dao.PresenterDAO;
 import group_3.model.Presenter;
 import group_3.model.Session;
 import group_3.util.DaoProvider;
+import group_3.service.EventAdminService.EventAdminService;
+import group_3.service.EventAdminService.EventAdminServiceImpl;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -26,6 +28,9 @@ public class SessionEditorController {
     private Session session;
     private EventDetailController parentController;
     private PresenterDAO presenterDAO;
+    private EventAdminService eventAdminService;
+    private int associatedEventId; // For new sessions
+    private boolean isNewSession;
     
     private TextField titleField;
     private TextArea descriptionArea;
@@ -38,14 +43,40 @@ public class SessionEditorController {
     private ListView<String> assignedPresentersListView;
     private ComboBox<Presenter> presenterCombo;
     
+    // Constructor for editing existing session
     public SessionEditorController(Session session, EventDetailController parentController) {
+        this.session = session;
         this.parentController = parentController;
         this.presenterDAO = DaoProvider.getPresenterDAO();
+        this.eventAdminService = new EventAdminServiceImpl();
+        this.isNewSession = false;
+    }
+    
+    // Constructor for creating new session
+    public SessionEditorController(int eventId, EventDetailController parentController) {
+        this.associatedEventId = eventId;
+        this.parentController = parentController;
+        this.presenterDAO = DaoProvider.getPresenterDAO();
+        this.eventAdminService = new EventAdminServiceImpl();
+        this.isNewSession = true;
+        
+        // Create a new blank session with default values
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        this.session = new Session(
+            0, // sessionId (will be auto-generated)
+            eventId, // eventId
+            "New Session", // title
+            "", // description
+            now, // startTime
+            now.plusHours(1), // endTime
+            "", // venue
+            50 // capacity
+        );
     }
     
     public void show() {
         stage = new Stage();
-        stage.setTitle("Edit Session - " + session.getTitle());
+        stage.setTitle(isNewSession ? "Create New Session" : "Edit Session - " + session.getTitle());
         stage.setScene(createScene());
         stage.setWidth(700);
         stage.setHeight(800);
@@ -278,10 +309,16 @@ public class SessionEditorController {
     
     private void handleSave() {
         try {
+            // Validate input
+            if (titleField.getText().trim().isEmpty()) {
+                showError("Validation Error", "Session title cannot be empty.");
+                return;
+            }
+            
             // Update session details
-            session.setTitle(titleField.getText());
-            session.setDescription(descriptionArea.getText());
-            session.setVenue(venueField.getText());
+            session.setTitle(titleField.getText().trim());
+            session.setDescription(descriptionArea.getText().trim());
+            session.setVenue(venueField.getText().trim());
             session.setCapacity(capacitySpinner.getValue());
             
             // Update times
@@ -291,15 +328,33 @@ public class SessionEditorController {
             session.setStartTime(newStart);
             session.setEndTime(newEnd);
             
+            // Save using EventAdminService
+            if (isNewSession) {
+                // Create the session first
+                eventAdminService.createSession(session);
+                
+                // Get the created session ID (assuming createSession saves and the session has an ID)
+                int sessionId = session.getSessionId();
+                
+                // Add the session to the event
+                eventAdminService.addSessionToEvent(associatedEventId, sessionId);
+            } else {
+                // Update existing session
+                eventAdminService.updateSession(session);
+            }
+            
+            showInfo("Success", "Session '" + session.getTitle() + "' saved successfully!");
+            
+            // Close dialog
             stage.close();
             
+            // Refresh parent view to show updated data
             if (parentController != null) {
                 parentController.refreshSessions();
             }
-            
-            showInfo("Success", "Session saved successfully!");
         } catch (Exception e) {
             showError("Error", "Failed to save session: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     

@@ -9,6 +9,8 @@ import group_3.model.Event;
 import group_3.model.enums.EventStatus;
 import group_3.model.enums.EventType;
 import group_3.util.DaoProvider;
+import group_3.service.EventAdminService.EventAdminService;
+import group_3.service.EventAdminService.EventAdminServiceImpl;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -36,6 +38,7 @@ import javafx.scene.text.Font;
 public class EventListController {
     
     private EventDAO eventDAO;
+    private EventAdminService eventAdminService;
     private ObservableList<Event> eventList;
     private ObservableList<Event> filteredList;
     private Scene scene;
@@ -53,6 +56,7 @@ public class EventListController {
     
     public EventListController() {
         eventDAO = DaoProvider.getEventDAO();
+        eventAdminService = new EventAdminServiceImpl();
         eventList = FXCollections.observableArrayList();
         filteredList = FXCollections.observableArrayList();
         initializeUI();
@@ -257,13 +261,15 @@ public class EventListController {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirm Delete");
         alert.setHeaderText("Delete Event: " + event.getName());
-        alert.setContentText("Are you sure you want to delete this event?");
+        alert.setContentText("Are you sure you want to delete this event? This will also delete all associated sessions.");
         
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
                 int eventId = event.getEventId();
-                eventDAO.delete(eventId);
+                // Use EventAdminService which handles cascade deletion of sessions
+                eventAdminService.deleteEvent(eventId);
+                // Automatically refresh the table view
                 loadEvents();
                 updateStatus("Event deleted successfully", filteredList.size());
             } catch (Exception e) {

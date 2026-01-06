@@ -1,5 +1,10 @@
 package group_3.controller;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
@@ -10,6 +15,8 @@ import group_3.model.Event;
 import group_3.model.EventStatistics;
 import group_3.service.EventStatisticsService.EventStatisticsService;
 import group_3.service.EventStatisticsService.EventStatisticsServiceImpl;
+import group_3.service.EventAdminService.EventAdminService;
+import group_3.service.EventAdminService.EventAdminServiceImpl;
 import group_3.util.DaoProvider;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -29,6 +36,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import javafx.stage.FileChooser;
 
 /**
  * Controller for Event Detail View.
@@ -41,6 +49,7 @@ public class EventDetailController {
     private EventListController listController;
     private EventDAO eventDAO;
     private EventStatisticsService statisticsService;
+    private EventAdminService eventAdminService;
     
     private static final DateTimeFormatter DATE_FORMATTER = 
         DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy 'at' HH:mm");
@@ -49,6 +58,7 @@ public class EventDetailController {
         this.currentEvent = event;
         this.listController = listController;
         this.eventDAO = DaoProvider.getEventDAO();
+        this.eventAdminService = new EventAdminServiceImpl();
 
         SessionDAO sessionDAO = DaoProvider.getSessionDAO();
         TicketDAO ticketDAO = DaoProvider.getTicketDAO();
@@ -122,7 +132,17 @@ public class EventDetailController {
         
         if (currentEvent.getEventImage() != null && !currentEvent.getEventImage().isEmpty()) {
             try {
-                Image image = new Image(currentEvent.getEventImage(), 600, 300, true, true);
+                String imageUrl = currentEvent.getEventImage();
+                
+                // Convert file path to proper file:// URI if it's a local file
+                if (!imageUrl.startsWith("http://") && !imageUrl.startsWith("https://") && !imageUrl.startsWith("file://")) {
+                    java.io.File file = new java.io.File(imageUrl);
+                    if (file.exists()) {
+                        imageUrl = file.toURI().toString();
+                    }
+                }
+                
+                Image image = new Image(imageUrl, 600, 300, true, true);
                 ImageView imageView = new ImageView(image);
                 imageView.setFitWidth(600);
                 imageView.setFitHeight(300);
@@ -236,6 +256,12 @@ public class EventDetailController {
         HBox buttons = new HBox(10);
         buttons.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
         
+        Button createBtn = createButton("Create New Session", "#27ae60");
+        createBtn.setOnAction(e -> {
+            SessionEditorController editor = new SessionEditorController(currentEvent.getEventId(), this);
+            editor.show();
+        });
+        
         Button editBtn = createButton("View/Edit Session", "#3498db");
         editBtn.setOnAction(e -> {
             int idx = sessionList.getSelectionModel().getSelectedIndex();
@@ -259,14 +285,26 @@ public class EventDetailController {
             }
         });
         
-        buttons.getChildren().addAll(editBtn);
+        buttons.getChildren().addAll(createBtn, editBtn);
         
         section.getChildren().addAll(title, sessionList, buttons);
         return section;
     }
     
     public void refreshSessions() {
-        // Refresh logic if needed
+        try {
+            // Reload the current event from database to get updated session data
+            int eventId = currentEvent.getEventId();
+            Optional<Event> updatedEvent = eventDAO.findById(eventId);
+            
+            if (updatedEvent.isPresent()) {
+                this.currentEvent = updatedEvent.get();
+                // Refresh the entire view to show updated data
+                stage.setScene(createScene());
+            }
+        } catch (Exception e) {
+            showError("Refresh Error", "Failed to refresh sessions: " + e.getMessage());
+        }
     }
     
     private VBox createStatisticsSection() {
@@ -304,8 +342,14 @@ public class EventDetailController {
         
         Button viewStatsBtn = createButton("View Full Statistics", "#3498db");
         viewStatsBtn.setOnAction(e -> handleViewFullStatistics());
+
+        Button downloadReportBtn = createButton("Download PDF Report", "#27ae60");
+        downloadReportBtn.setOnAction(e -> handleDownloadReport());
+
+        HBox actions = new HBox(10, viewStatsBtn, downloadReportBtn);
+        actions.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
         
-        section.getChildren().addAll(title, stats, viewStatsBtn);
+        section.getChildren().addAll(title, stats, actions);
         return section;
     }
     
@@ -378,14 +422,16 @@ public class EventDetailController {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirm Delete");
         alert.setHeaderText("Delete Event: " + currentEvent.getName());
-        alert.setContentText("Are you sure? This action cannot be undone.");
+        alert.setContentText("Are you sure? This will also delete all associated sessions. This action cannot be undone.");
         
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
                 int eventId = currentEvent.getEventId();
-                eventDAO.delete(eventId);
+                // Use EventAdminService which handles cascade deletion
+                eventAdminService.deleteEvent(eventId);
                 
+                // Automatically refresh parent list view
                 if (listController != null) {
                     listController.refreshEvents();
                 }
@@ -416,6 +462,34 @@ public class EventDetailController {
             }
         } catch (Exception e) {
             showError("Error", e.getMessage());
+        }
+    }
+
+    private void handleDownloadReport() {
+        try {
+            int eventId = currentEvent.getEventId();
+            String generatedPath = eventAdminService.exportEventReportPdf(eventId);
+
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Save Event Report");
+            fileChooser.getExtensionFilters().add(
+                    new FileChooser.ExtensionFilter("PDF files (*.pdf)", "*.pdf"));
+            fileChooser.setInitialFileName("event_" + eventId + "_report.pdf");
+
+            File target = fileChooser.showSaveDialog(stage);
+            if (target != null) {
+                Path destination = target.toPath();
+                Path parent = destination.getParent();
+                if (parent != null) {
+                    Files.createDirectories(parent);
+                }
+                Files.copy(Paths.get(generatedPath), destination, StandardCopyOption.REPLACE_EXISTING);
+                showInfo("Report Saved", "Report saved to: " + destination.toAbsolutePath());
+            } else {
+                showInfo("Report Generated", "Report created at: " + Paths.get(generatedPath).toAbsolutePath());
+            }
+        } catch (Exception e) {
+            showError("Report Error", e.getMessage());
         }
     }
     
