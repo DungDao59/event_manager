@@ -29,6 +29,8 @@ public class SessionEditorController {
     private EventDetailController parentController;
     private PresenterDAO presenterDAO;
     private EventAdminService eventAdminService;
+    private int associatedEventId; // For new sessions
+    private boolean isNewSession;
     
     private TextField titleField;
     private TextArea descriptionArea;
@@ -41,16 +43,40 @@ public class SessionEditorController {
     private ListView<String> assignedPresentersListView;
     private ComboBox<Presenter> presenterCombo;
     
+    // Constructor for editing existing session
     public SessionEditorController(Session session, EventDetailController parentController) {
         this.session = session;
         this.parentController = parentController;
         this.presenterDAO = DaoProvider.getPresenterDAO();
         this.eventAdminService = new EventAdminServiceImpl();
+        this.isNewSession = false;
+    }
+    
+    // Constructor for creating new session
+    public SessionEditorController(int eventId, EventDetailController parentController) {
+        this.associatedEventId = eventId;
+        this.parentController = parentController;
+        this.presenterDAO = DaoProvider.getPresenterDAO();
+        this.eventAdminService = new EventAdminServiceImpl();
+        this.isNewSession = true;
+        
+        // Create a new blank session with default values
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        this.session = new Session(
+            0, // sessionId (will be auto-generated)
+            eventId, // eventId
+            "New Session", // title
+            "", // description
+            now, // startTime
+            now.plusHours(1), // endTime
+            "", // venue
+            50 // capacity
+        );
     }
     
     public void show() {
         stage = new Stage();
-        stage.setTitle("Edit Session - " + session.getTitle());
+        stage.setTitle(isNewSession ? "Create New Session" : "Edit Session - " + session.getTitle());
         stage.setScene(createScene());
         stage.setWidth(700);
         stage.setHeight(800);
@@ -303,7 +329,19 @@ public class SessionEditorController {
             session.setEndTime(newEnd);
             
             // Save using EventAdminService
-            eventAdminService.updateSession(session);
+            if (isNewSession) {
+                // Create the session first
+                eventAdminService.createSession(session);
+                
+                // Get the created session ID (assuming createSession saves and the session has an ID)
+                int sessionId = session.getSessionId();
+                
+                // Add the session to the event
+                eventAdminService.addSessionToEvent(associatedEventId, sessionId);
+            } else {
+                // Update existing session
+                eventAdminService.updateSession(session);
+            }
             
             showInfo("Success", "Session '" + session.getTitle() + "' saved successfully!");
             

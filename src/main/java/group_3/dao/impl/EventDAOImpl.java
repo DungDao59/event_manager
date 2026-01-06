@@ -11,10 +11,13 @@ import java.util.List;
 import java.util.Optional;
 
 import group_3.dao.EventDAO;
+import group_3.dao.SessionDAO;
 import group_3.model.Event;
+import group_3.model.Session;
 import group_3.model.enums.EventStatus;
 import group_3.model.enums.EventType;
 import group_3.util.DatabaseConnection;
+import group_3.util.DaoProvider;
 /**
  * Implementation of EventDAO interface.
  * Handles database operations for Event entities.
@@ -213,6 +216,19 @@ public class EventDAOImpl implements EventDAO {
         LocalDateTime endDate = endDateSql != null ? endDateSql.toLocalDateTime() : startDate.plusDays(duration);
 
         Event event = new Event(id, name, type, startDate, endDate, location, duration, status, eventImage);
+        
+        // Load associated sessions
+        try {
+            SessionDAO sessionDAO = DaoProvider.getSessionDAO();
+            List<Session> sessions = sessionDAO.findByEventId(id);
+            for (Session session : sessions) {
+                event.addSession(String.valueOf(session.getSessionId()));
+            }
+        } catch (Exception e) {
+            // Log but don't fail - sessions can be loaded separately if needed
+            System.err.println("Warning: Could not load sessions for event " + id + ": " + e.getMessage());
+        }
+        
         return event;
     }
 }

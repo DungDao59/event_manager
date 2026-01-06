@@ -251,6 +251,12 @@ public class EventDetailController {
         HBox buttons = new HBox(10);
         buttons.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
         
+        Button createBtn = createButton("Create New Session", "#27ae60");
+        createBtn.setOnAction(e -> {
+            SessionEditorController editor = new SessionEditorController(currentEvent.getEventId(), this);
+            editor.show();
+        });
+        
         Button editBtn = createButton("View/Edit Session", "#3498db");
         editBtn.setOnAction(e -> {
             int idx = sessionList.getSelectionModel().getSelectedIndex();
@@ -274,7 +280,7 @@ public class EventDetailController {
             }
         });
         
-        buttons.getChildren().addAll(editBtn);
+        buttons.getChildren().addAll(createBtn, editBtn);
         
         section.getChildren().addAll(title, sessionList, buttons);
         return section;

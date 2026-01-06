@@ -38,10 +38,11 @@ public class SessionDAOImpl implements SessionDAO {
             ps.setInt(1, eventId);
             ps.setString(2, session.getTitle());
             ps.setString(3, session.getDescription());
-            ps.setTimestamp(4, java.sql.Timestamp.valueOf(session.getStartTime()));
-            ps.setTimestamp(5, java.sql.Timestamp.valueOf(session.getEndTime() != null ? session.getEndTime() : session.getStartTime().plusHours(1)));
-            ps.setString(6, session.getVenue());
-            ps.setInt(7, session.getCapacity());
+            ps.setDate(4, java.sql.Date.valueOf(session.getStartTime().toLocalDate()));
+            ps.setTime(5, java.sql.Time.valueOf(session.getStartTime().toLocalTime()));
+            ps.setTime(6, java.sql.Time.valueOf(session.getEndTime() != null ? session.getEndTime().toLocalTime() : session.getStartTime().plusHours(1).toLocalTime()));
+            ps.setString(7, session.getVenue());
+            ps.setInt(8, session.getCapacity());
 
             ps.executeUpdate();
             ResultSet rs = ps.getGeneratedKeys();
