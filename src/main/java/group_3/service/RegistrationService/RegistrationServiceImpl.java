@@ -19,6 +19,7 @@ import group_3.security.AuthContext;
 import group_3.service.SystemHistoryService.SystemHistoryService;
 import group_3.service.SystemHistoryService.SystemHistoryServiceImpl;
 import group_3.util.NotificationUtil;
+import group_3.util.QRCode;
 
 public class RegistrationServiceImpl implements RegistrationService{
     private final TicketDAO ticketDAO =  new TicketDAOImpl();
