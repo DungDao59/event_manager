@@ -3,10 +3,13 @@ package group_3.controller;
 import group_3.model.Event;
 import group_3.model.Session;
 import group_3.model.enums.TicketType;
+import group_3.security.AuthContext;
 import group_3.service.EventAdminService.EventAdminService;
 import group_3.service.EventAdminService.EventAdminServiceImpl;
 import group_3.service.RegistrationService.RegistrationService;
 import group_3.service.RegistrationService.RegistrationServiceImpl;
+import group_3.service.ScheduleService.ScheduleService;
+import group_3.service.ScheduleService.ScheduleServiceImpl;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -23,8 +26,9 @@ public class UserBookingController {
     private final EventAdminService eventService = new EventAdminServiceImpl();
     private final EventAdminService sessionService = new EventAdminServiceImpl();
     private final RegistrationService registrationService = new RegistrationServiceImpl();
+    private final ScheduleService scheduleService = new ScheduleServiceImpl();
 
-    private final int currentUserId = 1;
+    private final Integer currentUserId = AuthContext.getCurrentUserId();
     private ComboBox<TicketType> ticketTypeCombo;
 
     private Stage stage;
@@ -222,8 +226,31 @@ public class UserBookingController {
         Session selectedSession = sessionTable.getSelectionModel().getSelectedItem();
         TicketType selectedType = ticketTypeCombo.getValue();
 
+        if(currentUserId == null){
+            showAlert(
+                    Alert.AlertType.ERROR,
+                    "Not Logged In",
+                    "Please login before registering"
+            );
+        }
+
         if (selectedSession == null) {
             showAlert(Alert.AlertType.WARNING, "No Session", "Please select a session.");
+            return;
+        }
+
+        boolean hasConflict = scheduleService.hasConflict(
+                currentUserId,
+                selectedSession.getStartTime(),
+                selectedSession.getEndTime()
+        );
+
+        if(hasConflict){
+            showAlert(
+                    Alert.AlertType.ERROR,
+                    "Schedule Conflict",
+                    "You already have another session at this time."
+            );
             return;
         }
 
@@ -232,11 +259,11 @@ public class UserBookingController {
             return;
         }
 
-
         double price = 50.00; // Default Price for Standard
         if (selectedType.toString().equalsIgnoreCase("VIP")) {
             price = 100.00;
         }
+
 
         boolean success = registrationService.registerAttendee(
                 currentUserId,
