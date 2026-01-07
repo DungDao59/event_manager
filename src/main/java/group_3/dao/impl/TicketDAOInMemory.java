@@ -7,7 +7,14 @@ import group_3.util.MockData;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
-/** In-memory implementation of TicketDAO for mock mode. */
+/**
+ * @author Group 3
+ *
+ * In-memory DAO implementation for managing Ticket data
+ * using mock storage for testing and development.
+ */
+
+
 public class TicketDAOInMemory implements TicketDAO {
     @Override
     public int create(Ticket ticket) {

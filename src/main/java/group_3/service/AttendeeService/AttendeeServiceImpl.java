@@ -9,10 +9,10 @@ import group_3.dao.impl.PersonDAOImpl;
 import group_3.model.Attendee;
 
 /**
+ * @author Group 3
+ *
  * Implementation of AttendeeService for managing Attendees.
  * Provides CRUD operations and personal information update capabilities.
- * 
- * @author Group21
  */
 public class AttendeeServiceImpl implements AttendeeService {
     

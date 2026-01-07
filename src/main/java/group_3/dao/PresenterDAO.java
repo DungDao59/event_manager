@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * @author Group 3
+ *
  * Data Access Object interface for Presenter entity.
  * Handles database operations for the presenter table.
- * 
- * @author Group21
  */
 public interface PresenterDAO {
     

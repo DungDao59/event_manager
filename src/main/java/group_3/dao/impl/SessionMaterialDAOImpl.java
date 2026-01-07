@@ -14,10 +14,10 @@ import group_3.model.SessionMaterial;
 import group_3.util.DatabaseConnection;
 
 /**
+ * @author Group 3
+ *
  * Implementation of SessionMaterialDAO interface.
  * Handles database operations for SessionMaterial entities.
- * 
- * @author Group 3
  */
 public class SessionMaterialDAOImpl implements SessionMaterialDAO {
 

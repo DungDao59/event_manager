@@ -12,6 +12,14 @@ import group_3.dao.ScheduleDAO;
 import group_3.model.ScheduleEntry;
 import group_3.util.DatabaseConnection;
 
+/**
+ * @author Group 3
+ *
+ * JDBC-based DAO implementation for creating and updating
+ * schedule entries in the database.
+ */
+
+
 public class ScheduleDAOImpl implements ScheduleDAO {
     @Override
     public void create(ScheduleEntry scheduleEntry) {

@@ -1,12 +1,13 @@
 package group_3.model;
 
 /**
+ * @author Group 3
+ *
  * SessionMaterial represents educational or supplementary material associated with a session.
  * Maps to the session_material table in the database.
  * 
  * Supports both binary content (content_data) and URL-based content (content_url).
- * 
- * @author Group 3
+ *
  */
 public class SessionMaterial {
     private int materialId;

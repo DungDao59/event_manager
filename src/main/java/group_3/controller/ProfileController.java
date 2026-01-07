@@ -34,10 +34,10 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 /**
+ * @author Group 3
+ *
  * Controller for Profile View.
  * Allows Attendees and Presenters to view and update their profile information.
- * 
- * @author Group 3
  */
 public class ProfileController {
 

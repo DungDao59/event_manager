@@ -1,11 +1,12 @@
 package group_3.model;
 
 /**
+ * @author Group 3
+ *
  * Data Transfer Object for Event Statistics.
  * Contains computed statistics for an event including revenue and attendance.
- * 
- * @author Group 3
  */
+
 public class EventStatistics {
     private int eventId;
     private String eventName;

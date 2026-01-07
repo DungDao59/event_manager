@@ -8,7 +8,14 @@ import group_3.dao.PresenterDAO;
 import group_3.model.Presenter;
 import group_3.util.MockData;
 
-/** In-memory implementation of PresenterDAO for mock mode. */
+/**
+ * @author Group 3
+ *
+ * In-memory DAO implementation for managing Presenter data
+ * using mock storage for testing purposes.
+ */
+
+
 public class PresenterDAOInMemory implements PresenterDAO {
     
     @Override

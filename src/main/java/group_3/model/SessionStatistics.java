@@ -1,10 +1,10 @@
 package group_3.model;
 
 /**
+ * @author Group 3
+ *
  * Data Transfer Object for Session Statistics.
  * Contains computed statistics for a session including attendance and popularity metrics.
- * 
- * @author Group 3
  */
 public class SessionStatistics {
     private int sessionId;

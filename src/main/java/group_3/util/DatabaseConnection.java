@@ -13,6 +13,14 @@ import java.sql.Statement;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
+/**
+ * @author Group 3
+ *
+ * Utility class for establishing and managing database connections,
+ * including a cached connection and initialization checks.
+ */
+
+
 public class DatabaseConnection {
 
     private static final Dotenv dotenv = Dotenv.load();

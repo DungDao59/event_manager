@@ -5,6 +5,14 @@ import java.util.List;
 
 import group_3.model.SystemHistory;
 
+/**
+ * @author Group 3
+ *
+ * Service interface defining operations for logging and retrieving
+ * system history and audit records with various filters.
+ */
+
+
 public interface SystemHistoryService {
     void logAction(Integer user_id, String operationType, String details);
 

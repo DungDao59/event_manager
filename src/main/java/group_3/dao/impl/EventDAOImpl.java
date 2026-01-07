@@ -19,10 +19,10 @@ import group_3.model.enums.EventType;
 import group_3.util.DatabaseConnection;
 import group_3.util.DaoProvider;
 /**
+ * @author Group 3
+ *
  * Implementation of EventDAO interface.
  * Handles database operations for Event entities.
- * 
- * Author: Group 3
  */
 public class EventDAOImpl implements EventDAO {
 

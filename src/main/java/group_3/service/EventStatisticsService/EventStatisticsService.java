@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * @author Group 3
+ *
  * Service interface for Event Statistics operations.
  * Provides methods to calculate revenue, attendance rates, and popularity metrics.
- * 
- * @author Group 3
  */
 public interface EventStatisticsService {
     

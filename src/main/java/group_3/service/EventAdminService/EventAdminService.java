@@ -11,10 +11,10 @@ import group_3.model.enums.TicketStatus;
 import group_3.model.enums.TicketType;
 
 /**
+ * @author Group 3
+ *
  * Service interface for Event Administration.
  * Provides business logic operations for managing events and sessions.
- * 
- * Author: Group 3
  */
 public interface EventAdminService {
 

@@ -41,6 +41,8 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 /**
+ * @author Group 3
+ *
  * Controller for Public Event Browser (Anonymous Visitors).
  * Allows visitors to browse events and view presenter profiles without authentication.
  * 
@@ -53,8 +55,7 @@ import javafx.stage.Stage;
  * - Register for events/sessions
  * - Access administrative interfaces
  * - View internal records
- * 
- * @author Group 3
+ *
  */
 public class PublicEventBrowserController {
 

@@ -20,10 +20,10 @@ import group_3.model.Ticket;
 import group_3.model.enums.TicketStatus;
 
 /**
+ * @author Group 3
+ *
  * Implementation of PresenterService for managing Presenters and calculating statistics.
  * Provides CRUD operations and statistics calculation based on sessions and attendance.
- * 
- * @author Group21
  */
 public class PresenterServiceImpl implements PresenterService {
     

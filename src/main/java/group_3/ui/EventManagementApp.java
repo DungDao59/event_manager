@@ -5,10 +5,10 @@ import javafx.application.Application;
 import javafx.stage.Stage;
 
 /**
+ * @author Group 3
+ *
  * Main JavaFX Application for Event Management System.
  * Launches the Event Management UI (for Event Admins).
- * 
- * @author Group 3
  */
 public class EventManagementApp extends Application {
     @Override

@@ -29,10 +29,10 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
+ * @author Group 3
+ *
  * Controller for the Registration screen.
  * Handles new user registration for Attendees and Presenters.
- * 
- * @author Group 3
  */
 public class RegistrationController {
 

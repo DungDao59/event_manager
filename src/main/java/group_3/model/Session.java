@@ -1,16 +1,18 @@
 package group_3.model;
 
-/*
- * Session within an event, scheduled at a specific date/time and venue.
- * Maintains ids of assigned presenters for lightweight linkage.
- * Author: <Tram Anh Tuan - s4075376>
- */
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** Simple Session class representing a specific session within an event. */
+/**
+ * @author Group 3
+ *
+ * Model class representing a session within an event,
+ * including its schedule, venue, capacity, and associated presenters.
+ */
+
+
 public class Session {
     private int sessionId;
     private int eventId; // Reference to parent event

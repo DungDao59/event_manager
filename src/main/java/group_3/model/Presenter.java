@@ -3,8 +3,12 @@ package group_3.model;
 import java.time.LocalDate;
 
 /**
- * @author Group21
+ * @author Group 3
+ *
+ * Model class representing a presenter with role-specific
+ * information and performance statistics.
  */
+
 public class Presenter extends Person {
 
     private String presenterRole;

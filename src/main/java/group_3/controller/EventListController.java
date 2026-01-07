@@ -35,9 +35,11 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 /**
- * Controller for Event List View (Pure JavaFX Implementation).
- * Displays events in a table with search, filter, and CRUD operations.
+ * @author Group 3
+ * Controller for displaying, filtering, and managing the event list
+ * in the JavaFX application.
  */
+
 public class EventListController {
     
     private EventDAO eventDAO;

@@ -13,10 +13,10 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * @author Group 3
+ *
  * Example usage of EventStatisticsService.
  * Demonstrates how to calculate revenue, attendance rates, and identify popular sessions.
- * 
- * @author Group 3
  */
 public class EventStatisticsExample {
     

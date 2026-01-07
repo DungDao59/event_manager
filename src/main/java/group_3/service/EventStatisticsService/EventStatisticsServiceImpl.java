@@ -16,10 +16,10 @@ import group_3.model.Ticket;
 import group_3.model.enums.TicketStatus;
 
 /**
+ * @author Group 3
+ *
  * Implementation of EventStatisticsService.
  * Provides business logic for calculating event statistics, revenue, and attendance metrics.
- * 
- * @author Group 3
  */
 public class EventStatisticsServiceImpl implements EventStatisticsService {
     

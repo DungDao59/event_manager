@@ -6,6 +6,8 @@ import java.sql.Connection;
 import java.sql.Statement;
 
 /**
+ * @author Group 3
+ *
  * Utility to load mock data SQL script into database.
  */
 public class LoadMockData {

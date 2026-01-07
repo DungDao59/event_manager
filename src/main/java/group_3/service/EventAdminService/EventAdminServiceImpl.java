@@ -37,11 +37,11 @@ import group_3.util.NotificationUtil;
 import group_3.util.QRCode;
 
 /**
+ * @author Group 3
+ *
  * Implementation of EventAdminService for managing Events and Sessions.
  * Provides CRUD operations, presenter assignment, ticket management,
  * and report generation capabilities.
- * 
- * @author Group 3
  */
 public class EventAdminServiceImpl implements EventAdminService {
     

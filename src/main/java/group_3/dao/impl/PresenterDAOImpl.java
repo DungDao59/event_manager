@@ -15,10 +15,11 @@ import group_3.model.enums.Role;
 import group_3.util.DatabaseConnection;
 
 /**
+ * @author Group 3
+ *
  * Implementation of PresenterDAO for database operations.
  * Handles both person and presenter table operations.
- * 
- * @author Group21
+ *
  */
 public class PresenterDAOImpl implements PresenterDAO {
 

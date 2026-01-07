@@ -1,11 +1,5 @@
 package group_3.dao.impl;
 
-/*
- * System History DAO for creating and finding activities
- *
- * Author: Group 3
- */
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -19,6 +13,14 @@ import java.util.List;
 import group_3.dao.SystemHistoryDAO;
 import group_3.model.SystemHistory;
 import group_3.util.DatabaseConnection;
+
+/**
+ * @author Group 3
+ *
+ * JDBC-based DAO implementation for recording system history
+ * and audit log entries in the database.
+ */
+
 
 public class SystemHistoryDaoImpl implements SystemHistoryDAO {
 

@@ -8,6 +8,14 @@ import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * @author Group 3
+ *
+ * Implementation of SystemHistoryService for logging actions
+ * and retrieving system history records with optional filters.
+ */
+
+
 public class SystemHistoryServiceImpl implements SystemHistoryService{
     private final SystemHistoryDAO systemHistoryDAO;
 

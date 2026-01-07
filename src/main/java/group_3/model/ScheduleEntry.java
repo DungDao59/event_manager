@@ -2,6 +2,14 @@ package group_3.model;
 
 import java.time.LocalDateTime;
 
+/**
+ * @author Group 3
+ *
+ * Model class representing a schedule entry that links a person
+ * to a session with a defined time period.
+ */
+
+
 public class ScheduleEntry {
     private int id;
     private int personID;

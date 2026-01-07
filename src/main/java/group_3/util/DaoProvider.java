@@ -14,6 +14,8 @@ import group_3.dao.impl.SessionDAOInMemory;
 import group_3.dao.impl.TicketDAOInMemory;
 
 /**
+ * @author Group 3
+ *
  * Simple provider to switch between real DAO implementations and in-memory mocks.
  * Toggle via env var MOCK_DATA=true or JVM arg -DmockData=true.
  */

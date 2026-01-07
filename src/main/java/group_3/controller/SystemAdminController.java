@@ -41,10 +41,10 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 
 /**
+ * @author Group 3
+ *
  * Controller for System Admin Dashboard.
  * Provides views for System History logs and User Management.
- * 
- * @author Group 3
  */
 public class SystemAdminController {
 

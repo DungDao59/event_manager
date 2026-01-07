@@ -39,9 +39,12 @@ import javafx.stage.Stage;
 import javafx.stage.FileChooser;
 
 /**
- * Controller for Event Detail View.
- * Pure JavaFX implementation without FXML.
+ * @author Group 3
+ *
+ * Controller for displaying event details and handling edit/delete actions
+ * in the JavaFX application.
  */
+
 public class EventDetailController {
     
     private Stage stage;

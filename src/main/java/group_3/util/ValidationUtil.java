@@ -4,6 +4,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.regex.*;
 
+/**
+ * @author Group 3
+ *
+ * Utility class for input validation, including null checks,
+ * blank checks, and pattern-based validation.
+ */
+
+
 public class ValidationUtil {
     private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_]{4,20}$");
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d).{8,}$");

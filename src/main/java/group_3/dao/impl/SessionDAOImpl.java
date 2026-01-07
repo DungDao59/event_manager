@@ -15,9 +15,10 @@ import group_3.model.Session;
 import group_3.util.DatabaseConnection;
 
 /**
+ * @author Group 3
+ *
  * Implementation of SessionDAO interface.
  * Handles database operations for Session entities.
- * Author: Tram Anh Tuan - s4075376 
  */
 public class SessionDAOImpl implements SessionDAO {
 

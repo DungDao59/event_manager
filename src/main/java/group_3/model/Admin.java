@@ -4,6 +4,13 @@ import group_3.model.enums.Role;
 
 import java.time.LocalDate;
 
+/**
+ * @author Group 3
+ *
+ * Model class representing an administrator user in the system.
+ */
+
+
 public class Admin extends Person {
 
     public Admin(){
