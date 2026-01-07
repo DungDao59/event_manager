@@ -1,11 +1,12 @@
 package group_3.service.EventStatisticsService;
 
 /**
+ *  @author Group 3
+ *
  * Quick Reference Guide for Event Statistics Service
  * 
  * This class serves as documentation for the statistics calculation formulas.
- * 
- * @author Group 3
+ *
  */
 public class StatisticsFormulas {
     

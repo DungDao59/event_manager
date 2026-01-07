@@ -2,6 +2,14 @@ package group_3.model;
 
 import group_3.model.enums.*;
 
+/**
+ * @author Group 3
+ *
+ * Model class representing a ticket for an event session,
+ * including type, price, status, and associated QR code.
+ */
+
+
 public class Ticket {
     private int ticketID;
     private int eventID;

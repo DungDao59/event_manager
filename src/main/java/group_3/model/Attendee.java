@@ -3,8 +3,11 @@ package group_3.model;
 import java.time.LocalDate;
 
 /**
- * @author Group21
+ * @author Group 3
+ *
+ * Model class representing an attendee user with associated history data.
  */
+
 public class Attendee extends Person {
 
     private String history; // JSONB

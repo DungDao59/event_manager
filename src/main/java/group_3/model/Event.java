@@ -1,13 +1,5 @@
 package group_3.model;
 
-/**
- * Event composed of one or more sessions occurring at a location and date/time.
- * Stores session ids rather than full session objects to keep the model light.
- *
- * Author: <Tram Anh Tuan - s4075376>
- */
-
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,9 +8,15 @@ import java.util.List;
 import group_3.model.enums.EventStatus;
 import group_3.model.enums.EventType;
 
-/** Simple Event class representing an event with multiple sessions. */
+/**
+ * @author Group 3
+ *
+ * Model class representing an event with its details, schedule,
+ * and associated sessions.
+ */
+
+
 public class Event {
-   
 
     private int eventId;
     private String name;

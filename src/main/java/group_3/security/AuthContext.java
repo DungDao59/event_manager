@@ -1,6 +1,13 @@
 package group_3.security;
 
 import group_3.model.Person;
+/**
+ * @author Group 3
+ *
+ * Utility class for managing the current authenticated user
+ * in the application context.
+ */
+
 
 public final class AuthContext {
     private static Person currentUser;

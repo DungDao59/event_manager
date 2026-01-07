@@ -2,6 +2,14 @@ package group_3.model;
 
 import java.time.*;
 
+/**
+ * @author Group 3
+ *
+ * Model class representing a system history record for auditing
+ * user actions and system operations.
+ */
+
+
 public class SystemHistory {
     private long logId;
     private OffsetDateTime timestamp;

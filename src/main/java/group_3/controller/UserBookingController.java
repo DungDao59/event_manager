@@ -22,6 +22,14 @@ import javafx.stage.Stage;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+/**
+ * @author Group 3
+ *
+ * Controller for event booking, session selection, and ticket registration
+ * for logged-in users in the JavaFX application.
+ */
+
+
 public class UserBookingController {
     private final EventAdminService eventService = new EventAdminServiceImpl();
     private final EventAdminService sessionService = new EventAdminServiceImpl();

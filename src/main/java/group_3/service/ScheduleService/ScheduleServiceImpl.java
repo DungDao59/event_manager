@@ -10,6 +10,14 @@ import group_3.model.Session;
 import java.time.*;
 import java.util.*;
 
+/**
+ * @author Group 3
+ *
+ * Implementation of ScheduleService, providing schedule management
+ * and conflict detection for users.
+ */
+
+
 public class ScheduleServiceImpl implements ScheduleService {
 
     private final ScheduleDAO scheduleDAO = new ScheduleDAOImpl();

@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * @author Group 3
+ *
  * Data Access Object interface for Event entity.
  * Provides CRUD operations for events.
- * 
- * Author: Group 3
  */
 public interface EventDAO {
 

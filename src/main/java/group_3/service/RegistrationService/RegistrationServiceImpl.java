@@ -21,6 +21,14 @@ import group_3.service.SystemHistoryService.SystemHistoryServiceImpl;
 import group_3.util.NotificationUtil;
 import group_3.util.QRCode;
 
+/**
+ * @author Group 3
+ *
+ * Implementation of RegistrationService, handling attendee registration,
+ * schedule conflict checking, and ticket management.
+ */
+
+
 public class RegistrationServiceImpl implements RegistrationService{
     private final TicketDAO ticketDAO =  new TicketDAOImpl();
     private final ScheduleDAO scheduleDAO = new ScheduleDAOImpl();

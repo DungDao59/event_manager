@@ -17,6 +17,14 @@ import group_3.model.Presenter;
 import group_3.model.enums.Role;
 import group_3.util.DatabaseConnection;
 
+/**
+ * @author Group 3
+ *
+ * JDBC-based DAO implementation for accessing and managing Person data
+ * in the database.
+ */
+
+
 public class PersonDAOImpl implements PersonDAO {
 
     private Connection getConnection() throws Exception {

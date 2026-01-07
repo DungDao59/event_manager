@@ -67,11 +67,10 @@ import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
 /**
- * Controller for System Admin Dashboard.
- * Provides CRUD operations on all entities and access to reports/statistics.
- * Also includes complete system operation history viewing.
- * 
  * @author Group 3
+ *
+ * Controller for System Admin Dashboard.
+ * Provides views for System History logs and User Management.
  */
 public class SystemAdminController {
 

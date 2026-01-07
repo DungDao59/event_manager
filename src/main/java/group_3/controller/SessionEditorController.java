@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
+ * @author Group 3
+ *
  * Controller for Session Editor with Presenter Assignment.
  * Allows editing session details and assigning/removing presenters.
  */

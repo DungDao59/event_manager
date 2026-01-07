@@ -2,6 +2,14 @@ package group_3.util;
 
 import java.security.MessageDigest;
 
+/**
+ * @author Group 3
+ *
+ * Utility class for hashing passwords and verifying them,
+ * supporting SHA-256 and legacy/test password formats.
+ */
+
+
 public class PasswordUtil {
 
     public static String hash(String password) {

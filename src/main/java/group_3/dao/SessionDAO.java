@@ -5,10 +5,11 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ *
+ * @author Group 3
+ *
  * Data Access Object interface for Session entity.
  * Provides CRUD operations for sessions.
- * 
- * Author: Group 3
  */
 public interface SessionDAO {
 

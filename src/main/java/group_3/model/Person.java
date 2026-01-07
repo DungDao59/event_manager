@@ -4,8 +4,12 @@ import java.time.LocalDate;
 import group_3.model.enums.Role;
 
 /**
- * @author Group21
+ * @author Group 3
+ *
+ * Abstract base class representing a person in the system,
+ * providing common attributes for all user types.
  */
+
 public abstract class Person {
 
     protected int id;

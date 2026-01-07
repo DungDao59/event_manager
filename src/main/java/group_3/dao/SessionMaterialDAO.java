@@ -6,10 +6,10 @@ import java.util.Optional;
 import group_3.model.SessionMaterial;
 
 /**
+ * @author Group 3
+ *
  * Data Access Object interface for SessionMaterial entity.
  * Provides CRUD operations for session materials.
- * 
- * @author Group 3
  */
 public interface SessionMaterialDAO {
 

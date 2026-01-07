@@ -11,10 +11,10 @@ import group_3.service.SystemHistoryService.SystemHistoryService;
 import group_3.service.SystemHistoryService.SystemHistoryServiceImpl;
 
 /**
+ * @author Group 3
+ *
  * Implementation of UserService for managing all Person types.
  * Provides CRUD operations for Attendees, Presenters, and generic Person objects.
- * 
- * @author Group21
  */
 public class UserServiceImpl implements UserService {
     private final PersonDAO personDAO;

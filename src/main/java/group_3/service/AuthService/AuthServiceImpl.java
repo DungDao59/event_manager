@@ -13,8 +13,9 @@ import group_3.util.NotificationUtil;
 import group_3.util.PasswordUtil;
 
 /**
+ * @author Group 3
+ *
  * Implementation of AuthService for authentication operations.
- * @author Group3
  */
 public class AuthServiceImpl implements AuthService {
 

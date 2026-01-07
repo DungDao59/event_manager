@@ -6,10 +6,10 @@ import java.util.Optional;
 import group_3.model.Attendee;
 
 /**
+ * @author Group 3
+ *
  * AttendeeService provides operations for managing Attendees.
  * Handles CRUD operations and personal information updates for Attendees.
- * 
- * @author Group21
  */
 public interface AttendeeService {
     

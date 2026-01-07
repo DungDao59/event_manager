@@ -1,11 +1,15 @@
 package group_3.util;
 
-/*
-    @author group3
- */
-
 import group_3.model.Ticket;
 import javafx.scene.image.Image;
+
+/**
+ * @author Group 3
+ *
+ * Utility class for generating QR code payloads and images
+ * for tickets using an external QR code service.
+ */
+
 
 public final class QRCode {
     private QRCode(){}

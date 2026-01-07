@@ -6,10 +6,10 @@ import java.util.Optional;
 import java.util.Map;
 
 /**
+ * @author Group 3
+ *
  * PresenterService provides operations for managing Presenters and calculating their statistics.
  * Handles both CRUD operations and statistics calculation (sessions presented, ratings, performance metrics).
- * 
- * @author Group21
  */
 public interface PresenterService {
     

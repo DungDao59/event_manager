@@ -23,10 +23,10 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 /**
+ * @author Group 3
+ *
  * Controller for the Login screen.
  * Handles user authentication and navigation to registration.
- * 
- * @author Group 3
  */
 public class LoginController {
 

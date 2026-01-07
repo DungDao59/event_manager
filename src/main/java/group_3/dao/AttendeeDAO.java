@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * @author Group 3
+ *
  * Data Access Object interface for Attendee entity.
  * Handles database operations for the attendee table.
- * 
- * @author Group21
  */
 public interface AttendeeDAO {
     

@@ -33,9 +33,11 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 /**
- * Controller for Event Form (Create/Edit).
- * Pure JavaFX implementation without FXML.
+ * @author Group 3
+ * Controller for creating and editing events, handling event form input
+ * and validation in the JavaFX application.
  */
+
 public class EventFormController {
     
     private Stage stage;

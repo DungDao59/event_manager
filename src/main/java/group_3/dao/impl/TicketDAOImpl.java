@@ -9,6 +9,14 @@ import group_3.util.DatabaseConnection;
 import java.sql.*;
 import java.util.ArrayList;
 
+/**
+ * @author Group 3
+ *
+ * JDBC-based DAO implementation for creating and managing
+ * Ticket records in the database.
+ */
+
+
 public class TicketDAOImpl implements TicketDAO {
     @Override
     public int create(Ticket ticket) { //create new row in ticket table

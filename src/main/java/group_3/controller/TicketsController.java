@@ -20,6 +20,13 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
+/**
+ * @author Group 3
+ *
+ * Controller for displaying purchased tickets and generating QR codes
+ * for user entry in the JavaFX application.
+ */
+
 public class TicketsController {
     private final RegistrationService registrationService = new RegistrationServiceImpl();
 

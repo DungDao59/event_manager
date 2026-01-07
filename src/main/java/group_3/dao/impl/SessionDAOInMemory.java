@@ -9,7 +9,14 @@ import group_3.dao.SessionDAO;
 import group_3.model.Session;
 import group_3.util.MockData;
 
-/** In-memory implementation of SessionDAO for mock mode. */
+/**
+ * @author Group 3
+ *
+ * In-memory DAO implementation for managing Session data
+ * using mock storage for testing and development.
+ */
+
+
 public class SessionDAOInMemory implements SessionDAO {
     @Override
     public void create(Session session) {
@@ -73,5 +80,5 @@ public class SessionDAOInMemory implements SessionDAO {
             return (int) MockData.SESSIONS.values().stream()
                     .filter(s -> s.getEventId() == eventId)
                     .count();
-        }
     }
+}

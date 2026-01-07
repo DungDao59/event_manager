@@ -16,6 +16,8 @@ import group_3.model.enums.TicketStatus;
 import group_3.model.enums.TicketType;
 
 /**
+ * @author Group 3
+ *
  * Shared in-memory mock storage for DAOInMemory classes.
  */
 public final class MockData {

@@ -8,6 +8,14 @@ import group_3.dao.EventDAO;
 import group_3.model.Event;
 import group_3.util.MockData;
 
+/**
+ * @author Group 3
+ *
+ * In-memory DAO implementation for managing Event data
+ * using mock storage for testing and development.
+ */
+
+
 /** In-memory implementation of EventDAO for mock mode. */
 public class EventDAOInMemory implements EventDAO {
 

@@ -4,12 +4,26 @@ import java.util.ArrayList;
 
 import group_3.model.Ticket;
 
+/**
+ * @author Group 3
+ *
+ * DAO interface defining operations for accessing and managing Ticket data.
+ */
+
+
 public interface TicketDAO {
+
     int create(Ticket ticket);
+
     void update(Ticket ticket);
+
     boolean delete(int id);
+
     ArrayList<Ticket> findAll();
+
     Ticket findById(int id);
+
     ArrayList<Ticket> findTicketByAttendeeId(int id);
+
     ArrayList<Ticket> findTicketBySessionId(int id);
 }

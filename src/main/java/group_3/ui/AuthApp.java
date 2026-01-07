@@ -8,10 +8,10 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 /**
+ * @author Group 3
+ *
  * Main JavaFX Application with Authentication.
  * Starts with Login screen and navigates based on user role.
- * 
- * @author Group 3
  */
 public class AuthApp extends Application {
     

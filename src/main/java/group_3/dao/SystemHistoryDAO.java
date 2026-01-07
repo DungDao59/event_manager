@@ -5,6 +5,14 @@ import java.util.List;
 
 import group_3.model.SystemHistory;
 
+/**
+ * @author Group 3
+ *
+ * DAO interface defining operations for accessing and querying
+ * system history and audit log records.
+ */
+
+
 public interface SystemHistoryDAO {
     void create(SystemHistory history);
 

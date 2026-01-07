@@ -7,10 +7,10 @@ import group_3.model.Person;
 import group_3.model.enums.Role;
 
 /**
+ * @author Group 3
+ *
  * UserService provides CRUD operations for all Person types.
  * This is primarily used by System Admin for user management.
- * 
- * @author Group21
  */
 public interface UserService {
     Person createPerson( Person person );
