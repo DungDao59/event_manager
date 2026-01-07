@@ -407,11 +407,11 @@ public class AttendeeDashboardController {
         filterBar.setAlignment(Pos.CENTER_LEFT);
 
         ComboBox<String> typeFilter = new ComboBox<>();
-        typeFilter.getItems().addAll("All Types", "EARLYBIRD", "GENERAL", "VIP", "STUDENT");
+        typeFilter.getItems().addAll("All Types", "EARLYBIRD", "GENERAL", "VIP");
         typeFilter.setValue("All Types");
 
         ComboBox<String> statusFilter = new ComboBox<>();
-        statusFilter.getItems().addAll("All Status", "ACTIVE", "USED", "CANCELLED", "EXPIRED");
+        statusFilter.getItems().addAll("All Status", "ACTIVE", "USED", "CANCELLED");
         statusFilter.setValue("All Status");
 
         Button filterBtn = new Button("Apply Filter");
