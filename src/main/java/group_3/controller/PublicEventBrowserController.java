@@ -119,7 +119,7 @@ public class PublicEventBrowserController {
         titleLabel.setFont(new Font("System Bold", 28));
         titleLabel.setStyle("-fx-text-fill: white;");
 
-        Label subtitleLabel = new Label("Browse upcoming events and presenters");
+        Label subtitleLabel = new Label("Browse scheduled events and presenters");
         subtitleLabel.setStyle("-fx-text-fill: #bdc3c7; -fx-font-size: 14px;");
 
         VBox titleBox = new VBox(5);
@@ -172,7 +172,7 @@ public class PublicEventBrowserController {
 
         statusFilterCombo = new ComboBox<>();
         statusFilterCombo.setPromptText("Status");
-        statusFilterCombo.getItems().addAll("All Statuses", "UPCOMING", "ONGOING", "COMPLETED", "CANCELLED");
+        statusFilterCombo.getItems().addAll("All Statuses", "SCHEDULED", "ONGOING", "COMPLETED", "CANCELLED");
         statusFilterCombo.setValue("All Statuses");
         statusFilterCombo.setPrefWidth(150);
         statusFilterCombo.setOnAction(e -> applyFilters());
@@ -275,7 +275,7 @@ public class PublicEventBrowserController {
                 } else {
                     setText(status);
                     switch (status) {
-                        case "UPCOMING" -> setStyle("-fx-text-fill: #27ae60; -fx-font-weight: bold;");
+                        case "SCHEDULED" -> setStyle("-fx-text-fill: #27ae60; -fx-font-weight: bold;");
                         case "ONGOING" -> setStyle("-fx-text-fill: #3498db; -fx-font-weight: bold;");
                         case "COMPLETED" -> setStyle("-fx-text-fill: #7f8c8d;");
                         case "CANCELLED" -> setStyle("-fx-text-fill: #e74c3c;");
