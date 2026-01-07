@@ -100,7 +100,6 @@ public class DatabaseConnection {
             loadInitialData();
         } catch (SQLException e) {
             System.err.println("[Error] Database setup failed: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
