@@ -94,7 +94,6 @@
 
     <build>
         <plugins>
-
             <!-- JavaFX Maven Plugin -->
             <plugin>
                 <groupId>org.openjfx</groupId>

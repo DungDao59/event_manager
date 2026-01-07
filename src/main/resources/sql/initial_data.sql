@@ -21,18 +21,15 @@ INSERT INTO person (username, password, full_name, date_of_birth, contact_inform
 ('admin_mallory', 'pass123', 'Mallory Admin', '1983-02-14', '{"email": "mallory@event.com"}', 'EVENT_ADMIN'),
 ('admin_trent', 'pass123', 'Trent Admin', '1990-03-03', '{"email": "trent@event.com"}', 'EVENT_ADMIN'),
 ('sys_root', 'pass123', 'Root User', '1970-01-01', '{"email": "root@system.com"}', 'SYSTEM_ADMIN'),
-('sys_dev', 'pass123', 'Dev Ops', '1992-05-05', '{"email": "dev@system.com"}', 'SYSTEM_ADMIN')
-ON CONFLICT (username) DO NOTHING;
+('sys_dev', 'pass123', 'Dev Ops', '1992-05-05', '{"email": "dev@system.com"}', 'SYSTEM_ADMIN');
 
 -- 2. ATTENDEE DATA
 INSERT INTO attendee (person_id, history)
-SELECT id, '{"joined_events": []}' FROM person WHERE role = 'ATTENDEE'
-ON CONFLICT (person_id) DO NOTHING;
+SELECT id, '{"joined_events": []}' FROM person WHERE role = 'ATTENDEE';
 
 -- 3. PRESENTER DATA
 INSERT INTO presenter (person_id, presenter_role, statistics)
-SELECT id, 'Guest Speaker', '{"rating": 5.0}' FROM person WHERE role = 'PRESENTER'
-ON CONFLICT (person_id) DO NOTHING;
+SELECT id, 'Guest Speaker', '{"rating": 5.0}' FROM person WHERE role = 'PRESENTER';
 
 -- 4. EVENT DATA (20 Records)
 INSERT INTO event (name, type, start_date, end_date, location, duration, status) VALUES
@@ -58,50 +55,67 @@ INSERT INTO event (name, type, start_date, end_date, location, duration, status)
 ('LegalTech Meetup', 'Conference', '2026-10-10', '2026-10-11', 'Sydney', 2, 'SCHEDULED');
 
 -- 5. SESSION DATA
-INSERT INTO session (event_id, title, description, scheduled_date, start_time, end_time, venue, capacity)
+INSERT INTO session (
+    event_id,
+    title,
+    description,
+    start_time,
+    end_time,
+    venue,
+    capacity
+)
 SELECT
     event_id,
     'Session Title ' || event_id,
     'Detailed description for session ' || event_id,
-    start_date,
-    '09:00:00',
-    '11:00:00',
+    start_date + TIME '09:00:00',
+    start_date + TIME '11:00:00',
     'Room ' || event_id,
     50
 FROM event;
+
 
 -- 6. SESSION MATERIAL
 INSERT INTO session_material (session_id, title, description, file_type, content_url)
 SELECT session_id, 'Resource ' || session_id, 'PDF Notes', 'PDF', 'http://example.com' FROM session;
 
--- 7. SESSION PRESENTER
+-- 7. SESSION PRESENTER (Maps the 5 presenters to 20 sessions)
 INSERT INTO session_presenter (session_id, presenter_id)
 SELECT s.session_id, p.person_id
 FROM session s, presenter p
 WHERE p.person_id = (SELECT person_id FROM presenter OFFSET (s.session_id % 5) LIMIT 1);
 
--- 8. TICKET DATA (Only for valid attendees: person IDs 1-10)
-INSERT INTO ticket (attendee_id, event_id, session_id, type, price, status, qr_code_data) VALUES
-(1, 1, 1, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":1,"attendeeId":1,"eventId":1,"sessionId":1}'),
-(2, 1, 1, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":2,"attendeeId":2,"eventId":1,"sessionId":1}'),
-(3, 2, 2, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":3,"attendeeId":3,"eventId":2,"sessionId":2}'),
-(4, 2, 2, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":4,"attendeeId":4,"eventId":2,"sessionId":2}'),
-(5, 3, 3, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":5,"attendeeId":5,"eventId":3,"sessionId":3}'),
-(6, 3, 3, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":6,"attendeeId":6,"eventId":3,"sessionId":3}'),
+-- 8. TICKET DATA
+INSERT INTO ticket (
+    attendee_id,
+    event_id,
+    session_id,
+    type,
+    price,
+    status,
+    qr_code_data
+)
+VALUES
+(1, 4, 4, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":1,"attendeeId":1,"eventId":4,"sessionId":4}'),
+(2, 4, 4, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":2,"attendeeId":2,"eventId":4,"sessionId":4}'),
+(3, 4, 4, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":3,"attendeeId":3,"eventId":4,"sessionId":4}'),
+(4, 4, 4, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":4,"attendeeId":4,"eventId":4,"sessionId":4}'),
+(5, 4, 4, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":5,"attendeeId":5,"eventId":4,"sessionId":4}'),
+(6, 4, 4, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":6,"attendeeId":6,"eventId":4,"sessionId":4}'),
 (7, 4, 4, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":7,"attendeeId":7,"eventId":4,"sessionId":4}'),
 (8, 4, 4, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":8,"attendeeId":8,"eventId":4,"sessionId":4}'),
-(9, 5, 5, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":9,"attendeeId":9,"eventId":5,"sessionId":5}'),
-(10, 5, 5, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":10,"attendeeId":10,"eventId":5,"sessionId":5}'),
-(1, 6, 6, 'VIP', 120.00, 'ACTIVE', '{"ticketId":11,"attendeeId":1,"eventId":6,"sessionId":6}'),
-(2, 7, 7, 'VIP', 120.00, 'ACTIVE', '{"ticketId":12,"attendeeId":2,"eventId":7,"sessionId":7}'),
-(3, 8, 8, 'VIP', 120.00, 'ACTIVE', '{"ticketId":13,"attendeeId":3,"eventId":8,"sessionId":8}'),
-(4, 9, 9, 'VIP', 120.00, 'ACTIVE', '{"ticketId":14,"attendeeId":4,"eventId":9,"sessionId":9}'),
-(5, 10, 10, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":15,"attendeeId":5,"eventId":10,"sessionId":10}'),
-(6, 11, 11, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":16,"attendeeId":6,"eventId":11,"sessionId":11}'),
-(7, 12, 12, 'VIP', 120.00, 'ACTIVE', '{"ticketId":17,"attendeeId":7,"eventId":12,"sessionId":12}'),
-(8, 13, 13, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":18,"attendeeId":8,"eventId":13,"sessionId":13}'),
-(9, 14, 14, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":19,"attendeeId":9,"eventId":14,"sessionId":14}'),
-(10, 15, 15, 'VIP', 120.00, 'ACTIVE', '{"ticketId":20,"attendeeId":10,"eventId":15,"sessionId":15}');
+(9, 4, 4, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":9,"attendeeId":9,"eventId":4,"sessionId":4}'),
+(1, 4, 4, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":10,"attendeeId":10,"eventId":4,"sessionId":4}'),
+(2, 4, 4, 'VIP', 120.00, 'ACTIVE', '{"ticketId":11,"attendeeId":11,"eventId":4,"sessionId":4}'),
+(3, 4, 4, 'VIP', 120.00, 'ACTIVE', '{"ticketId":12,"attendeeId":12,"eventId":4,"sessionId":4}'),
+(4, 4, 4, 'VIP', 120.00, 'ACTIVE', '{"ticketId":13,"attendeeId":13,"eventId":4,"sessionId":4}'),
+(5, 4, 4, 'VIP', 120.00, 'ACTIVE', '{"ticketId":14,"attendeeId":14,"eventId":4,"sessionId":4}'),
+(6, 4, 4, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":15,"attendeeId":15,"eventId":4,"sessionId":4}'),
+(7, 4, 4, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":16,"attendeeId":16,"eventId":4,"sessionId":4}'),
+(8, 4, 4, 'VIP', 120.00, 'ACTIVE', '{"ticketId":17,"attendeeId":17,"eventId":4,"sessionId":4}'),
+(9, 4, 4, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":18,"attendeeId":18,"eventId":4,"sessionId":4}'),
+(10, 4, 4, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":19,"attendeeId":19,"eventId":4,"sessionId":4}'),
+(2, 4, 4, 'VIP', 120.00, 'ACTIVE', '{"ticketId":20,"attendeeId":20,"eventId":4,"sessionId":4}');
 
 -- 9. SCHEDULE ENTRY
 INSERT INTO schedule_entry (person_id, session_id, start_time, end_time)
