@@ -13,10 +13,10 @@ import group_3.dao.SessionDAO;
 import group_3.dao.TicketDAO;
 import group_3.model.Event;
 import group_3.model.EventStatistics;
-import group_3.service.EventStatisticsService.EventStatisticsService;
-import group_3.service.EventStatisticsService.EventStatisticsServiceImpl;
 import group_3.service.EventAdminService.EventAdminService;
 import group_3.service.EventAdminService.EventAdminServiceImpl;
+import group_3.service.EventStatisticsService.EventStatisticsService;
+import group_3.service.EventStatisticsService.EventStatisticsServiceImpl;
 import group_3.util.DaoProvider;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -35,8 +35,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
-import javafx.stage.Stage;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 
 /**
  * Controller for Event Detail View.

@@ -153,19 +153,19 @@ public class LoginController {
     }
 
     private void loadPresenterDashboard(Stage stage) {
-        // Load Event Management view for presenters
-        EventListController controller = new EventListController();
+        // Load Presenter Dashboard
+        PresenterDashboardController controller = new PresenterDashboardController();
         stage.setScene(controller.getScene());
-        stage.setTitle("Event Management System");
+        stage.setTitle("Presenter Dashboard");
         stage.setWidth(1200);
         stage.setHeight(800);
     }
 
     private void loadAttendeeDashboard(Stage stage) {
-        // Load Event Management view for attendees
-        EventListController controller = new EventListController();
+        // Load Attendee Dashboard
+        AttendeeDashboardController controller = new AttendeeDashboardController();
         stage.setScene(controller.getScene());
-        stage.setTitle("Event Management System");
+        stage.setTitle("Attendee Dashboard");
         stage.setWidth(1200);
         stage.setHeight(800);
     }

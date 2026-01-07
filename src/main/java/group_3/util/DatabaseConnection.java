@@ -20,9 +20,11 @@ public class DatabaseConnection {
     private static final String URL  = dotenv.get("DB_URL");
     private static final String USER = dotenv.get("DB_USER");
     private static final String PASS = dotenv.get("DB_PASS");
-    
-    private static Connection cachedConnection = null;
 
+    /**
+     * Get a new database connection. Each call returns a fresh connection.
+     * Callers are responsible for closing the connection when done.
+     */
     public static Connection getConnection() throws SQLException {
         try {
             Class.forName("org.postgresql.Driver");
@@ -30,12 +32,7 @@ public class DatabaseConnection {
             throw new SQLException("PostgreSQL JDBC Driver not found", e);
         }
         
-        if (cachedConnection != null && !cachedConnection.isClosed()) {
-            return cachedConnection;
-        }
-        
-        cachedConnection = DriverManager.getConnection(URL, USER, PASS);
-        return cachedConnection;
+        return DriverManager.getConnection(URL, USER, PASS);
     }
 
     private static boolean isDatabaseFullyInitialized() {

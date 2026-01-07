@@ -2,15 +2,17 @@ package group_3.util;
 
 import group_3.dao.EventDAO;
 import group_3.dao.PresenterDAO;
+import group_3.dao.ScheduleDAO;
 import group_3.dao.SessionDAO;
 import group_3.dao.TicketDAO;
 import group_3.dao.impl.EventDAOImpl;
-import group_3.dao.impl.PresenterDAOImpl;
-import group_3.dao.impl.SessionDAOImpl;
-import group_3.dao.impl.TicketDAOImpl;
 import group_3.dao.impl.EventDAOInMemory;
+import group_3.dao.impl.PresenterDAOImpl;
 import group_3.dao.impl.PresenterDAOInMemory;
+import group_3.dao.impl.ScheduleDAOImpl;
+import group_3.dao.impl.SessionDAOImpl;
 import group_3.dao.impl.SessionDAOInMemory;
+import group_3.dao.impl.TicketDAOImpl;
 import group_3.dao.impl.TicketDAOInMemory;
 
 /**
@@ -46,6 +48,10 @@ public final class DaoProvider {
 
     public static PresenterDAO getPresenterDAO() {
         return isMockMode() ? new PresenterDAOInMemory() : new PresenterDAOImpl();
+    }
+
+    public static ScheduleDAO getScheduleDAO() {
+        return new ScheduleDAOImpl();
     }
 }
 
