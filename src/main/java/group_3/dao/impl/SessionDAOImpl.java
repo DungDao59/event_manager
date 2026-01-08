@@ -64,7 +64,7 @@ public class SessionDAOImpl implements SessionDAO {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                return Optional.of(mapRowToSession(rs));
+                return Optional.of(mapRowToSession(rs, conn));
             }
         } catch (Exception e) {
             throw new RuntimeException("Error finding session by ID: " + e.getMessage(), e);
@@ -82,7 +82,7 @@ public class SessionDAOImpl implements SessionDAO {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                return Optional.of(mapRowToSession(rs));
+                return Optional.of(mapRowToSession(rs, conn));
             }
         } catch (Exception e) {
             throw new RuntimeException("Error finding session by title: " + e.getMessage(), e);
@@ -100,7 +100,7 @@ public class SessionDAOImpl implements SessionDAO {
              ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
-                sessions.add(mapRowToSession(rs));
+                sessions.add(mapRowToSession(rs, conn));
             }
         } catch (Exception e) {
             throw new RuntimeException("Error finding all sessions: " + e.getMessage(), e);
@@ -120,7 +120,7 @@ public class SessionDAOImpl implements SessionDAO {
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                sessions.add(mapRowToSession(rs));
+                sessions.add(mapRowToSession(rs, conn));
             }
         } catch (Exception e) {
             throw new RuntimeException("Error finding sessions by event ID: " + e.getMessage(), e);
@@ -220,7 +220,7 @@ public class SessionDAOImpl implements SessionDAO {
      * @return a Session object
      * @throws SQLException if there's a SQL error
      */
-    private Session mapRowToSession(ResultSet rs) throws SQLException {
+    private Session mapRowToSession(ResultSet rs, Connection conn) throws SQLException {
         int id = rs.getInt("session_id");
         int eventId = rs.getInt("event_id");
         String title = rs.getString("title");
@@ -233,7 +233,7 @@ public class SessionDAOImpl implements SessionDAO {
         LocalDateTime startTime = startTimeSql != null ? startTimeSql.toLocalDateTime() : LocalDateTime.now();
         LocalDateTime endTime = endTimeSql != null ? endTimeSql.toLocalDateTime() : startTime.plusHours(1);
 
-        return new Session(
+        Session session = new Session(
                 id,
                 eventId,
                 title,
@@ -243,6 +243,37 @@ public class SessionDAOImpl implements SessionDAO {
                 venue,
                 capacity
         );
+        
+        // Load presenter IDs from session_presenter table
+        List<Integer> presenterIds = loadPresenterIds(id, conn);
+        session.setPresenterIds(presenterIds);
+        
+        return session;
+    }
+    
+    /**
+     * Load presenter IDs for a session from the session_presenter table
+     * @param sessionId the session ID
+     * @param conn the database connection
+     * @return list of presenter IDs
+     */
+    private List<Integer> loadPresenterIds(int sessionId, Connection conn) {
+        List<Integer> presenterIds = new ArrayList<>();
+        String sql = "SELECT presenter_id FROM session_presenter WHERE session_id = ?";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, sessionId);
+            ResultSet rs = ps.executeQuery();
+            
+            while (rs.next()) {
+                presenterIds.add(rs.getInt("presenter_id"));
+            }
+        } catch (SQLException e) {
+            // Log but don't fail - session can still be returned without presenter IDs
+            System.err.println("Warning: Could not load presenter IDs for session " + sessionId + ": " + e.getMessage());
+        }
+        
+        return presenterIds;
     }
 }
 

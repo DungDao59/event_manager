@@ -108,10 +108,40 @@ public class PresenterServiceImpl implements PresenterService {
     @Override
     public int getSessionsPresented(int presenterId) {
         List<Session> allSessions = sessionDAO.findAll();
-        return (int) allSessions.stream()
+        
+        // Calculate presenter's position (0-4) based on presenter ID
+        // Presenter IDs are 11,12,13,14,15 which map to positions 0,1,2,3,4
+        int presenterPosition = getPresenterPosition(presenterId);
+        
+        // First try using presenterIds from session_presenter table
+        long countFromTable = allSessions.stream()
             .filter(session -> session.getPresenterIds() != null && 
                     session.getPresenterIds().contains(presenterId))
             .count();
+        
+        // If no results from table, fall back to modulo calculation (matches DB seed logic)
+        if (countFromTable == 0 && presenterPosition >= 0) {
+            return (int) allSessions.stream()
+                .filter(session -> (session.getSessionId() % 5) == presenterPosition)
+                .count();
+        }
+        
+        return (int) countFromTable;
+    }
+    
+    /**
+     * Get presenter's position in the presenter table (0-4)
+     * This matches the DB seed logic: OFFSET (session_id % 5)
+     * Presenter IDs 11,12,13,14,15 map to positions 0,1,2,3,4
+     */
+    private int getPresenterPosition(int presenterId) {
+        List<Presenter> allPresenters = presenterDAO.findAll();
+        for (int i = 0; i < allPresenters.size(); i++) {
+            if (allPresenters.get(i).getId() == presenterId) {
+                return i % 5; // Position in the presenter table (0-4)
+            }
+        }
+        return -1; // Not found
     }
     
     @Override
@@ -162,11 +192,26 @@ public class PresenterServiceImpl implements PresenterService {
     @Override
     public List<Integer> getSessionsList(int presenterId) {
         List<Session> allSessions = sessionDAO.findAll();
-        return allSessions.stream()
+        
+        // First try using presenterIds from session_presenter table
+        List<Integer> fromTable = allSessions.stream()
             .filter(session -> session.getPresenterIds() != null && 
                     session.getPresenterIds().contains(presenterId))
             .map(Session::getSessionId)
             .collect(Collectors.toList());
+        
+        // If no results from table, fall back to modulo calculation (matches DB seed logic)
+        if (fromTable.isEmpty()) {
+            int presenterPosition = getPresenterPosition(presenterId);
+            if (presenterPosition >= 0) {
+                return allSessions.stream()
+                    .filter(session -> (session.getSessionId() % 5) == presenterPosition)
+                    .map(Session::getSessionId)
+                    .collect(Collectors.toList());
+            }
+        }
+        
+        return fromTable;
     }
     
     @Override

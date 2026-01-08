@@ -6,16 +6,21 @@ import java.io.PrintWriter;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import group_3.dao.SessionDAO;
+import group_3.dao.TicketDAO;
 import group_3.dao.impl.PersonDAOImpl;
+import group_3.model.Event;
 import group_3.model.Person;
 import group_3.model.Presenter;
 import group_3.model.Session;
 import group_3.model.SessionMaterial;
+import group_3.model.Ticket;
+import group_3.model.enums.TicketStatus;
 import group_3.security.AuthContext;
 import group_3.service.EventAdminService.EventAdminService;
 import group_3.service.EventAdminService.EventAdminServiceImpl;
@@ -86,6 +91,7 @@ public class PresenterDashboardController {
     private final EventAdminService eventService;
     private final UserService userService;
     private final SessionDAO sessionDAO;
+    private final TicketDAO ticketDAO;
 
     private Scene scene;
     private Person currentUser;
@@ -128,6 +134,7 @@ public class PresenterDashboardController {
         this.eventService = new EventAdminServiceImpl();
         this.userService = new UserServiceImpl(new PersonDAOImpl());
         this.sessionDAO = DaoProvider.getSessionDAO();
+        this.ticketDAO = DaoProvider.getTicketDAO();
         this.currentUser = AuthContext.getCurrentUser();
         
         // Load presenter data
@@ -639,26 +646,54 @@ public class PresenterDashboardController {
         Object avg = stats.get("average_attendance");
         avgAttendanceValue.setText(avg != null ? String.format("%.1f", avg) : "0");
 
-        // Update pie chart with sample data
+        // Update pie chart with real event type distribution
         eventTypeChart.getData().clear();
-        eventTypeChart.getData().addAll(
-            new PieChart.Data("Conference", 40),
-            new PieChart.Data("Workshop", 30),
-            new PieChart.Data("Seminar", 20),
-            new PieChart.Data("Summit", 10)
-        );
+        Map<String, Integer> eventTypeCount = new HashMap<>();
+        
+        for (Session session : sessionList) {
+            try {
+                Optional<Event> eventOpt = eventService.getEventById(session.getEventId());
+                if (eventOpt.isPresent()) {
+                    String eventType = eventOpt.get().getType() != null ? 
+                        eventOpt.get().getType().toString() : "Other";
+                    eventTypeCount.put(eventType, eventTypeCount.getOrDefault(eventType, 0) + 1);
+                }
+            } catch (Exception e) {
+                // Skip if event not found
+            }
+        }
+        
+        if (eventTypeCount.isEmpty()) {
+            eventTypeChart.getData().add(new PieChart.Data("No Data", 1));
+        } else {
+            for (Map.Entry<String, Integer> entry : eventTypeCount.entrySet()) {
+                eventTypeChart.getData().add(new PieChart.Data(entry.getKey(), entry.getValue()));
+            }
+        }
 
-        // Update bar chart
+        // Update bar chart with real audience data per session
         audienceChart.getData().clear();
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName("Audience");
         
         int sessionCount = 0;
         for (Session session : sessionList) {
-            series.getData().add(new XYChart.Data<>("S" + session.getSessionId(), 
-                30 + (int)(Math.random() * 20))); // Sample data
+            // Get actual ticket count for this session
+            int audienceSize = 0;
+            try {
+                ArrayList<Ticket> tickets = ticketDAO.findTicketBySessionId(session.getSessionId());
+                audienceSize = (int) tickets.stream()
+                    .filter(t -> t.getStatus() == TicketStatus.USED || t.getStatus() == TicketStatus.ACTIVE)
+                    .count();
+            } catch (Exception e) {
+                // Use 0 if error
+            }
+            
+            String sessionLabel = session.getTitle().length() > 15 ? 
+                session.getTitle().substring(0, 12) + "..." : session.getTitle();
+            series.getData().add(new XYChart.Data<>(sessionLabel, audienceSize));
             sessionCount++;
-            if (sessionCount >= 5) break; // Limit to 5 sessions
+            if (sessionCount >= 5) break; // Limit to 5 sessions for readability
         }
         
         if (!series.getData().isEmpty()) {
