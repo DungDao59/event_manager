@@ -16,8 +16,8 @@ import group_3.model.Event;
 import group_3.model.Session;
 import group_3.model.enums.EventStatus;
 import group_3.model.enums.EventType;
-import group_3.util.DatabaseConnection;
 import group_3.util.DaoProvider;
+import group_3.util.DatabaseConnection;
 /**
  * @author Group 3
  *
@@ -194,14 +194,7 @@ public class EventDAOImpl implements EventDAO {
         String statusStr = rs.getString("status");
         String eventImage = rs.getString("event_image");
 
-        EventType type = null;
-        if (typeStr != null) {
-            try {
-                type = EventType.valueOf(typeStr);
-            } catch (IllegalArgumentException e) {
-                type = EventType.CONFERENCE;
-            }
-        }
+        EventType type = mapToValidEventType(typeStr);
 
         EventStatus status = EventStatus.SCHEDULED;
         if (statusStr != null) {
@@ -230,5 +223,29 @@ public class EventDAOImpl implements EventDAO {
         }
         
         return event;
+    }
+
+    /**
+     * Maps raw database type strings to valid EventType enum values.
+     * Only returns values defined in EventType enum: CONFERENCE, WORKSHOP, CONCERT, EXHIBITION
+     */
+    private EventType mapToValidEventType(String rawType) {
+        if (rawType == null) return EventType.CONFERENCE;
+        
+        String upperType = rawType.toUpperCase().trim();
+        
+        try {
+            return EventType.valueOf(upperType);
+        } catch (IllegalArgumentException ex) {
+            return switch (upperType) {
+                case "SUMMIT" -> EventType.CONFERENCE;
+                case "SEMINAR" -> EventType.WORKSHOP;
+                case "EXPO" -> EventType.EXHIBITION;
+                case "FAIR" -> EventType.EXHIBITION;
+                case "MEETUP" -> EventType.WORKSHOP;
+                case "SYMPOSIUM" -> EventType.CONFERENCE;
+                default -> EventType.CONFERENCE;
+            };
+        }
     }
 }

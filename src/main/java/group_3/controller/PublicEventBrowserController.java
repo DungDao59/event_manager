@@ -12,6 +12,7 @@ import group_3.model.Event;
 import group_3.model.Presenter;
 import group_3.model.Session;
 import group_3.model.enums.EventType;
+import group_3.util.BulkDataLoader;
 import group_3.util.DaoProvider;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -240,7 +241,8 @@ public class PublicEventBrowserController {
         // Type Column
         TableColumn<Event, String> typeCol = new TableColumn<>("Type");
         typeCol.setCellValueFactory(cell -> 
-            new javafx.beans.property.SimpleStringProperty(cell.getValue().getType().toString()));
+            new javafx.beans.property.SimpleStringProperty(
+                cell.getValue().getType() != null ? cell.getValue().getType().toString() : "N/A"));
         typeCol.setPrefWidth(100);
 
         // Location Column
@@ -264,7 +266,8 @@ public class PublicEventBrowserController {
         // Status Column with color coding
         TableColumn<Event, String> statusCol = new TableColumn<>("Status");
         statusCol.setCellValueFactory(cell -> 
-            new javafx.beans.property.SimpleStringProperty(cell.getValue().getStatus().toString()));
+            new javafx.beans.property.SimpleStringProperty(
+                cell.getValue().getStatus() != null ? cell.getValue().getStatus().toString() : "N/A"));
         statusCol.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(String status, boolean empty) {
@@ -335,9 +338,16 @@ public class PublicEventBrowserController {
 
     private void loadEvents() {
         try {
-            List<Event> events = eventDAO.findAll();
-            eventList.setAll(events);
+            System.out.println("[Guest] Starting optimized data load with single connection...");
+            long startTime = System.currentTimeMillis();
+            
+            BulkDataLoader.GuestData data = BulkDataLoader.loadGuestData();
+            eventList.setAll(data.events);
             applyFilters();
+            
+            long endTime = System.currentTimeMillis();
+            System.out.println("[Guest] Total data load completed in " + (endTime - startTime) + "ms");
+            System.out.println("[Guest] UI updated successfully");
         } catch (Exception e) {
             showError("Error loading events: " + e.getMessage());
         }
@@ -357,17 +367,17 @@ public class PublicEventBrowserController {
                 event.getName().toLowerCase().contains(searchText);
 
             boolean matchesType = "All Types".equals(selectedType) || selectedType == null ||
-                event.getType().toString().equals(selectedType);
+                (event.getType() != null && event.getType().toString().equals(selectedType));
 
             boolean matchesStatus = "All Statuses".equals(selectedStatus) || selectedStatus == null ||
-                event.getStatus().toString().equals(selectedStatus);
+                (event.getStatus() != null && event.getStatus().toString().equals(selectedStatus));
 
             boolean matchesDate = selectedDate == null ||
                 (event.getStartDate() != null && 
                  event.getStartDate().toLocalDate().equals(selectedDate));
 
             boolean matchesLocation = locationText.isEmpty() ||
-                event.getLocation().toLowerCase().contains(locationText);
+                (event.getLocation() != null && event.getLocation().toLowerCase().contains(locationText));
 
             if (matchesSearch && matchesType && matchesStatus && matchesDate && matchesLocation) {
                 filteredList.add(event);

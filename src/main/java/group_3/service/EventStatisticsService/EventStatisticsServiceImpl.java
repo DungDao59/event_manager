@@ -90,20 +90,6 @@ public class EventStatisticsServiceImpl implements EventStatisticsService {
     }
     
     @Override
-    public List<EventStatistics> getAllEventStatistics() {
-        List<Event> events = eventDAO.findAll();
-        List<EventStatistics> statsList = new ArrayList<>();
-        
-        for (Event event : events) {
-            int eventId = event.getEventId();
-            Optional<EventStatistics> stats = getEventStatistics(eventId);
-            stats.ifPresent(statsList::add);
-        }
-        
-        return statsList;
-    }
-    
-    @Override
     public Optional<SessionStatistics> getSessionStatistics(int sessionId) {
         Optional<Session> sessionOpt = sessionDAO.findById(sessionId);
         if (sessionOpt.isEmpty()) {

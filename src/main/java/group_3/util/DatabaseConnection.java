@@ -98,7 +98,6 @@ public class DatabaseConnection {
 
     public static void setUpDatabase() {
         if (isDatabaseFullyInitialized()) {
-            System.out.println("Database already initialized, skipping setup");
             return;
         }
         

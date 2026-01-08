@@ -28,6 +28,7 @@ import group_3.service.PresenterService.PresenterService;
 import group_3.service.PresenterService.PresenterServiceImpl;
 import group_3.service.UserService.UserService;
 import group_3.service.UserService.UserServiceImpl;
+import group_3.util.BulkDataLoader;
 import group_3.util.DaoProvider;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
@@ -96,6 +97,9 @@ public class PresenterDashboardController {
     private Scene scene;
     private Person currentUser;
     private Presenter currentPresenter;
+    
+    // Cached presenter data from BulkDataLoader (for charts without additional DB calls)
+    private BulkDataLoader.PresenterData cachedPresenterData;
 
     // My Sessions Tab
     private TableView<Session> sessionTable;
@@ -210,42 +214,30 @@ public class PresenterDashboardController {
         });
         
         Thread loadThread = new Thread(() -> {
-            try {
-                List<Session> sessions = new ArrayList<>();
-                Map<String, Object> stats = null;
-
-                if (currentUser != null) {
-                    try {
-                        Platform.runLater(() -> loadingLabel.setText("Loading sessions..."));
-                        // Get sessions assigned to this presenter
-                        List<Integer> sessionIds = presenterService.getSessionsList(currentUser.getId());
-                        for (Integer sessionId : sessionIds) {
-                            Optional<Session> session = eventService.getSessionById(sessionId);
-                            session.ifPresent(sessions::add);
-                        }
-                    } catch (Exception e) {
-                        System.err.println("Error loading sessions: " + e.getMessage());
-                    }
-
-                    try {
-                        Platform.runLater(() -> loadingLabel.setText("Loading statistics..."));
-                        stats = presenterService.getPresenterStatistics(currentUser.getId());
-                    } catch (Exception e) {
-                        System.err.println("Error loading statistics: " + e.getMessage());
-                    }
-                }
-
-                final List<Session> finalSessions = sessions;
-                final Map<String, Object> finalStats = stats;
+            try {   
+                // Use BulkDataLoader for single connection loading
+                int presenterId = currentUser != null ? currentUser.getId() : 0;
+                BulkDataLoader.PresenterData data = BulkDataLoader.loadPresenterData(presenterId);
+                
+                // Cache the data for use in updateStatisticsView (avoids additional DB calls)
+                cachedPresenterData = data;
+                
+                // Build stats map from loaded data
+                Map<String, Object> stats = new HashMap<>();
+                stats.put("sessions_presented", data.sessionsPresented);
+                stats.put("total_attendees", data.totalAttendees);
+                stats.put("average_attendance", Math.round(data.avgAttendance * 100.0) / 100.0);
 
                 Platform.runLater(() -> {
-                    sessionList.setAll(finalSessions);
-                    updateStatisticsView(finalStats);
+                    sessionList.setAll(data.sessions);
+                    updateStatisticsView(stats);
                     loadProfileData();
-                    loadingOverlay.setVisible(false); // Hide loading overlay
+                    loadingOverlay.setVisible(false);
+                    System.out.println("[Presenter] UI updated successfully");
                 });
             } catch (Exception e) {
-                System.err.println("Error loading data: " + e.getMessage());
+                System.err.println("[Presenter] Error loading data: " + e.getMessage());
+                e.printStackTrace();
                 Platform.runLater(() -> loadingOverlay.setVisible(false));
             }
         });
@@ -328,13 +320,9 @@ public class PresenterDashboardController {
     private void loadSessionData() {
         if (currentUser == null) return;
         try {
-            List<Integer> sessionIds = presenterService.getSessionsList(currentUser.getId());
-            List<Session> sessions = new ArrayList<>();
-            for (Integer sessionId : sessionIds) {
-                Optional<Session> session = eventService.getSessionById(sessionId);
-                session.ifPresent(sessions::add);
-            }
-            sessionList.setAll(sessions);
+            // Use BulkDataLoader for single connection
+            BulkDataLoader.PresenterData data = BulkDataLoader.loadPresenterData(currentUser.getId());
+            sessionList.setAll(data.sessions);
         } catch (Exception e) {
             System.err.println("Error loading sessions: " + e.getMessage());
         }
@@ -646,47 +634,36 @@ public class PresenterDashboardController {
         Object avg = stats.get("average_attendance");
         avgAttendanceValue.setText(avg != null ? String.format("%.1f", avg) : "0");
 
-        // Update pie chart with real event type distribution
+        // Update pie chart using pre-calculated data from BulkDataLoader (NO additional DB calls!)
+        // Only display valid EventType enum values: CONFERENCE, WORKSHOP, CONCERT, EXHIBITION
         eventTypeChart.getData().clear();
-        Map<String, Integer> eventTypeCount = new HashMap<>();
-        
-        for (Session session : sessionList) {
-            try {
-                Optional<Event> eventOpt = eventService.getEventById(session.getEventId());
-                if (eventOpt.isPresent()) {
-                    String eventType = eventOpt.get().getType() != null ? 
-                        eventOpt.get().getType().toString() : "Other";
-                    eventTypeCount.put(eventType, eventTypeCount.getOrDefault(eventType, 0) + 1);
+        if (cachedPresenterData != null && !cachedPresenterData.eventTypeStats.isEmpty()) {
+            for (Map.Entry<String, Integer> entry : cachedPresenterData.eventTypeStats.entrySet()) {
+                // Validate that the key is a valid EventType enum value
+                try {
+                    group_3.model.enums.EventType.valueOf(entry.getKey());
+                    eventTypeChart.getData().add(new PieChart.Data(entry.getKey(), entry.getValue()));
+                } catch (IllegalArgumentException e) {
+                    // Skip invalid event types - only show CONFERENCE, WORKSHOP, CONCERT, EXHIBITION
+                    System.err.println("Skipping invalid event type: " + entry.getKey());
                 }
-            } catch (Exception e) {
-                // Skip if event not found
             }
         }
-        
-        if (eventTypeCount.isEmpty()) {
+        if (eventTypeChart.getData().isEmpty()) {
             eventTypeChart.getData().add(new PieChart.Data("No Data", 1));
-        } else {
-            for (Map.Entry<String, Integer> entry : eventTypeCount.entrySet()) {
-                eventTypeChart.getData().add(new PieChart.Data(entry.getKey(), entry.getValue()));
-            }
         }
 
-        // Update bar chart with real audience data per session
+        // Update bar chart using pre-calculated audience data (NO additional DB calls!)
         audienceChart.getData().clear();
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName("Audience");
         
         int sessionCount = 0;
         for (Session session : sessionList) {
-            // Get actual ticket count for this session
+            // Use pre-calculated audience count from cachedPresenterData
             int audienceSize = 0;
-            try {
-                ArrayList<Ticket> tickets = ticketDAO.findTicketBySessionId(session.getSessionId());
-                audienceSize = (int) tickets.stream()
-                    .filter(t -> t.getStatus() == TicketStatus.USED || t.getStatus() == TicketStatus.ACTIVE)
-                    .count();
-            } catch (Exception e) {
-                // Use 0 if error
+            if (cachedPresenterData != null && cachedPresenterData.sessionAudienceMap != null) {
+                audienceSize = cachedPresenterData.sessionAudienceMap.getOrDefault(session.getSessionId(), 0);
             }
             
             String sessionLabel = session.getTitle().length() > 15 ? 
@@ -704,7 +681,14 @@ public class PresenterDashboardController {
     private void loadStatisticsData() {
         if (currentUser == null) return;
         try {
-            Map<String, Object> stats = presenterService.getPresenterStatistics(currentUser.getId());
+            // Use BulkDataLoader for single connection
+            BulkDataLoader.PresenterData data = BulkDataLoader.loadPresenterData(currentUser.getId());
+            // Update cache for chart data
+            cachedPresenterData = data;
+            Map<String, Object> stats = new HashMap<>();
+            stats.put("sessions_presented", data.sessionsPresented);
+            stats.put("total_attendees", data.totalAttendees);
+            stats.put("average_attendance", Math.round(data.avgAttendance * 100.0) / 100.0);
             updateStatisticsView(stats);
         } catch (Exception e) {
             System.err.println("Error loading statistics: " + e.getMessage());

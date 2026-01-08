@@ -1,5 +1,8 @@
 package group_3.service.EventStatisticsService;
 
+import java.util.List;
+import java.util.Optional;
+
 import group_3.dao.EventDAO;
 import group_3.dao.SessionDAO;
 import group_3.dao.TicketDAO;
@@ -8,9 +11,6 @@ import group_3.dao.impl.SessionDAOImpl;
 import group_3.dao.impl.TicketDAOImpl;
 import group_3.model.EventStatistics;
 import group_3.model.SessionStatistics;
-
-import java.util.List;
-import java.util.Optional;
 
 /**
  * @author Group 3
@@ -93,31 +93,6 @@ public class EventStatisticsExample {
             System.out.println("   Tickets Sold: " + session.getTotalTicketsSold());
         }
         
-        // Example 7: Get statistics for all events
-        System.out.println("\n=== Example 7: Statistics for All Events ===");
-        List<EventStatistics> allEventStats = statsService.getAllEventStatistics();
-        
-        if (allEventStats.isEmpty()) {
-            System.out.println("No events found.");
-        } else {
-            System.out.println("Total Events: " + allEventStats.size());
-            System.out.println("\nEvent Summary:");
-            
-            double totalRevenue = 0;
-            int totalTickets = 0;
-            
-            for (EventStatistics stats : allEventStats) {
-                System.out.println("- " + stats.getEventName());
-                System.out.println("  Revenue: $" + String.format("%.2f", stats.getTotalRevenue()));
-                System.out.println("  Attendance Rate: " + String.format("%.2f", stats.getAttendanceRate()) + "%");
-                
-                totalRevenue += stats.getTotalRevenue();
-                totalTickets += stats.getTotalTicketsSold();
-            }
-            
-            System.out.println("\nOverall Statistics:");
-            System.out.println("Total Revenue: $" + String.format("%.2f", totalRevenue));
-            System.out.println("Total Tickets Sold: " + totalTickets);
-        }
+      
     }
 }

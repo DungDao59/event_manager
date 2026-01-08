@@ -33,26 +33,26 @@ SELECT id, 'Guest Speaker', '{"rating": 5.0}' FROM person WHERE role = 'PRESENTE
 
 -- 4. EVENT DATA (20 Records)
 INSERT INTO event (name, type, start_date, end_date, location, duration, status) VALUES
-('TechConf 2026', 'Conference', '2026-03-01', '2026-03-03', 'San Francisco', 3, 'SCHEDULED'),
-('Design Summit', 'Workshop', '2026-04-10', '2026-04-11', 'New York', 2, 'SCHEDULED'),
-('AI Expo', 'Exhibition', '2026-05-20', '2026-05-22', 'London', 3, 'SCHEDULED'),
-('Cyber Security Forum', 'Conference', '2026-06-15', '2026-06-16', 'Berlin', 2, 'SCHEDULED'),
-('HealthTech 2026', 'Summit', '2026-07-01', '2026-07-02', 'Tokyo', 2, 'SCHEDULED'),
-('Green Energy Meet', 'Seminar', '2026-08-05', '2026-08-05', 'Oslo', 1, 'SCHEDULED'),
-('FinTech Days', 'Conference', '2026-09-10', '2026-09-12', 'Singapore', 3, 'SCHEDULED'),
-('Mobile Dev Week', 'Workshop', '2026-10-01', '2026-10-05', 'Austin', 5, 'SCHEDULED'),
-('Cloud Native Con', 'Conference', '2026-11-12', '2026-11-14', 'Seattle', 3, 'SCHEDULED'),
-('Game Dev Gala', 'Expo', '2026-12-01', '2026-12-03', 'Los Angeles', 3, 'SCHEDULED'),
-('Open Source Summit', 'Conference', '2026-01-15', '2026-01-17', 'Paris', 3, 'COMPLETED'),
-('Blockchain Blast', 'Seminar', '2026-02-10', '2026-02-10', 'Dubai', 1, 'COMPLETED'),
-('UX Masters', 'Workshop', '2026-03-20', '2026-03-21', 'Toronto', 2, 'SCHEDULED'),
-('Data Science Day', 'Seminar', '2026-04-05', '2026-04-05', 'Boston', 1, 'SCHEDULED'),
-('E-commerce Expo', 'Exhibition', '2026-05-12', '2026-05-13', 'Madrid', 2, 'SCHEDULED'),
-('IoT World', 'Conference', '2026-06-25', '2026-06-27', 'Seoul', 3, 'SCHEDULED'),
-('Robotics Rally', 'Workshop', '2026-07-15', '2026-07-17', 'Pittsburgh', 3, 'SCHEDULED'),
-('Future of Food', 'Summit', '2026-08-20', '2026-08-21', 'Amsterdam', 2, 'SCHEDULED'),
-('Space Explorers', 'Seminar', '2026-09-05', '2026-09-05', 'Houston', 1, 'SCHEDULED'),
-('LegalTech Meetup', 'Conference', '2026-10-10', '2026-10-11', 'Sydney', 2, 'SCHEDULED');
+('TechConf 2026', 'CONFERENCE', '2026-03-01', '2026-03-03', 'San Francisco', 3, 'SCHEDULED'),
+('Design Summit', 'WORKSHOP', '2026-04-10', '2026-04-11', 'New York', 2, 'SCHEDULED'),
+('AI Expo', 'EXHIBITION', '2026-05-20', '2026-05-22', 'London', 3, 'SCHEDULED'),
+('Cyber Security Forum', 'CONFERENCE', '2026-06-15', '2026-06-16', 'Berlin', 2, 'SCHEDULED'),
+('HealthTech 2026', 'CONFERENCE', '2026-07-01', '2026-07-02', 'Tokyo', 2, 'SCHEDULED'),
+('Green Energy Meet', 'WORKSHOP', '2026-08-05', '2026-08-05', 'Oslo', 1, 'SCHEDULED'),
+('FinTech Days', 'CONCERT', '2026-09-10', '2026-09-12', 'Singapore', 3, 'SCHEDULED'),
+('Mobile Dev Week', 'WORKSHOP', '2026-10-01', '2026-10-05', 'Austin', 5, 'SCHEDULED'),
+('Cloud Native Con', 'CONFERENCE', '2026-11-12', '2026-11-14', 'Seattle', 3, 'SCHEDULED'),
+('Game Dev Gala', 'EXHIBITION', '2026-12-01', '2026-12-03', 'Los Angeles', 3, 'SCHEDULED'),
+('Open Source Summit', 'CONFERENCE', '2026-01-15', '2026-01-17', 'Paris', 3, 'COMPLETED'),
+('Blockchain Blast', 'WORKSHOP', '2026-02-10', '2026-02-10', 'Dubai', 1, 'COMPLETED'),
+('UX Masters', 'WORKSHOP', '2026-03-20', '2026-03-21', 'Toronto', 2, 'SCHEDULED'),
+('Data Science Day', 'CONFERENCE', '2026-04-05', '2026-04-05', 'Boston', 1, 'SCHEDULED'),
+('E-commerce Expo', 'EXHIBITION', '2026-05-12', '2026-05-13', 'Madrid', 2, 'SCHEDULED'),
+('IoT World', 'CONFERENCE', '2026-06-25', '2026-06-27', 'Seoul', 3, 'SCHEDULED'),
+('Robotics Rally', 'WORKSHOP', '2026-07-15', '2026-07-17', 'Pittsburgh', 3, 'SCHEDULED'),
+('Future of Food', 'EXHIBITION', '2026-08-20', '2026-08-21', 'Amsterdam', 2, 'SCHEDULED'),
+('Space Explorers', 'CONFERENCE', '2026-09-05', '2026-09-05', 'Houston', 1, 'SCHEDULED'),
+('LegalTech Meetup', 'CONFERENCE', '2026-10-10', '2026-10-11', 'Sydney', 2, 'SCHEDULED');
 
 -- 5. SESSION DATA
 INSERT INTO session (
@@ -85,42 +85,37 @@ SELECT s.session_id, p.person_id
 FROM session s, presenter p
 WHERE p.person_id = (SELECT person_id FROM presenter OFFSET (s.session_id % 5) LIMIT 1);
 
--- 8. TICKET DATA (Distributed for pro_speaker1's sessions: 5, 10, 15, 20)
--- pro_speaker1 (id=11) owns sessions where session_id % 5 = 0: sessions 5, 10, 15, 20
-
--- Tickets for Session 5 (pro_speaker1) - 8 attendees
-INSERT INTO ticket (attendee_id, event_id, session_id, type, price, status, qr_code_data) VALUES
-(1, 5, 5, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":1,"attendeeId":1,"eventId":5,"sessionId":5}'),
-(2, 5, 5, 'EARLYBIRD', 35.00, 'USED', '{"ticketId":2,"attendeeId":2,"eventId":5,"sessionId":5}'),
-(3, 5, 5, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":3,"attendeeId":3,"eventId":5,"sessionId":5}'),
-(4, 5, 5, 'GENERAL', 50.00, 'USED', '{"ticketId":4,"attendeeId":4,"eventId":5,"sessionId":5}'),
-(5, 5, 5, 'VIP', 120.00, 'ACTIVE', '{"ticketId":5,"attendeeId":5,"eventId":5,"sessionId":5}'),
-(6, 5, 5, 'VIP', 120.00, 'USED', '{"ticketId":6,"attendeeId":6,"eventId":5,"sessionId":5}'),
-(7, 5, 5, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":7,"attendeeId":7,"eventId":5,"sessionId":5}'),
-(8, 5, 5, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":8,"attendeeId":8,"eventId":5,"sessionId":5}');
-
--- Tickets for Session 10 (pro_speaker1) - 5 attendees
-INSERT INTO ticket (attendee_id, event_id, session_id, type, price, status, qr_code_data) VALUES
-(1, 10, 10, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":9,"attendeeId":1,"eventId":10,"sessionId":10}'),
-(2, 10, 10, 'GENERAL', 50.00, 'USED', '{"ticketId":10,"attendeeId":2,"eventId":10,"sessionId":10}'),
-(3, 10, 10, 'VIP', 120.00, 'ACTIVE', '{"ticketId":11,"attendeeId":3,"eventId":10,"sessionId":10}'),
-(9, 10, 10, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":12,"attendeeId":9,"eventId":10,"sessionId":10}'),
-(10, 10, 10, 'GENERAL', 50.00, 'USED', '{"ticketId":13,"attendeeId":10,"eventId":10,"sessionId":10}');
-
--- Tickets for Session 15 (pro_speaker1) - 12 attendees
-INSERT INTO ticket (attendee_id, event_id, session_id, type, price, status, qr_code_data) VALUES
-(1, 15, 15, 'EARLYBIRD', 35.00, 'USED', '{"ticketId":14,"attendeeId":1,"eventId":15,"sessionId":15}'),
-(2, 15, 15, 'EARLYBIRD', 35.00, 'USED', '{"ticketId":15,"attendeeId":2,"eventId":15,"sessionId":15}'),
-(3, 15, 15, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":16,"attendeeId":3,"eventId":15,"sessionId":15}'),
-(4, 15, 15, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":17,"attendeeId":4,"eventId":15,"sessionId":15}'),
-(5, 15, 15, 'GENERAL', 50.00, 'USED', '{"ticketId":18,"attendeeId":5,"eventId":15,"sessionId":15}'),
-(6, 15, 15, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":19,"attendeeId":6,"eventId":15,"sessionId":15}'),
-(7, 15, 15, 'VIP', 120.00, 'ACTIVE', '{"ticketId":20,"attendeeId":7,"eventId":15,"sessionId":15}'),
-(8, 15, 15, 'VIP', 120.00, 'USED', '{"ticketId":21,"attendeeId":8,"eventId":15,"sessionId":15}'),
-(9, 15, 15, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":22,"attendeeId":9,"eventId":15,"sessionId":15}'),
-(10, 15, 15, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":23,"attendeeId":10,"eventId":15,"sessionId":15}'),
-(1, 15, 15, 'VIP', 120.00, 'USED', '{"ticketId":24,"attendeeId":1,"eventId":15,"sessionId":15}'),
-(2, 15, 15, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":25,"attendeeId":2,"eventId":15,"sessionId":15}');
+-- 8. TICKET DATA
+INSERT INTO ticket (
+    attendee_id,
+    event_id,
+    session_id,
+    type,
+    price,
+    status,
+    qr_code_data
+)
+VALUES
+(1, 4, 4, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":1,"attendeeId":1,"eventId":4,"sessionId":4}'),
+(2, 4, 4, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":2,"attendeeId":2,"eventId":4,"sessionId":4}'),
+(3, 4, 4, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":3,"attendeeId":3,"eventId":4,"sessionId":4}'),
+(4, 4, 4, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":4,"attendeeId":4,"eventId":4,"sessionId":4}'),
+(5, 4, 4, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":5,"attendeeId":5,"eventId":4,"sessionId":4}'),
+(6, 4, 4, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":6,"attendeeId":6,"eventId":4,"sessionId":4}'),
+(7, 4, 4, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":7,"attendeeId":7,"eventId":4,"sessionId":4}'),
+(8, 4, 4, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":8,"attendeeId":8,"eventId":4,"sessionId":4}'),
+(9, 4, 4, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":9,"attendeeId":9,"eventId":4,"sessionId":4}'),
+(10, 4, 4, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":10,"attendeeId":10,"eventId":4,"sessionId":4}'),
+(11, 4, 4, 'VIP', 120.00, 'ACTIVE', '{"ticketId":11,"attendeeId":11,"eventId":4,"sessionId":4}'),
+(12, 4, 4, 'VIP', 120.00, 'ACTIVE', '{"ticketId":12,"attendeeId":12,"eventId":4,"sessionId":4}'),
+(13, 4, 4, 'VIP', 120.00, 'ACTIVE', '{"ticketId":13,"attendeeId":13,"eventId":4,"sessionId":4}'),
+(14, 4, 4, 'VIP', 120.00, 'ACTIVE', '{"ticketId":14,"attendeeId":14,"eventId":4,"sessionId":4}'),
+(15, 4, 4, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":15,"attendeeId":15,"eventId":4,"sessionId":4}'),
+(16, 4, 4, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":16,"attendeeId":16,"eventId":4,"sessionId":4}'),
+(17, 4, 4, 'VIP', 120.00, 'ACTIVE', '{"ticketId":17,"attendeeId":17,"eventId":4,"sessionId":4}'),
+(18, 4, 4, 'GENERAL', 50.00, 'ACTIVE', '{"ticketId":18,"attendeeId":18,"eventId":4,"sessionId":4}'),
+(19, 4, 4, 'EARLYBIRD', 35.00, 'ACTIVE', '{"ticketId":19,"attendeeId":19,"eventId":4,"sessionId":4}'),
+(20, 4, 4, 'VIP', 120.00, 'ACTIVE', '{"ticketId":20,"attendeeId":20,"eventId":4,"sessionId":4}');
 
 -- Tickets for Session 20 (pro_speaker1) - 6 attendees
 INSERT INTO ticket (attendee_id, event_id, session_id, type, price, status, qr_code_data) VALUES

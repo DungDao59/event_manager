@@ -27,6 +27,7 @@ import group_3.service.RegistrationService.RegistrationService;
 import group_3.service.RegistrationService.RegistrationServiceImpl;
 import group_3.service.UserService.UserService;
 import group_3.service.UserService.UserServiceImpl;
+import group_3.util.BulkDataLoader;
 import group_3.util.DaoProvider;
 import group_3.util.QRCode;
 import javafx.application.Platform;
@@ -204,39 +205,25 @@ public class AttendeeDashboardController {
         
         Thread loadThread = new Thread(() -> {
             try {
-                Platform.runLater(() -> loadingLabel.setText("Loading events..."));
-                List<Event> events = eventService.getAllEvents();
-                List<Ticket> tickets = new ArrayList<>();
-                List<ScheduleEntry> schedules = new ArrayList<>();
-
-                if (currentUser != null) {
-                    try {
-                        Platform.runLater(() -> loadingLabel.setText("Loading tickets..."));
-                        tickets = ticketDAO.findTicketByAttendeeId(currentUser.getId());
-                    } catch (Exception e) {
-                        System.err.println("Error loading tickets: " + e.getMessage());
-                    }
-                    try {
-                        Platform.runLater(() -> loadingLabel.setText("Loading schedule..."));
-                        schedules = scheduleDAO.findAllScheduleByUserId(currentUser.getId());
-                    } catch (Exception e) {
-                        System.err.println("Error loading schedules: " + e.getMessage());
-                    }
-                }
-
-                final List<Event> finalEvents = events;
-                final List<Ticket> finalTickets = tickets;
-                final List<ScheduleEntry> finalSchedules = schedules;
+               
+                
+                // Use BulkDataLoader for single connection loading
+                int userId = currentUser != null ? currentUser.getId() : 0;
+                BulkDataLoader.AttendeeData data = BulkDataLoader.loadAttendeeData(userId);
+                
+               
 
                 Platform.runLater(() -> {
-                    eventList.setAll(finalEvents);
-                    ticketList.setAll(finalTickets);
-                    scheduleList.setAll(finalSchedules);
+                    eventList.setAll(data.events);
+                    ticketList.setAll(data.tickets);
+                    scheduleList.setAll(data.schedules);
                     loadProfileData();
-                    loadingOverlay.setVisible(false); // Hide loading overlay
+                    loadingOverlay.setVisible(false);
+                  
                 });
             } catch (Exception e) {
-                System.err.println("Error loading data: " + e.getMessage());
+                System.err.println("[Attendee] Error loading data: " + e.getMessage());
+                e.printStackTrace();
                 Platform.runLater(() -> loadingOverlay.setVisible(false));
             }
         });

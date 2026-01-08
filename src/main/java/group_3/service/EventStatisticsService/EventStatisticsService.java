@@ -1,10 +1,10 @@
 package group_3.service.EventStatisticsService;
 
-import group_3.model.EventStatistics;
-import group_3.model.SessionStatistics;
-
 import java.util.List;
 import java.util.Optional;
+
+import group_3.model.EventStatistics;
+import group_3.model.SessionStatistics;
 
 /**
  * @author Group 3
@@ -39,13 +39,6 @@ public interface EventStatisticsService {
      * @return attendance rate as a percentage (0-100)
      */
     double calculateEventAttendanceRate(int eventId);
-    
-    /**
-     * Get statistics for all events.
-     * 
-     * @return a list of EventStatistics for all events
-     */
-    List<EventStatistics> getAllEventStatistics();
     
     /**
      * Get statistics for a specific session.
