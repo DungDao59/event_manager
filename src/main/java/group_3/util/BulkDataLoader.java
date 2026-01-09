@@ -52,6 +52,8 @@ public class BulkDataLoader {
         public List<Event> events = new ArrayList<>();
         public List<Ticket> tickets = new ArrayList<>();
         public List<ScheduleEntry> schedules = new ArrayList<>();
+        public List<Session> sessions = new ArrayList<>();  // Cached sessions for all events
+        public java.util.Map<Integer, List<Session>> sessionsByEventId = new java.util.HashMap<>();  // Sessions grouped by event ID
     }
 
     /**
@@ -245,11 +247,10 @@ public class BulkDataLoader {
                     // Parse EventType - only accept valid enum values
                     EventType type = null;
                     String typeStr = rs.getString("type");
-                    if (typeStr != null) {
+                    if (typeStr != null && !typeStr.trim().isEmpty()) {
                         try {
-                            type = EventType.valueOf(typeStr.toUpperCase());
+                            type = EventType.valueOf(typeStr.trim().toUpperCase());
                         } catch (IllegalArgumentException ex) {
-                            // Skip invalid type values - database should only contain valid enum values
                             type = null;
                         }
                     }
@@ -427,7 +428,7 @@ public class BulkDataLoader {
      * Load all Attendee Dashboard data using a single database connection.
      *
      * @param attendeeId the ID of the current attendee/user
-     * @return AttendeeData containing events, tickets, and schedules
+     * @return AttendeeData containing events, tickets, schedules, and cached sessions
      */
     public static AttendeeData loadAttendeeData(int attendeeId) {
         AttendeeData data = new AttendeeData();
@@ -436,6 +437,14 @@ public class BulkDataLoader {
 
             // Load all events
             data.events = loadEvents(conn);
+
+            // Load all sessions and cache them by event ID (eliminates delay when clicking events)
+            data.sessions = loadSessions(conn);
+            for (Session session : data.sessions) {
+                data.sessionsByEventId
+                    .computeIfAbsent(session.getEventId(), k -> new ArrayList<>())
+                    .add(session);
+            }
 
             // Load tickets for this attendee
             data.tickets = loadTicketsForAttendee(conn, attendeeId);
@@ -652,22 +661,21 @@ public class BulkDataLoader {
                 // Parse EventType - only accept valid enum values
                 EventType type = null;
                 String typeStr = rs.getString("type");
-                if (typeStr != null) {
+                if (typeStr != null && !typeStr.trim().isEmpty()) {
                     try {
-                        type = EventType.valueOf(typeStr.toUpperCase());
+                        type = EventType.valueOf(typeStr.trim().toUpperCase());
                     } catch (IllegalArgumentException ex) {
-                        // Skip invalid type values - database should only contain valid enum values
                         type = null;
                     }
                 }
 
                 EventStatus status = null;
                 String statusStr = rs.getString("status");
-                if (statusStr != null) {
+                if (statusStr != null && !statusStr.trim().isEmpty()) {
                     try {
-                        status = EventStatus.valueOf(statusStr.toUpperCase());
+                        status = EventStatus.valueOf(statusStr.trim().toUpperCase());
                     } catch (IllegalArgumentException ex) {
-                        // Ignore invalid enum values
+                        // Ignore invalid status values
                     }
                 }
 

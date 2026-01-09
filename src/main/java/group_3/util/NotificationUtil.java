@@ -5,30 +5,33 @@ import group_3.model.Person;
 /**
  * @author Group 3
  *
- * Utility class for sending console-based notifications to users
- * with timestamp and user information.
+ * Utility class for sending console-based notifications to users with timestamp
+ * and user information.
  */
-
-
 public class NotificationUtil {
-    
 
-    private NotificationUtil(){}
-
-    public static void notify(Person user, String title, String message){
-        if(user == null) return;
-
-       
-
+    private NotificationUtil() {
     }
 
-    public static void notifyRegistrationSuccess(Person user, int sessionId){
+    public static void notify(Person user, String title, String message) {
+        if (user == null) {
+            return;
+        }
+        String timestamp = java.time.LocalDateTime.now().toString();
+        System.out.println("[" + timestamp + "] Notification for "
+                + user.getFullName() + " (" + user.getUsername() + "):");
+        System.out.println("  " + title);
+        System.out.println("  " + message);
+        System.out.println("----------------------------------------");
+    }
+
+    public static void notifyRegistrationSuccess(Person user, int sessionId) {
         notify(user,
                 "Registration Successful",
                 "You have successfully registered for session ID: " + sessionId);
     }
 
-    public static void notifyRegistrationCancelled(Person user, int ticketId){
+    public static void notifyRegistrationCancelled(Person user, int ticketId) {
         notify(
                 user,
                 "Registration Cancelled",
@@ -36,7 +39,7 @@ public class NotificationUtil {
         );
     }
 
-    public static void notifyReportExported(Person user, String reportType){
+    public static void notifyReportExported(Person user, String reportType) {
         notify(
                 user,
                 "Report exported",

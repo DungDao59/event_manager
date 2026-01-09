@@ -1,6 +1,7 @@
 package group_3.model;
 
-import group_3.model.enums.*;
+import group_3.model.enums.TicketStatus;
+import group_3.model.enums.TicketType;
 
 /**
  * @author Group 3
@@ -101,19 +102,5 @@ public class Ticket {
 
     public void setQRpath(String QRpath) {
         this.QRpath = QRpath;
-    }
-
-    @Override
-    public String toString() {
-        return "Ticket{" +
-                "Ticket ID ='" + ticketID + '\'' +
-                ", Event ID ='" + eventID + '\'' +
-                ", Session ID ='" + sessionID + '\'' +
-                ", Attendee ID ='" + attendeeID + '\'' +
-                ", Type ='" + type + '\'' +
-                ", Price =" + price +
-                ", Status ='" + status + '\'' +
-                ", QR Path ='" + QRpath + '\'' +
-                '}';
     }
 }

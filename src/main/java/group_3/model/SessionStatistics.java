@@ -107,17 +107,4 @@ public class SessionStatistics {
         return capacityUtilization;
     }
     
-    @Override
-    public String toString() {
-        return "SessionStatistics{" +
-                "sessionId=" + sessionId +
-                ", sessionTitle='" + sessionTitle + '\'' +
-                ", eventId=" + eventId +
-                ", totalTicketsSold=" + totalTicketsSold +
-                ", totalCheckedIn=" + totalCheckedIn +
-                ", attendanceRate=" + String.format("%.2f", attendanceRate) + "%" +
-                ", capacity=" + capacity +
-                ", capacityUtilization=" + String.format("%.2f", capacityUtilization) + "%" +
-                '}';
-    }
 }

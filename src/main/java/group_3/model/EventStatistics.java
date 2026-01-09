@@ -83,15 +83,5 @@ public class EventStatistics {
         return attendanceRate;
     }
     
-    @Override
-    public String toString() {
-        return "EventStatistics{" +
-                "eventId=" + eventId +
-                ", eventName='" + eventName + '\'' +
-                ", totalRevenue=" + totalRevenue +
-                ", totalTicketsSold=" + totalTicketsSold +
-                ", totalCheckedIn=" + totalCheckedIn +
-                ", attendanceRate=" + String.format("%.2f", attendanceRate) + "%" +
-                '}';
-    }
+   
 }

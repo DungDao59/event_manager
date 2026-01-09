@@ -126,6 +126,9 @@ public class AttendeeDashboardController {
     // Loading indicator
     private StackPane loadingOverlay;
     private Label loadingLabel;
+    
+    // Cached data from BulkDataLoader (for instant session loading without DB calls)
+    private BulkDataLoader.AttendeeData cachedAttendeeData;
 
     public AttendeeDashboardController() {
         this.eventService = new EventAdminServiceImpl();
@@ -211,7 +214,8 @@ public class AttendeeDashboardController {
                 int userId = currentUser != null ? currentUser.getId() : 0;
                 BulkDataLoader.AttendeeData data = BulkDataLoader.loadAttendeeData(userId);
                 
-               
+                // Cache the data for instant session loading
+                cachedAttendeeData = data;
 
                 Platform.runLater(() -> {
                     eventList.setAll(data.events);
@@ -274,9 +278,21 @@ public class AttendeeDashboardController {
 
         eventTable.getColumns().addAll(nameCol, typeCol, dateCol, locationCol);
 
+        // Use cached sessions for instant loading (no delay!)
         eventTable.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
-                loadSessionsForEvent(newVal.getEventId());
+                // Use pre-loaded cached sessions - NO database call needed!
+                if (cachedAttendeeData != null && cachedAttendeeData.sessionsByEventId != null) {
+                    List<Session> cachedSessions = cachedAttendeeData.sessionsByEventId.get(newVal.getEventId());
+                    if (cachedSessions != null) {
+                        sessionList.setAll(cachedSessions);
+                    } else {
+                        sessionList.clear();
+                    }
+                } else {
+                    // Fallback to database call if cache is not available
+                    loadSessionsForEvent(newVal.getEventId());
+                }
             }
         });
 
@@ -330,14 +346,47 @@ public class AttendeeDashboardController {
         return view;
     }
 
-    private void loadSessionsForEvent(int eventId) {
-        try {
-            List<Session> sessions = eventService.getSessionsByEventId(eventId);
-            sessionList.setAll(sessions);
-        } catch (Exception e) {
-            System.err.println("Error loading sessions: " + e.getMessage());
+   // In AttendeeDashboardController.java
+
+private void loadSessionsForEvent(int eventId) {
+    // 1. CLEAR existing data so the user doesn't see old sessions from the previous click
+    sessionList.clear();
+
+    // 2. Show loading feedback immediately
+    loadingOverlay.setVisible(true);
+    loadingLabel.setText("Loading sessions...");
+    
+    // 3. Create a background Task
+    javafx.concurrent.Task<List<Session>> task = new javafx.concurrent.Task<>() {
+        @Override
+        protected List<Session> call() throws Exception {
+            // This code runs in a BACKGROUND thread, so the UI won't freeze
+            return eventService.getSessionsByEventId(eventId);
         }
-    }
+    };
+
+    // 4. Handle Success (Runs on UI Thread when data is ready)
+    task.setOnSucceeded(e -> {
+        List<Session> results = task.getValue();
+        if (results != null) {
+            sessionList.setAll(results);
+        }
+        loadingOverlay.setVisible(false);
+    });
+
+    // 5. Handle Failure (Runs on UI Thread if error occurs)
+    task.setOnFailed(e -> {
+        loadingOverlay.setVisible(false);
+        Throwable error = task.getException();
+        System.err.println("Error loading sessions: " + error.getMessage());
+        // Optional: Show an alert to the user here
+    });
+
+    // 6. Start the background thread
+    Thread thread = new Thread(task);
+    thread.setDaemon(true); // Ensures thread closes if app closes
+    thread.start();
+}
 
     private void handleRegister() {
         Event selectedEvent = eventTable.getSelectionModel().getSelectedItem();
