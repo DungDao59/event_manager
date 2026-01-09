@@ -135,7 +135,7 @@ public class AttendeeDAOImpl implements AttendeeDAO {
 
     @Override
     public void update(Attendee attendee) {
-        String personSql = "UPDATE person SET username = ?, password = ?, full_name = ?, date_of_birth = ?, contact_information = ? WHERE id = ?";
+        String personSql = "UPDATE person SET username = ?, password = ?, full_name = ?, date_of_birth = ?, contact_information = ?::jsonb WHERE id = ?";
         String attendeeSql = "UPDATE attendee SET history = ? WHERE person_id = ?";
         
         try (Connection conn = getConnection()) {

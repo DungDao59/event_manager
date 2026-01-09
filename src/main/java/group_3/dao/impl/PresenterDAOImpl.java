@@ -136,7 +136,7 @@ public class PresenterDAOImpl implements PresenterDAO {
 
     @Override
     public void update(Presenter presenter) {
-        String personSql = "UPDATE person SET username = ?, password = ?, full_name = ?, date_of_birth = ?, contact_information = ? WHERE id = ?";
+        String personSql = "UPDATE person SET username = ?, password = ?, full_name = ?, date_of_birth = ?, contact_information = ?::jsonb WHERE id = ?";
         String presenterSql = "UPDATE presenter SET presenter_role = ?, statistics = ? WHERE person_id = ?";
         
         try (Connection conn = getConnection()) {

@@ -254,11 +254,15 @@ public class SystemAdminController {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
+        Button profileBtn = new Button("My Profile");
+        profileBtn.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;");
+        profileBtn.setOnAction(e -> handleMyProfile());
+
         Button logoutBtn = new Button("Logout");
         logoutBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold;");
         logoutBtn.setOnAction(e -> handleLogout());
 
-        header.getChildren().addAll(titleLabel, spacer, logoutBtn);
+        header.getChildren().addAll(titleLabel, spacer, profileBtn, logoutBtn);
         return header;
     }
 
@@ -1023,6 +1027,17 @@ public class SystemAdminController {
     }
 
     // ======================= UTILITY METHODS =======================
+
+    private void handleMyProfile() {
+        try {
+            Stage stage = (Stage) scene.getWindow();
+            ProfileController profileController = new ProfileController();
+            stage.setScene(profileController.getScene());
+            stage.setTitle("My Profile");
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Navigation Error", "Could not load profile page: " + e.getMessage());
+        }
+    }
 
     private void handleLogout() {
         try {

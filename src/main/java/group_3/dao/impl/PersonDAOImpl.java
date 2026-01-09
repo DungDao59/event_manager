@@ -127,7 +127,7 @@ public class PersonDAOImpl implements PersonDAO {
 
     @Override
     public void update(Person person) {
-        String sql = "UPDATE person SET username = ?, password = ?, full_name = ?, date_of_birth = ?, contact_information = ?, role = ? WHERE id = ?";
+        String sql = "UPDATE person SET username = ?, password = ?, full_name = ?, date_of_birth = ?, contact_information = ?::jsonb, role = ?::user_role WHERE id = ?";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, person.getUsername());
