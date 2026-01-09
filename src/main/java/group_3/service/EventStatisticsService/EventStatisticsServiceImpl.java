@@ -90,6 +90,53 @@ public class EventStatisticsServiceImpl implements EventStatisticsService {
     }
     
     @Override
+    public List<EventStatistics> getAllEventStatistics() {
+        // OPTIMIZED: Fetch all data ONCE instead of per-event queries
+        List<Event> events = eventDAO.findAll();
+        ArrayList<Ticket> allTickets = ticketDAO.findAll();
+        
+        if (allTickets == null) {
+            allTickets = new ArrayList<>();
+        }
+        
+        List<EventStatistics> statsList = new ArrayList<>();
+        
+        for (Event event : events) {
+            int eventId = event.getEventId();
+            
+            // Filter tickets for this event (no DB call, uses cached list)
+            double revenue = allTickets.stream()
+                .filter(ticket -> ticket.getEventID() == eventId)
+                .filter(ticket -> ticket.getStatus() == TicketStatus.ACTIVE || 
+                                ticket.getStatus() == TicketStatus.USED)
+                .mapToDouble(Ticket::getPrice)
+                .sum();
+            
+            int ticketsSold = (int) allTickets.stream()
+                .filter(ticket -> ticket.getEventID() == eventId)
+                .filter(ticket -> ticket.getStatus() == TicketStatus.ACTIVE || 
+                                ticket.getStatus() == TicketStatus.USED)
+                .count();
+            
+            int checkedIn = (int) allTickets.stream()
+                .filter(ticket -> ticket.getEventID() == eventId)
+                .filter(ticket -> ticket.getStatus() == TicketStatus.USED)
+                .count();
+            
+            EventStatistics stats = new EventStatistics(
+                eventId,
+                event.getName(),
+                revenue,
+                ticketsSold,
+                checkedIn
+            );
+            statsList.add(stats);
+        }
+        
+        return statsList;
+    }
+    
+    @Override
     public Optional<SessionStatistics> getSessionStatistics(int sessionId) {
         Optional<Session> sessionOpt = sessionDAO.findById(sessionId);
         if (sessionOpt.isEmpty()) {
