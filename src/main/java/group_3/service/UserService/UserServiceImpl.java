@@ -5,8 +5,12 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import group_3.dao.PersonDAO;
+import group_3.dao.SessionPresenterDAO;
+import group_3.dao.impl.SessionPresenterDAOImpl;
 import group_3.model.Person;
 import group_3.model.enums.Role;
+import group_3.service.PresenterService.PresenterService;
+import group_3.service.PresenterService.PresenterServiceImpl;
 import group_3.service.SystemHistoryService.SystemHistoryService;
 import group_3.service.SystemHistoryService.SystemHistoryServiceImpl;
 
@@ -19,15 +23,18 @@ import group_3.service.SystemHistoryService.SystemHistoryServiceImpl;
 public class UserServiceImpl implements UserService {
     private final PersonDAO personDAO;
     private final SystemHistoryService historyService;
+    private final SessionPresenterDAO sessionPresenterDAO;
 
     public UserServiceImpl(PersonDAO personDao){
         this.personDAO = personDao;
         this.historyService = new SystemHistoryServiceImpl();
+        this.sessionPresenterDAO = new SessionPresenterDAOImpl();
     }
 
-    public UserServiceImpl(PersonDAO personDao, SystemHistoryService historyService){
+    public UserServiceImpl(PersonDAO personDao, SystemHistoryService historyService, PresenterService presenterService){
         this.personDAO = personDao;
         this.historyService = historyService;
+        this.sessionPresenterDAO = new SessionPresenterDAOImpl();
     }
 
     @Override
@@ -103,6 +110,11 @@ public class UserServiceImpl implements UserService {
         if(existing.isEmpty()) {
             throw new IllegalArgumentException(
                     "User not found with ID " + userId
+            );
+        }
+        if(sessionPresenterDAO.existsByPresenterId(userId)){
+            throw new IllegalArgumentException(
+                    "Cannot delete presenter. They are assigned to one or more sessions"
             );
         }
 

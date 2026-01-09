@@ -491,7 +491,10 @@ public class SystemAdminController {
         confirm.setContentText("Are you sure?");
         Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            try { userService.deleteUser(user.getId()); showAlert(Alert.AlertType.INFORMATION, "Success", "User deleted."); loadUserData(); }
+            try { userService.deleteUser(user.getId());
+                showAlert(Alert.AlertType.INFORMATION, "Success", "User deleted.");
+                loadUserData();
+            }
             catch (Exception e) { showAlert(Alert.AlertType.ERROR, "Error", "Failed: " + e.getMessage()); }
         }
     }
