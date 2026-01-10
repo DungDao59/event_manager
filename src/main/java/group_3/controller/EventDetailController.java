@@ -73,8 +73,8 @@ public class EventDetailController {
         stage = new Stage();
         stage.setTitle("Event Details - " + currentEvent.getName());
         stage.setScene(createScene());
-        stage.setWidth(950);
-        stage.setHeight(800);
+        stage.setWidth(1000);
+        stage.setHeight(850);
         stage.show();
     }
     
