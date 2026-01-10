@@ -1,6 +1,7 @@
 package group_3.model;
 
 import java.time.LocalDate;
+
 import group_3.model.enums.Role;
 
 /**
@@ -48,4 +49,5 @@ public abstract class Person {
     public void setDateOfBirth(LocalDate dateOfBirth) { this.dateOfBirth = dateOfBirth; }
     public void setContactInformation(String contactInformation) { this.contactInformation = contactInformation; }
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+    public void setRole(Role role) { this.role = role; }
 }
