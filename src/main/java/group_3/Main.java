@@ -15,6 +15,7 @@ import javafx.stage.Stage;
  *
  * @author Group 3
  */
+
 public class Main extends Application {
 
     @Override

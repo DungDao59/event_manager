@@ -492,9 +492,6 @@ public class EventFormController {
             eventId = eventToEdit.getEventId();
         }
         
-        // Debug output
-        System.out.println("DEBUG: Building event with image path: " + selectedImagePath);
-        
         Event event = new Event(
             eventId,
             nameField.getText().trim(),
