@@ -480,8 +480,11 @@ public class SystemAdminController {
         Optional<Role> result = dialog.showAndWait();
         result.ifPresent(newRole -> {
             if (userService.assignRole(user.getId(), newRole)) {
+                // Update role in-place to keep the same position in the list
+                user.setRole(newRole);
+                // Refresh the table view to show updated role
+                userTable.refresh();
                 showAlert(Alert.AlertType.INFORMATION, "Success", "Role changed to " + newRole);
-                loadUserData();
             } else {
                 showAlert(Alert.AlertType.ERROR, "Error", "Failed to change role.");
             }
@@ -581,12 +584,12 @@ public class SystemAdminController {
     }
 
     private void handleCreateEvent() {
-        try { EventFormController form = new EventFormController(null, null); form.show(); loadEventData(); } 
+        try { EventFormController form = new EventFormController(null, null); form.show(); } 
         catch (Exception e) { showAlert(Alert.AlertType.ERROR, "Error", "Failed: " + e.getMessage()); }
     }
 
     private void handleEditEvent(Event event) {
-        try { EventFormController form = new EventFormController(event, null); form.show(); loadEventData(); }
+        try { EventFormController form = new EventFormController(event, null); form.show(); }
         catch (Exception e) { showAlert(Alert.AlertType.ERROR, "Error", "Failed: " + e.getMessage()); }
     }
 

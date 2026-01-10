@@ -110,7 +110,7 @@ public class PersonDAOImpl implements PersonDAO {
 
     @Override
     public List<Person> findAll() {
-        String sql = "SELECT * FROM person";
+        String sql = "SELECT * FROM person ORDER BY role";
         List<Person> persons = new ArrayList<>();
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -133,7 +133,12 @@ public class PersonDAOImpl implements PersonDAO {
             ps.setString(1, person.getUsername());
             ps.setString(2, person.getPasswordHash());
             ps.setString(3, person.getFullName());
-            ps.setDate(4, java.sql.Date.valueOf(person.getDateOfBirth()));
+            // Handle null date of birth
+            if (person.getDateOfBirth() != null) {
+                ps.setDate(4, java.sql.Date.valueOf(person.getDateOfBirth()));
+            } else {
+                ps.setNull(4, java.sql.Types.DATE);
+            }
             ps.setString(5, person.getContactInformation());
             ps.setString(6, person.getRole().name());
             ps.setInt(7, person.getId());

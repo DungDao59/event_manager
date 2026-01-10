@@ -2,15 +2,18 @@ package group_3.controller;
 
 import java.io.File;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 import group_3.model.Event;
+import group_3.model.Session;
 import group_3.model.enums.EventStatus;
 import group_3.model.enums.EventType;
 import group_3.service.EventAdminService.EventAdminService;
 import group_3.service.EventAdminService.EventAdminServiceImpl;
 import group_3.util.DaoProvider;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -21,6 +24,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.TextField;
@@ -29,6 +33,7 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
@@ -64,12 +69,21 @@ public class EventFormController {
     private ListView<String> sessionListView;
     private TextField newSessionField;
     private Label errorLabel;
+    private StackPane sessionLoadingPane;
+    private ProgressIndicator sessionLoadingIndicator;
     private List<Integer> sessionsToRemove = new ArrayList<>();
-    
+
     public EventFormController(Event event, EventListController listController) {
         this.eventToEdit = event;
         this.listController = listController;
-        this.eventAdminService = new EventAdminServiceImpl();
+        // Lazy init - don't create service in constructor to avoid blocking UI
+    }
+
+    private EventAdminService getEventAdminService() {
+        if (eventAdminService == null) {
+            eventAdminService = new EventAdminServiceImpl();
+        }
+        return eventAdminService;
     }
     
     public void show() {
@@ -79,6 +93,10 @@ public class EventFormController {
         stage.setWidth(700);
         stage.setHeight(800);
         stage.show();
+        // Load form data after UI is shown
+        if (eventToEdit != null) {
+            Platform.runLater(this::populateForm);
+        }
     }
     
     private Scene createScene() {
@@ -216,12 +234,7 @@ public class EventFormController {
         errorLabel = new Label();
         errorLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
         form.getChildren().add(errorLabel);
-        
-        // Populate if editing
-        if (eventToEdit != null) {
-            populateForm();
-        }
-        
+        // Do not call populateForm here
         return form;
     }
     
@@ -373,16 +386,37 @@ public class EventFormController {
             endMinuteCombo.setValue(eventToEdit.getEndDate().getMinute());
         }
         
-        // Populate sessions using batch query (single DB connection for all sessions)
-        group_3.dao.SessionDAO sessionDAO = DaoProvider.getSessionDAO();
-        java.util.List<group_3.model.Session> sessions = sessionDAO.findByEventId(eventToEdit.getEventId());
-        java.util.List<String> sessionDisplayList = sessions.stream()
-            .map(s -> s.getTitle() + " (ID: " + s.getSessionId() + ")")
-            .collect(java.util.stream.Collectors.toList());
-        
-        sessionListView.setItems(FXCollections.observableArrayList(sessionDisplayList));
+        // Load sessions asynchronously to avoid UI freeze
+        loadSessionsAsync();
     }
-    
+
+    private void loadSessionsAsync() {
+        // Show loading placeholder
+        sessionListView.setPlaceholder(new Label("Loading sessions..."));
+
+        // Load sessions in background thread
+        new Thread(() -> {
+            try {
+                group_3.dao.SessionDAO sessionDAO = DaoProvider.getSessionDAO();
+                List<Session> sessions = sessionDAO.findByEventId(eventToEdit.getEventId());
+                List<String> sessionDisplayList = sessions.stream()
+                    .map(s -> s.getTitle() + " (ID: " + s.getSessionId() + ")")
+                    .collect(Collectors.toList());
+
+                // Update UI on JavaFX thread
+                Platform.runLater(() -> {
+                    sessionListView.setItems(FXCollections.observableArrayList(sessionDisplayList));
+                    sessionListView.setPlaceholder(new Label("No sessions"));
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    sessionListView.setPlaceholder(new Label("Error loading sessions"));
+                });
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
     private void handleAddSession() {
         String sessionId = newSessionField.getText().trim();
         if (!sessionId.isEmpty()) {
@@ -421,19 +455,22 @@ public class EventFormController {
             Event event = buildEvent();
 
             if (eventToEdit == null) {
-                eventAdminService.createEvent(event);
-                showSuccess("Event Created", "Event Created Successfully");
+                // Create new event using EventAdminService
+                getEventAdminService().createEvent(event);
+                showSuccess("Event Created", "Event '" + event.getName() + "' has been created successfully.");
             } else {
-                eventAdminService.updateEvent(event);
+                // Update existing event using EventAdminService
+                getEventAdminService().updateEvent(event);
 
                 // Process Removals
                 for (Integer sessionId : sessionsToRemove) {
                     eventAdminService.deleteSession(sessionId);
                 }
 
-                showSuccess("Event Updated", "Event Updated Successfully");
+                showSuccess("Event Updated", "Event '" + event.getName() + "' has been updated successfully.");
             }
-
+            
+            // Refresh the list view to show the changes
             if (listController != null) {
                 listController.refreshEvents();
             }

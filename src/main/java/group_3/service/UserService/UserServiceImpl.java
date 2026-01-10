@@ -10,7 +10,6 @@ import group_3.dao.impl.SessionPresenterDAOImpl;
 import group_3.model.Person;
 import group_3.model.enums.Role;
 import group_3.service.PresenterService.PresenterService;
-import group_3.service.PresenterService.PresenterServiceImpl;
 import group_3.service.SystemHistoryService.SystemHistoryService;
 import group_3.service.SystemHistoryService.SystemHistoryServiceImpl;
 
@@ -156,8 +155,11 @@ public class UserServiceImpl implements UserService {
             return false; // No change needed
         }
 
-        // Note: This requires creating a new Person subclass instance based on the new role
-        // For simplicity, we'll log the action. Full implementation would need to migrate user data.
+        // Update the user's role
+        user.setRole(newRole);
+        personDAO.update(user);
+        
+        // Log the action
         historyService.logAction(userId, "ROLE_CHANGED", 
             String.format("{\"userId\": %d, \"username\": \"%s\", \"oldRole\": \"%s\", \"newRole\": \"%s\"}", 
                 userId, user.getUsername(), oldRole, newRole));
