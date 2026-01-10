@@ -37,11 +37,11 @@ INSERT INTO event (name, type, start_date, end_date, location, duration, status)
 ('Design Summit', 'WORKSHOP', '2026-04-10', '2026-04-11', 'New York', 2, 'SCHEDULED'),
 ('AI Expo', 'EXHIBITION', '2026-05-20', '2026-05-22', 'London', 3, 'SCHEDULED'),
 ('Cyber Security Forum', 'CONFERENCE', '2026-06-15', '2026-06-16', 'Berlin', 2, 'SCHEDULED'),
-('HealthTech 2026', 'CONFERENCE', '2026-07-01', '2026-07-02', 'Tokyo', 2, 'SCHEDULED'),
-('Green Energy Meet', 'WORKSHOP', '2026-08-05', '2026-08-05', 'Oslo', 1, 'SCHEDULED'),
-('FinTech Days', 'CONCERT', '2026-09-10', '2026-09-12', 'Singapore', 3, 'SCHEDULED'),
+('HealthTech 2026', 'CONFERENCE', '2026-07-01', '2026-07-02', 'Tokyo', 2, 'CANCELLED'),
+('Green Energy Meet', 'WORKSHOP', '2026-08-05', '2026-08-05', 'Oslo', 1, 'CANCELLED'),
+('FinTech Days', 'CONCERT', '2026-09-10', '2026-09-12', 'Singapore', 3, 'CANCELLED'),
 ('Mobile Dev Week', 'WORKSHOP', '2026-10-01', '2026-10-05', 'Austin', 5, 'SCHEDULED'),
-('Cloud Native Con', 'CONFERENCE', '2026-11-12', '2026-11-14', 'Seattle', 3, 'SCHEDULED'),
+('Cloud Native Con', 'CONFERENCE', '2026-11-12', '2026-11-14', 'Seattle', 3, 'CANCELLED'),
 ('Game Dev Gala', 'EXHIBITION', '2026-12-01', '2026-12-03', 'Los Angeles', 3, 'SCHEDULED'),
 ('Open Source Summit', 'CONFERENCE', '2026-01-15', '2026-01-17', 'Paris', 3, 'COMPLETED'),
 ('Blockchain Blast', 'WORKSHOP', '2026-02-10', '2026-02-10', 'Dubai', 1, 'COMPLETED'),
@@ -52,7 +52,12 @@ INSERT INTO event (name, type, start_date, end_date, location, duration, status)
 ('Robotics Rally', 'WORKSHOP', '2026-07-15', '2026-07-17', 'Pittsburgh', 3, 'SCHEDULED'),
 ('Future of Food', 'EXHIBITION', '2026-08-20', '2026-08-21', 'Amsterdam', 2, 'SCHEDULED'),
 ('Space Explorers', 'CONFERENCE', '2026-09-05', '2026-09-05', 'Houston', 1, 'SCHEDULED'),
-('LegalTech Meetup', 'CONFERENCE', '2026-10-10', '2026-10-11', 'Sydney', 2, 'SCHEDULED');
+('LegalTech Meetup', 'CONFERENCE', '2026-10-10', '2026-10-11', 'Sydney', 2, 'SCHEDULED'),
+('Tech Innovators', 'CONFERENCE', '2026-11-20', '2026-11-22', 'San Jose', 3, 'ONGOING'),
+('AR/VR Expo', 'EXHIBITION', '2026-12-15', '2026-12-16', 'Chicago', 2, 'ONGOING'),
+('Social Media Summit', 'WORKSHOP', '2027-01-10', '2027-01-11', 'Miami', 2, 'ONGOING'),
+('EdTech Forum', 'CONFERENCE', '2027-02-05', '2027-02-07', 'Dublin', 3, 'ONGOING'),
+('BioTech Symposium', 'CONFERENCE', '2027-03-12', '2027-03-14', 'Geneva', 3, 'ONGOING');
 
 -- 5. SESSION DATA
 INSERT INTO session (

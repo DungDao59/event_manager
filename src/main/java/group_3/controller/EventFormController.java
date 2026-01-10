@@ -370,19 +370,11 @@ public class EventFormController {
             endMinuteCombo.setValue(eventToEdit.getEndDate().getMinute());
         }
         
-        // Populate sessions with names instead of just IDs
+        // Populate sessions using batch query (single DB connection for all sessions)
         group_3.dao.SessionDAO sessionDAO = DaoProvider.getSessionDAO();
-        java.util.List<String> sessionDisplayList = eventToEdit.getSessionIds().stream()
-            .map(sessionId -> {
-                try {
-                    int sId = Integer.parseInt(sessionId);
-                    return sessionDAO.findById(sId)
-                        .map(s -> s.getTitle() + " (ID: " + sessionId + ")")
-                        .orElse("Session #" + sessionId);
-                } catch (Exception e) {
-                    return "Session #" + sessionId;
-                }
-            })
+        java.util.List<group_3.model.Session> sessions = sessionDAO.findByEventId(eventToEdit.getEventId());
+        java.util.List<String> sessionDisplayList = sessions.stream()
+            .map(s -> s.getTitle() + " (ID: " + s.getSessionId() + ")")
             .collect(java.util.stream.Collectors.toList());
         
         sessionListView.setItems(FXCollections.observableArrayList(sessionDisplayList));

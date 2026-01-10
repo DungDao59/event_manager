@@ -18,16 +18,21 @@ DROP TABLE IF EXISTS attendee;
 
 DROP TABLE IF EXISTS person;
 
---     CREATE TYPE user_role AS ENUM (
---        'ATTENDEE',
---        'PRESENTER',
---        'EVENT_ADMIN',
---        'SYSTEM_ADMIN'
---     );
---
---     CREATE TYPE event_status AS ENUM ('SCHEDULED', 'ONGOING', 'COMPLETED', 'CANCELLED');
---
---     CREATE TYPE ticket_status AS ENUM ('ACTIVE', 'USED', 'CANCELLED');
+-- Drop and recreate enum types
+DROP TYPE IF EXISTS user_role CASCADE;
+DROP TYPE IF EXISTS event_status CASCADE;
+DROP TYPE IF EXISTS ticket_status CASCADE;
+
+CREATE TYPE user_role AS ENUM (
+   'ATTENDEE',
+   'PRESENTER',
+   'EVENT_ADMIN',
+   'SYSTEM_ADMIN'
+);
+
+CREATE TYPE event_status AS ENUM ('SCHEDULED', 'ONGOING', 'COMPLETED', 'CANCELLED');
+
+CREATE TYPE ticket_status AS ENUM ('ACTIVE', 'USED', 'CANCELLED');
 
     -- PERSON TABLE --
     CREATE TABLE

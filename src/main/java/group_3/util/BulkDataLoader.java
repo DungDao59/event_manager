@@ -79,6 +79,14 @@ public class BulkDataLoader {
     }
 
     /**
+     * Container for Event Admin data
+     */
+    public static class EventAdminData {
+        public List<Event> events = new ArrayList<>();
+        public List<Session> sessions = new ArrayList<>();
+    }
+
+    /**
      * Load all Guest/Public data using a single database connection.
      * @return GuestData containing events
      */
@@ -94,6 +102,22 @@ public class BulkDataLoader {
             e.printStackTrace();
         }
 
+        return data;
+    }
+
+    /**
+     * Load all Event Admin data using a single database connection.
+     * @return EventAdminData containing events and sessions
+     */
+    public static EventAdminData loadEventAdminData() {
+        EventAdminData data = new EventAdminData();
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            data.events = loadEvents(conn);
+            data.sessions = loadSessions(conn);
+        } catch (SQLException e) {
+            System.err.println("Error loading event admin data: " + e.getMessage());
+            e.printStackTrace();
+        }
         return data;
     }
 

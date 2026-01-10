@@ -149,4 +149,24 @@ public class DatabaseConnection {
             e.printStackTrace();
         }
     }
+    
+    /**
+     * Main method to reset the database.
+     * Usage: mvn compile exec:java -Dexec.mainClass="group_3.util.DatabaseConnection"
+     */
+    public static void main(String[] args) {
+        System.out.println("=== Database Reset Tool ===");
+        try {
+            System.out.println("Step 1: Dropping all tables and recreating schema...");
+            setupSchema();
+            
+            System.out.println("Step 2: Loading initial data...");
+            loadInitialData();
+            
+            System.out.println("=== Database reset completed successfully! ===");
+        } catch (SQLException e) {
+            System.err.println("Database reset failed: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 }

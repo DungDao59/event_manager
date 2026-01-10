@@ -37,6 +37,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.application.Platform;
 
 /**
  * @author Group 3
@@ -227,6 +228,9 @@ public class EventDetailController {
         return section;
     }
     
+    // Cache sessions loaded via batch query
+    private java.util.List<group_3.model.Session> cachedSessions = new java.util.ArrayList<>();
+    
     private VBox createSessionsSection() {
         VBox section = new VBox(10);
         section.setStyle("-fx-border-color: #e0e0e0; -fx-border-width: 1; -fx-padding: 15; -fx-background-color: #f8f9fa;");
@@ -236,19 +240,11 @@ public class EventDetailController {
         
         // Get SessionDAO to fetch session details
         SessionDAO sessionDAO = DaoProvider.getSessionDAO();
+        cachedSessions = sessionDAO.findByEventId(currentEvent.getEventId());
         
-        // Build session display list with titles
-        java.util.List<String> sessionDisplayList = currentEvent.getSessionIds().stream()
-            .map(sessionId -> {
-                try {
-                    int sId = Integer.parseInt(sessionId);
-                    return sessionDAO.findById(sId)
-                        .map(s -> s.getTitle() + " (ID: " + sessionId + ")")
-                        .orElse("Session #" + sessionId);
-                } catch (RuntimeException e) {
-                    return "Session #" + sessionId;
-                }
-            })
+        // Build session display list from cached sessions
+        java.util.List<String> sessionDisplayList = cachedSessions.stream()
+            .map(s -> s.getTitle() + " (ID: " + s.getSessionId() + ")")
             .collect(java.util.stream.Collectors.toList());
         
         ListView<String> sessionList = new ListView<>(
@@ -268,21 +264,11 @@ public class EventDetailController {
         Button editBtn = createButton("View/Edit Session", "#3498db");
         editBtn.setOnAction(e -> {
             int idx = sessionList.getSelectionModel().getSelectedIndex();
-            if (idx >= 0) {
-                String sessionId = currentEvent.getSessionIds().get(idx);
-                try {
-                    int sId = Integer.parseInt(sessionId);
-                    java.util.Optional<group_3.model.Session> sessionOpt = 
-                        sessionDAO.findById(sId);
-                    if (sessionOpt.isPresent()) {
-                        SessionEditorController editor = new SessionEditorController(sessionOpt.get(), this);
-                        editor.show();
-                    } else {
-                        showError("Session Not Found", "Session with ID " + sessionId + " not found.");
-                    }
-                } catch (RuntimeException ex) {
-                    showError("Error", "Failed to open session editor: " + ex.getMessage());
-                }
+            if (idx >= 0 && idx < cachedSessions.size()) {
+                // Use cached session - no DB call needed
+                group_3.model.Session selectedSession = cachedSessions.get(idx);
+                SessionEditorController editor = new SessionEditorController(selectedSession, this);
+                editor.show();
             } else {
                 showError("No Selection", "Please select a session from the list first.");
             }
@@ -322,26 +308,46 @@ public class EventDetailController {
         stats.setVgap(15);
         stats.setStyle("-fx-padding: 15;");
         
-        try {
-            int eventId = currentEvent.getEventId();
-            Optional<EventStatistics> statsOpt = statisticsService.getEventStatistics(eventId);
-            
-            if (statsOpt.isPresent()) {
-                EventStatistics stat = statsOpt.get();
+        // Show loading placeholder immediately
+        Label loadingLabel = new Label("Loading statistics...");
+        loadingLabel.setStyle("-fx-text-fill: #7f8c8d; -fx-font-style: italic;");
+        stats.add(loadingLabel, 0, 0);
+        
+        // Load statistics asynchronously to prevent UI freeze
+        Thread statsThread = new Thread(() -> {
+            try {
+                int eventId = currentEvent.getEventId();
+                Optional<EventStatistics> statsOpt = statisticsService.getEventStatistics(eventId);
                 
-                VBox revenueCard = createStatCard("Total Revenue", "$" + String.format("%.2f", stat.getTotalRevenue()));
-                VBox ticketsCard = createStatCard("Tickets Sold", String.valueOf(stat.getTotalTicketsSold()));
-                VBox attendanceCard = createStatCard("Attendance Rate", String.format("%.1f%%", stat.getAttendanceRate()));
-                
-                stats.add(revenueCard, 0, 0);
-                stats.add(ticketsCard, 1, 0);
-                stats.add(attendanceCard, 2, 0);
+                Platform.runLater(() -> {
+                    stats.getChildren().clear();
+                    if (statsOpt.isPresent()) {
+                        EventStatistics stat = statsOpt.get();
+                        
+                        VBox revenueCard = createStatCard("Total Revenue", "$" + String.format("%.2f", stat.getTotalRevenue()));
+                        VBox ticketsCard = createStatCard("Tickets Sold", String.valueOf(stat.getTotalTicketsSold()));
+                        VBox attendanceCard = createStatCard("Attendance Rate", String.format("%.1f%%", stat.getAttendanceRate()));
+                        
+                        stats.add(revenueCard, 0, 0);
+                        stats.add(ticketsCard, 1, 0);
+                        stats.add(attendanceCard, 2, 0);
+                    } else {
+                        Label noStats = new Label("No statistics available");
+                        noStats.setStyle("-fx-text-fill: #999;");
+                        stats.add(noStats, 0, 0);
+                    }
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    stats.getChildren().clear();
+                    Label errorLabel = new Label("Statistics not available");
+                    errorLabel.setStyle("-fx-text-fill: #999;");
+                    stats.add(errorLabel, 0, 0);
+                });
             }
-        } catch (Exception e) {
-            Label errorLabel = new Label("Statistics not available");
-            errorLabel.setStyle("-fx-text-fill: #999;");
-            stats.add(errorLabel, 0, 0);
-        }
+        });
+        statsThread.setDaemon(true);
+        statsThread.start();
         
         Button viewStatsBtn = createButton("View Full Statistics", "#3498db");
         viewStatsBtn.setOnAction(e -> handleViewFullStatistics());

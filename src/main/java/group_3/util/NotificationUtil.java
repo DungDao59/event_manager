@@ -17,12 +17,6 @@ public class NotificationUtil {
         if (user == null) {
             return;
         }
-        String timestamp = java.time.LocalDateTime.now().toString();
-        System.out.println("[" + timestamp + "] Notification for "
-                + user.getFullName() + " (" + user.getUsername() + "):");
-        System.out.println("  " + title);
-        System.out.println("  " + message);
-        System.out.println("----------------------------------------");
     }
 
     public static void notifyRegistrationSuccess(Person user, int sessionId) {

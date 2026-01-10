@@ -12,8 +12,4 @@ public enum EventType {
         WORKSHOP,
         CONCERT,
         EXHIBITION,
-        SUMMIT,
-        SEMINAR,
-        EXPO,
-        NETWORKING
     }

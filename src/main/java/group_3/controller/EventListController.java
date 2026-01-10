@@ -1,7 +1,6 @@
 package group_3.controller;
 
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Optional;
 
 import group_3.dao.EventDAO;
@@ -11,16 +10,20 @@ import group_3.model.enums.EventType;
 import group_3.security.AuthContext;
 import group_3.service.EventAdminService.EventAdminService;
 import group_3.service.EventAdminService.EventAdminServiceImpl;
+import group_3.util.BulkDataLoader;
 import group_3.util.DaoProvider;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -30,6 +33,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
@@ -56,6 +60,10 @@ public class EventListController {
     private Label statusLabel;
     private Label eventCountLabel;
     
+    // Loading overlay
+    private StackPane loadingOverlay;
+    private Label loadingLabel;
+    
     private static final DateTimeFormatter DATE_FORMATTER = 
         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     
@@ -72,11 +80,30 @@ public class EventListController {
         root.setStyle("-fx-font-family: 'Segoe UI'; -fx-font-size: 14px;");
         
         root.setTop(createTopSection());
-        root.setCenter(createTableSection());
+        VBox tableSection = createTableSection();
         root.setBottom(createStatusBar());
         
+        // Create loading overlay
+        loadingOverlay = new StackPane();
+        loadingOverlay.setStyle("-fx-background-color: rgba(255, 255, 255, 0.9);");
+        ProgressIndicator progressIndicator = new ProgressIndicator();
+        progressIndicator.setMaxSize(80, 80);
+        loadingLabel = new Label("Loading events...");
+        loadingLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        VBox loadingContent = new VBox(15, progressIndicator, loadingLabel);
+        loadingContent.setAlignment(Pos.CENTER);
+        loadingOverlay.getChildren().add(loadingContent);
+        loadingOverlay.setVisible(true);
+        
+        // Wrap table with loading overlay
+        StackPane contentWrapper = new StackPane(tableSection, loadingOverlay);
+        VBox.setVgrow(contentWrapper, Priority.ALWAYS);
+        root.setCenter(contentWrapper);
+        
         scene = new Scene(root);
-        loadEvents();
+        
+        // Load data asynchronously
+        loadAllDataAsync();
     }
     
     private VBox createTopSection() {
@@ -249,15 +276,48 @@ public class EventListController {
         return statusBar;
     }
     
+    private void loadAllDataAsync() {
+        // Show loading overlay
+        Platform.runLater(() -> {
+            if (loadingOverlay != null) {
+                loadingOverlay.setVisible(true);
+                loadingLabel.setText("Loading events...");
+            }
+        });
+        
+        Thread loadThread = new Thread(() -> {
+            try {
+                // Use BulkDataLoader for efficient single-connection loading
+                BulkDataLoader.EventAdminData data = BulkDataLoader.loadEventAdminData();
+                
+                // Update UI on JavaFX thread
+                Platform.runLater(() -> {
+                    eventList.setAll(data.events);
+                    applyFilters();
+                    updateStatus("Events loaded successfully", data.events.size());
+                    
+                    // Hide loading overlay
+                    if (loadingOverlay != null) {
+                        loadingOverlay.setVisible(false);
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+                Platform.runLater(() -> {
+                    showError("Error loading events", e.getMessage());
+                    if (loadingOverlay != null) {
+                        loadingOverlay.setVisible(false);
+                    }
+                });
+            }
+        });
+        loadThread.setName("EventLoader");
+        loadThread.setDaemon(true);
+        loadThread.start();
+    }
+    
     private void loadEvents() {
-        try {
-            List<Event> events = eventDAO.findAll();
-            eventList.setAll(events);
-            applyFilters();
-            updateStatus("Events loaded successfully", events.size());
-        } catch (Exception e) {
-            showError("Error loading events", e.getMessage());
-        }
+        loadAllDataAsync();
     }
     
     private void handleCreateEvent() {
