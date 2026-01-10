@@ -29,6 +29,7 @@ import group_3.service.UserService.UserService;
 import group_3.service.UserService.UserServiceImpl;
 import group_3.util.BulkDataLoader;
 import group_3.util.DaoProvider;
+import group_3.util.PasswordUtil;
 import group_3.util.QRCode;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
@@ -929,11 +930,31 @@ private void loadSessionsForEvent(int eventId) {
             String confirmPwd = confirmPasswordField.getText();
 
             if (!currentPwd.isEmpty() || !newPwd.isEmpty() || !confirmPwd.isEmpty()) {
+                // Validate all password fields are filled
+                if (currentPwd.isEmpty()) {
+                    showAlert(Alert.AlertType.ERROR, "Error", "Please enter your current password.");
+                    return;
+                }
+                if (newPwd.isEmpty()) {
+                    showAlert(Alert.AlertType.ERROR, "Error", "Please enter a new password.");
+                    return;
+                }
+                if (newPwd.length() < 6) {
+                    showAlert(Alert.AlertType.ERROR, "Error", "New password must be at least 6 characters.");
+                    return;
+                }
                 if (!newPwd.equals(confirmPwd)) {
                     showAlert(Alert.AlertType.ERROR, "Error", "New passwords do not match.");
                     return;
                 }
-                // Password change would be handled here
+                // Verify current password
+                if (!PasswordUtil.verifyPassword(currentPwd, currentUser.getPasswordHash())) {
+                    showAlert(Alert.AlertType.ERROR, "Error", "Current password is incorrect.");
+                    return;
+                }
+                // Hash and set new password
+                String newHash = PasswordUtil.hash(newPwd);
+                currentUser.setPasswordHash(newHash);
             }
 
             userService.updateUser(currentUser);

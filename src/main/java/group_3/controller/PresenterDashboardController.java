@@ -30,6 +30,7 @@ import group_3.service.UserService.UserService;
 import group_3.service.UserService.UserServiceImpl;
 import group_3.util.BulkDataLoader;
 import group_3.util.DaoProvider;
+import group_3.util.PasswordUtil;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -233,10 +234,9 @@ public class PresenterDashboardController {
                     updateStatisticsView(stats);
                     loadProfileData();
                     loadingOverlay.setVisible(false);
-                    System.out.println("[Presenter] UI updated successfully");
+                    
                 });
             } catch (Exception e) {
-                System.err.println("[Presenter] Error loading data: " + e.getMessage());
                 e.printStackTrace();
                 Platform.runLater(() -> loadingOverlay.setVisible(false));
             }
@@ -867,14 +867,36 @@ public class PresenterDashboardController {
             currentUser.setContactInformation("{\"bio\": \"" + bioField.getText() + "\"}");
 
             // Check if password change is requested
+            String currentPwd = currentPasswordField.getText();
             String newPwd = newPasswordField.getText();
             String confirmPwd = confirmPasswordField.getText();
 
-            if (!newPwd.isEmpty() || !confirmPwd.isEmpty()) {
+            if (!currentPwd.isEmpty() || !newPwd.isEmpty() || !confirmPwd.isEmpty()) {
+                // Validate all password fields are filled
+                if (currentPwd.isEmpty()) {
+                    showAlert(Alert.AlertType.ERROR, "Error", "Please enter your current password.");
+                    return;
+                }
+                if (newPwd.isEmpty()) {
+                    showAlert(Alert.AlertType.ERROR, "Error", "Please enter a new password.");
+                    return;
+                }
+                if (newPwd.length() < 6) {
+                    showAlert(Alert.AlertType.ERROR, "Error", "New password must be at least 6 characters.");
+                    return;
+                }
                 if (!newPwd.equals(confirmPwd)) {
                     showAlert(Alert.AlertType.ERROR, "Error", "New passwords do not match.");
                     return;
                 }
+                // Verify current password
+                if (!PasswordUtil.verifyPassword(currentPwd, currentUser.getPasswordHash())) {
+                    showAlert(Alert.AlertType.ERROR, "Error", "Current password is incorrect.");
+                    return;
+                }
+                // Hash and set new password
+                String newHash = PasswordUtil.hash(newPwd);
+                currentUser.setPasswordHash(newHash);
             }
 
             userService.updateUser(currentUser);
