@@ -187,10 +187,13 @@ public class EventAdminServiceImpl implements EventAdminService {
         }
         eventDAO.update(event);
 
+        String jsonDetail = String.format("{\"action\": \"UPDATE_EVENT\", \"eventId\": %d, \"name\": \"%s\"}",
+                event.getEventId(), event.getName());
+
         historyService.logAction(
                 AuthContext.getCurrentUserId(),
                 "UPDATE EVENT",
-                "Updated event ID = " + event.getEventId()
+                jsonDetail
         );
 
         NotificationUtil.notify(
@@ -222,10 +225,13 @@ public class EventAdminServiceImpl implements EventAdminService {
         eventDAO.delete(eventId);
 
 
+        String jsonDetail = String.format("{\"action\": \"DELETE_EVENT\", \"eventId\": %d}",
+                eventId);
+
         historyService.logAction(
                 AuthContext.getCurrentUserId(),
-                "CREATE EVENT",
-                "Delete event ID = " + eventId
+                "DELETE EVENT",
+                jsonDetail
         );
 
         NotificationUtil.notify(
@@ -351,10 +357,13 @@ public class EventAdminServiceImpl implements EventAdminService {
         }
         sessionDAO.update(session);
 
+        String jsonDetail = String.format("{\"action\": \"UPDATE_SESSION\", \"sessionId\": %d, \"title\": \"%s\"}",
+                session.getSessionId(), session.getTitle());
+
         historyService.logAction(
                 AuthContext.getCurrentUserId(),
                 "UPDATE SESSION",
-                "Update session ID = " + session.getSessionId()
+                jsonDetail
         );
 
         NotificationUtil.notify(
@@ -378,10 +387,12 @@ public class EventAdminServiceImpl implements EventAdminService {
         }
         sessionDAO.delete(sessionId);
 
+        String jsonDetails = String.format("{\"action\": \"DELETE_SESSION\", \"sessionId\": %d}", sessionId);
+
         historyService.logAction(
                 AuthContext.getCurrentUserId(),
-                "UPDATE SESSION",
-                "Delete session ID = " + sessionId
+                "DELETE SESSION",
+                jsonDetails
         );
 
         NotificationUtil.notify(
@@ -428,10 +439,13 @@ public class EventAdminServiceImpl implements EventAdminService {
             session.setEventId(eventId);
             sessionDAO.update(session);
 
+            String jsonDetail = String.format("{\"action\": \"LINK_SESSION_EVENT\", \"sessionId\": %d, \"eventId\": %d}",
+                    sessionId, eventId);
+
             historyService.logAction(
                     AuthContext.getCurrentUserId(),
                     "LINK SESSION EVENT",
-                    "Add session #" + sessionId + "to event #" + eventId
+                    jsonDetail
             );
         }
     }
@@ -458,10 +472,13 @@ public class EventAdminServiceImpl implements EventAdminService {
                 session.setEventId(0);
                 sessionDAO.update(session);
 
+                String jsonDetail = String.format("{\"action\": \"UNLINK_SESSION_EVENT\", \"sessionId\": %d, \"eventId\": %d}",
+                        sessionId, eventId);
+
                 historyService.logAction(
                         AuthContext.getCurrentUserId(),
                         "UNLINK SESSION EVENT",
-                        "Remove session #" + sessionId + " from event #" + eventId
+                        jsonDetail
                 );
             }
         }
@@ -501,10 +518,13 @@ public class EventAdminServiceImpl implements EventAdminService {
             session.addPresenter(presenterId);
             sessionDAO.update(session);
 
+            String jsonDetail = String.format("{\"action\": \"ASSIGN_PRESENTER\", \"sessionId\": %d, \"presenterId\": %d}",
+                    sessionId, presenterId);
+
             historyService.logAction(
                     AuthContext.getCurrentUserId(),
                     "ASSIGN PRESENTER",
-                    "Assign presenter #" + presenterId + " to session #" +  sessionId
+                    jsonDetail
             );
 
             NotificationUtil.notify(
@@ -540,10 +560,13 @@ public class EventAdminServiceImpl implements EventAdminService {
 
             sessionDAO.update(session);
 
+            String jsonDetail = String.format("{\"action\": \"UNASSIGN_PRESENTER\", \"sessionId\": %d, \"presenterId\": %d}",
+                    sessionId, presenterId);
+
             historyService.logAction(
                     AuthContext.getCurrentUserId(),
                     "UNASSIGN PRESENTER",
-                    "Unassign presenter #" + presenterId + "from session #" + sessionId
+                    jsonDetail
             );
 
             NotificationUtil.notify(
@@ -664,10 +687,13 @@ public class EventAdminServiceImpl implements EventAdminService {
         ticket.setStatus(newStatus);
         ticketDAO.update(ticket);
 
+        String jsonDetail = String.format("{\"action\": \"UPDATE_TICKET_STATUS\", \"ticketId\": %d, \"newStatus\": \"%s\"}",
+                ticketId, newStatus.name());
+
         historyService.logAction(
                 AuthContext.getCurrentUserId(),
                 "UPDATE TICKET STATUS",
-                "Update ticket #" + ticketId + " status to " + newStatus.name()
+                jsonDetail
         );
         return true;
     }
@@ -716,10 +742,12 @@ public class EventAdminServiceImpl implements EventAdminService {
             return false;
         }
 
+        String jsonDetail = String.format("{\"action\": \"DELETE_TICKET\", \"ticketId\": %d}", ticketId);
+
         historyService.logAction(
                 AuthContext.getCurrentUserId(),
                 "DELETE TICKET",
-                "Delete ticket ID = " + ticketId
+                jsonDetail
         );
 
         return ticketDAO.delete(ticketId);
