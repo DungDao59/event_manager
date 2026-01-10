@@ -22,7 +22,9 @@ import group_3.model.enums.EventType;
 import group_3.model.enums.Role;
 import group_3.model.enums.TicketStatus;
 import group_3.model.enums.TicketType;
-
+/**
+ * @author Group 3
+ */
 /**
  * Utility class to load all dashboard data using a SINGLE database
  * connection. This dramatically reduces load time by eliminating multiple

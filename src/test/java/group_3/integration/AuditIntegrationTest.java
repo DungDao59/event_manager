@@ -20,7 +20,9 @@ import group_3.service.AuthService.AuthServiceImpl;
 import group_3.service.EventAdminService.EventAdminService;
 import group_3.service.EventAdminService.EventAdminServiceImpl;
 import group_3.util.PasswordUtil;
-
+/**
+ * @author Group 3
+ */
 public class AuditIntegrationTest {
 
     @Test

@@ -3,7 +3,9 @@ package group_3.util;
 import group_3.model.Ticket;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-
+/**
+ * @author Group 3
+ */
 public class QRCodeTest {
     @Test
     void generateValidQRPayload(){
