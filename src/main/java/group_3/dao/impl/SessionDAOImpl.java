@@ -7,8 +7,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import group_3.dao.SessionDAO;
 import group_3.model.Session;
@@ -118,13 +121,70 @@ public class SessionDAOImpl implements SessionDAO {
             ps.setInt(1, eventId);
             ResultSet rs = ps.executeQuery();
 
+            // First pass: create sessions without presenter IDs
+            List<Integer> sessionIds = new ArrayList<>();
             while (rs.next()) {
-                sessions.add(mapRowToSession(rs, conn));
+                Session session = mapRowToSessionBasic(rs);
+                sessions.add(session);
+                sessionIds.add(session.getSessionId());
+            }
+            
+            // Batch load all presenter IDs in one query
+            if (!sessionIds.isEmpty()) {
+                Map<Integer, List<Integer>> presenterMap = loadPresenterIdsBatch(sessionIds, conn);
+                for (Session session : sessions) {
+                    session.setPresenterIds(presenterMap.getOrDefault(session.getSessionId(), new ArrayList<>()));
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException("Error finding sessions by event ID: " + e.getMessage(), e);
         }
         return sessions;
+    }
+    
+    /**
+     * Batch load presenter IDs for multiple sessions in a single query
+     */
+    private Map<Integer, List<Integer>> loadPresenterIdsBatch(List<Integer> sessionIds, Connection conn) {
+        Map<Integer, List<Integer>> result = new HashMap<>();
+        if (sessionIds.isEmpty()) return result;
+        
+        String placeholders = sessionIds.stream().map(id -> "?").collect(Collectors.joining(","));
+        String sql = "SELECT session_id, presenter_id FROM session_presenter WHERE session_id IN (" + placeholders + ")";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (int i = 0; i < sessionIds.size(); i++) {
+                ps.setInt(i + 1, sessionIds.get(i));
+            }
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                int sessionId = rs.getInt("session_id");
+                int presenterId = rs.getInt("presenter_id");
+                result.computeIfAbsent(sessionId, k -> new ArrayList<>()).add(presenterId);
+            }
+        } catch (SQLException e) {
+            System.err.println("Warning: Could not batch load presenter IDs: " + e.getMessage());
+        }
+        return result;
+    }
+    
+    /**
+     * Map a row to Session without loading presenter IDs (for batch loading)
+     */
+    private Session mapRowToSessionBasic(ResultSet rs) throws SQLException {
+        int id = rs.getInt("session_id");
+        int eventId = rs.getInt("event_id");
+        String title = rs.getString("title");
+        String description = rs.getString("description");
+        java.sql.Timestamp startTimeSql = rs.getTimestamp("start_time");
+        java.sql.Timestamp endTimeSql = rs.getTimestamp("end_time");
+        String venue = rs.getString("venue");
+        int capacity = rs.getInt("capacity");
+
+        LocalDateTime startTime = startTimeSql != null ? startTimeSql.toLocalDateTime() : LocalDateTime.now();
+        LocalDateTime endTime = endTimeSql != null ? endTimeSql.toLocalDateTime() : startTime.plusHours(1);
+
+        return new Session(id, eventId, title, description, startTime, endTime, venue, capacity);
     }
 
     @Override
