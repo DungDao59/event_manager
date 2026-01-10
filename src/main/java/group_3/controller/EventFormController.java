@@ -2,6 +2,8 @@ package group_3.controller;
 
 import java.io.File;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import group_3.model.Event;
 import group_3.model.enums.EventStatus;
@@ -62,6 +64,7 @@ public class EventFormController {
     private ListView<String> sessionListView;
     private TextField newSessionField;
     private Label errorLabel;
+    private List<Integer> sessionsToRemove = new ArrayList<>();
     
     public EventFormController(Event event, EventListController listController) {
         this.eventToEdit = event;
@@ -387,37 +390,57 @@ public class EventFormController {
             newSessionField.clear();
         }
     }
-    
+
     private void handleRemoveSession() {
-        int index = sessionListView.getSelectionModel().getSelectedIndex();
-        if (index >= 0) {
-            sessionListView.getItems().remove(index);
+        String selectedItem = sessionListView.getSelectionModel().getSelectedItem();
+        if (selectedItem != null) {
+            try {
+                int idStart = selectedItem.lastIndexOf("(ID: ") + 5;
+                int idEnd = selectedItem.lastIndexOf(")");
+
+                if (idStart > 4 && idEnd > idStart) {
+                    String idStr = selectedItem.substring(idStart, idEnd);
+                    int sessionId = Integer.parseInt(idStr);
+
+                    // Add to removal list
+                    sessionsToRemove.add(sessionId);
+                }
+            } catch (Exception e) {
+                System.err.println("Could not parse session ID: " + selectedItem);
+            }
+
+            // Remove from UI list
+            sessionListView.getItems().remove(selectedItem);
         }
     }
-    
+
     private void handleSave() {
         if (!validateForm()) return;
-        
+
         try {
             Event event = buildEvent();
-            
+
             if (eventToEdit == null) {
-                // Create new event using EventAdminService
                 eventAdminService.createEvent(event);
-                showSuccess("Event Created", "Event '" + event.getName() + "' has been created successfully.");
+                showSuccess("Event Created", "Event Created Successfully");
             } else {
-                // Update existing event using EventAdminService
                 eventAdminService.updateEvent(event);
-                showSuccess("Event Updated", "Event '" + event.getName() + "' has been updated successfully.");
+
+                // Process Removals
+                for (Integer sessionId : sessionsToRemove) {
+                    eventAdminService.deleteSession(sessionId);
+                }
+
+                showSuccess("Event Updated", "Event Updated Successfully");
             }
-            
-            // Refresh the list view to show the changes
+
             if (listController != null) {
                 listController.refreshEvents();
             }
             stage.close();
         } catch (Exception e) {
             showError("Error saving event", e.getMessage());
+            e.printStackTrace();
         }
     }
     

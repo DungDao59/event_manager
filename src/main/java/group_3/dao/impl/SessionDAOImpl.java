@@ -47,6 +47,7 @@ public class SessionDAOImpl implements SessionDAO {
             ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
                 session.setSessionId(rs.getInt(1));
+                updatePresenters(session, conn);
             }
         } catch (Exception e) {
             throw new RuntimeException("Error creating session: " + e.getMessage(), e);
@@ -146,6 +147,10 @@ public class SessionDAOImpl implements SessionDAO {
             ps.setInt(8, session.getSessionId());
 
             ps.executeUpdate();
+            ResultSet rs = ps.getGeneratedKeys();
+
+            updatePresenters(session, conn);
+
         } catch (Exception e) {
             throw new RuntimeException("Error updating session: " + e.getMessage(), e);
         }
@@ -272,6 +277,25 @@ public class SessionDAOImpl implements SessionDAO {
         }
         
         return presenterIds;
+    }
+
+    private void updatePresenters(Session session, Connection conn) throws SQLException {
+        // Clear old
+        try (PreparedStatement del = conn.prepareStatement("DELETE FROM session_presenter WHERE session_id = ?")) {
+            del.setInt(1, session.getSessionId());
+            del.executeUpdate();
+        }
+        // Insert new
+        if (!session.getPresenterIds().isEmpty()) {
+            try (PreparedStatement ins = conn.prepareStatement("INSERT INTO session_presenter (session_id, presenter_id) VALUES (?, ?)")) {
+                for (Integer pId : session.getPresenterIds()) {
+                    ins.setInt(1, session.getSessionId());
+                    ins.setInt(2, pId);
+                    ins.addBatch();
+                }
+                ins.executeBatch();
+            }
+        }
     }
 }
 

@@ -1,7 +1,9 @@
 package group_3.controller;
 
+import group_3.dao.EventDAO;
 import group_3.dao.PresenterDAO;
 import group_3.model.Presenter;
+import group_3.model.Event;
 import group_3.model.Session;
 import group_3.util.DaoProvider;
 import group_3.service.EventAdminService.EventAdminService;
@@ -25,11 +27,12 @@ import java.util.stream.Collectors;
  * Allows editing session details and assigning/removing presenters.
  */
 public class SessionEditorController {
-    
+
     private Stage stage;
     private Session session;
     private EventDetailController parentController;
     private PresenterDAO presenterDAO;
+    private EventDAO eventDAO;
     private EventAdminService eventAdminService;
     private int associatedEventId; // For new sessions
     private boolean isNewSession;
@@ -50,6 +53,7 @@ public class SessionEditorController {
         this.session = session;
         this.parentController = parentController;
         this.presenterDAO = DaoProvider.getPresenterDAO();
+        this.eventDAO = DaoProvider.getEventDAO();
         this.eventAdminService = new EventAdminServiceImpl();
         this.isNewSession = false;
     }
@@ -59,6 +63,7 @@ public class SessionEditorController {
         this.associatedEventId = eventId;
         this.parentController = parentController;
         this.presenterDAO = DaoProvider.getPresenterDAO();
+        this.eventDAO = DaoProvider.getEventDAO();
         this.eventAdminService = new EventAdminServiceImpl();
         this.isNewSession = true;
         
@@ -328,6 +333,27 @@ public class SessionEditorController {
             java.time.LocalDateTime newStart = startDatePicker.getValue()
                     .atTime(startHourSpinner.getValue(), startMinSpinner.getValue());
             java.time.LocalDateTime newEnd = newStart.plusHours(durationHoursSpinner.getValue());
+
+            int targetEventId = isNewSession ? associatedEventId : session.getEventId();
+            Event event = eventDAO.findById(targetEventId).orElse(null);
+
+            if (event != null) {
+                if (newStart.isBefore(event.getStartDate())) {
+                    showError("Invalid Date",
+                            "Session cannot start before the Event starts.\n" +
+                                    "Event Start: " + event.getStartDate().toString().replace("T", " "));
+                    return;
+                }
+                if (newEnd.isAfter(event.getEndDate())) {
+                    showError("Invalid Date",
+                            "Session cannot end after the Event ends.\n" +
+                                    "Event End: " + event.getEndDate().toString().replace("T", " "));
+                    return;
+                }
+            } else {
+                showError("System Error", "Could not find the parent event to validate dates.");
+                return;
+            }
             session.setStartTime(newStart);
             session.setEndTime(newEnd);
             
