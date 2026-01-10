@@ -42,7 +42,12 @@ public class SessionDAOImpl implements SessionDAO {
             ps.setString(2, session.getTitle());
             ps.setString(3, session.getDescription());
             ps.setTimestamp(4, java.sql.Timestamp.valueOf(session.getStartTime()));
-            ps.setTimestamp(5, java.sql.Timestamp.valueOf(session.getEndTime() != null ? session.getEndTime() : session.getStartTime().plusHours(1)));
+            LocalDateTime endTime =
+                    session.getEndTime() != null
+                            ? session.getEndTime()
+                            : session.getStartTime().plusHours(1);
+
+            ps.setTimestamp(5, java.sql.Timestamp.valueOf(endTime));
             ps.setString(6, session.getVenue());
             ps.setInt(7, session.getCapacity());
 
@@ -190,7 +195,7 @@ public class SessionDAOImpl implements SessionDAO {
 
     @Override
     public void update(Session session) {
-        String sql = "UPDATE session SET event_id = ?, title = ?, description = ?, " +
+        String sql = "UPDATE session SET event_id = ?, title = ?, description = ?" +
                 "start_time = ?, end_time = ?, venue = ?, capacity = ? WHERE session_id = ?";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
