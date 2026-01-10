@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -268,16 +267,21 @@ public class AttendeeDashboardController {
             c.getValue().getType() != null ? c.getValue().getType().toString() : "N/A"));
         typeCol.setPrefWidth(100);
 
-        TableColumn<Event, String> dateCol = new TableColumn<>("Date");
-        dateCol.setCellValueFactory(c -> new SimpleStringProperty(
+        TableColumn<Event, String> startDateCol = new TableColumn<>("Start Date");
+        startDateCol.setCellValueFactory(c -> new SimpleStringProperty(
             c.getValue().getStartDate() != null ? c.getValue().getStartDate().format(DATE_FORMATTER) : "N/A"));
-        dateCol.setPrefWidth(100);
+        startDateCol.setPrefWidth(100);
+
+        TableColumn<Event, String> endDateCol = new TableColumn<>("End Date");
+        endDateCol.setCellValueFactory(c -> new SimpleStringProperty(
+                c.getValue().getEndDate() != null ? c.getValue().getEndDate().format(DATE_FORMATTER) : "N/A"));
+        endDateCol.setPrefWidth(100);
 
         TableColumn<Event, String> locationCol = new TableColumn<>("Location");
         locationCol.setCellValueFactory(new PropertyValueFactory<>("location"));
         locationCol.setPrefWidth(120);
 
-        eventTable.getColumns().addAll(nameCol, typeCol, dateCol, locationCol);
+        eventTable.getColumns().addAll(nameCol, typeCol, startDateCol, endDateCol, locationCol);
 
         // Use cached sessions for instant loading (no delay!)
         eventTable.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
@@ -321,7 +325,17 @@ public class AttendeeDashboardController {
         capacityCol.setCellValueFactory(new PropertyValueFactory<>("capacity"));
         capacityCol.setPrefWidth(80);
 
-        sessionTable.getColumns().addAll(sessionTitleCol, venueCol, capacityCol);
+        TableColumn<Session, String> startTimeCol = new TableColumn<>("Start Time");
+        startTimeCol.setCellValueFactory(c -> new SimpleStringProperty(
+                c.getValue().getStartTime() != null ? c.getValue().getStartTime().format(DATETIME_FORMATTER) : "N/A"));
+        startTimeCol.setPrefWidth(120);
+
+        TableColumn<Session, String> endTimeCol = new TableColumn<>("Start Time");
+        endTimeCol.setCellValueFactory(c -> new SimpleStringProperty(
+                c.getValue().getEndTime() != null ? c.getValue().getEndTime().format(DATETIME_FORMATTER) : "N/A"));
+        endTimeCol.setPrefWidth(120);
+
+        sessionTable.getColumns().addAll(sessionTitleCol, venueCol, capacityCol, startTimeCol, endTimeCol);
 
         // Registration controls
         Label ticketLabel = new Label("3. Choose Ticket Type");
