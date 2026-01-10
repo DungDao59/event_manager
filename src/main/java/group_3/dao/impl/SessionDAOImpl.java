@@ -28,8 +28,8 @@ public class SessionDAOImpl implements SessionDAO {
 
     @Override
     public void create(Session session) {
-        String sql = "INSERT INTO session (event_id, title, description, scheduled_date, start_time, end_time, venue, capacity) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO session (event_id, title, description, start_time, end_time, venue, capacity) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -38,11 +38,10 @@ public class SessionDAOImpl implements SessionDAO {
             ps.setInt(1, eventId);
             ps.setString(2, session.getTitle());
             ps.setString(3, session.getDescription());
-            ps.setDate(4, java.sql.Date.valueOf(session.getStartTime().toLocalDate()));
-            ps.setTime(5, java.sql.Time.valueOf(session.getStartTime().toLocalTime()));
-            ps.setTime(6, java.sql.Time.valueOf(session.getEndTime() != null ? session.getEndTime().toLocalTime() : session.getStartTime().plusHours(1).toLocalTime()));
-            ps.setString(7, session.getVenue());
-            ps.setInt(8, session.getCapacity());
+            ps.setTime(4, java.sql.Time.valueOf(session.getStartTime().toLocalTime()));
+            ps.setTime(5, java.sql.Time.valueOf(session.getEndTime() != null ? session.getEndTime().toLocalTime() : session.getStartTime().plusHours(1).toLocalTime()));
+            ps.setString(6, session.getVenue());
+            ps.setInt(7, session.getCapacity());
 
             ps.executeUpdate();
             ResultSet rs = ps.getGeneratedKeys();
@@ -130,7 +129,7 @@ public class SessionDAOImpl implements SessionDAO {
 
     @Override
     public void update(Session session) {
-        String sql = "UPDATE session SET event_id = ?, title = ?, description = ?, scheduled_date = ?, " +
+        String sql = "UPDATE session SET event_id = ?, title = ?, description = ?" +
                 "start_time = ?, end_time = ?, venue = ?, capacity = ? WHERE session_id = ?";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -141,11 +140,10 @@ public class SessionDAOImpl implements SessionDAO {
             ps.setString(2, session.getTitle());
             ps.setString(3, session.getDescription());
             ps.setTimestamp(4, java.sql.Timestamp.valueOf(session.getStartTime()));
-            ps.setTimestamp(5, java.sql.Timestamp.valueOf(session.getStartTime()));
-            ps.setTimestamp(6, java.sql.Timestamp.valueOf(session.getEndTime() != null ? session.getEndTime() : session.getStartTime().plusHours(1)));
-            ps.setString(7, session.getVenue());
-            ps.setInt(8, session.getCapacity());
-            ps.setInt(9, session.getSessionId());
+            ps.setTimestamp(5, java.sql.Timestamp.valueOf(session.getEndTime() != null ? session.getEndTime() : session.getStartTime().plusHours(1)));
+            ps.setString(6, session.getVenue());
+            ps.setInt(7, session.getCapacity());
+            ps.setInt(8, session.getSessionId());
 
             ps.executeUpdate();
         } catch (Exception e) {
