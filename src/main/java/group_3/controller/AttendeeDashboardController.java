@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -268,16 +267,21 @@ public class AttendeeDashboardController {
             c.getValue().getType() != null ? c.getValue().getType().toString() : "N/A"));
         typeCol.setPrefWidth(100);
 
-        TableColumn<Event, String> dateCol = new TableColumn<>("Date");
-        dateCol.setCellValueFactory(c -> new SimpleStringProperty(
+        TableColumn<Event, String> startDateCol = new TableColumn<>("Start Date");
+        startDateCol.setCellValueFactory(c -> new SimpleStringProperty(
             c.getValue().getStartDate() != null ? c.getValue().getStartDate().format(DATE_FORMATTER) : "N/A"));
-        dateCol.setPrefWidth(100);
+        startDateCol.setPrefWidth(100);
+
+        TableColumn<Event, String> endDateCol = new TableColumn<>("End Date");
+        endDateCol.setCellValueFactory(c -> new SimpleStringProperty(
+                c.getValue().getEndDate() != null ? c.getValue().getEndDate().format(DATE_FORMATTER) : "N/A"));
+        endDateCol.setPrefWidth(100);
 
         TableColumn<Event, String> locationCol = new TableColumn<>("Location");
         locationCol.setCellValueFactory(new PropertyValueFactory<>("location"));
         locationCol.setPrefWidth(120);
 
-        eventTable.getColumns().addAll(nameCol, typeCol, dateCol, locationCol);
+        eventTable.getColumns().addAll(nameCol, typeCol, startDateCol, endDateCol, locationCol);
 
         // Use cached sessions for instant loading (no delay!)
         eventTable.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
@@ -321,7 +325,17 @@ public class AttendeeDashboardController {
         capacityCol.setCellValueFactory(new PropertyValueFactory<>("capacity"));
         capacityCol.setPrefWidth(80);
 
-        sessionTable.getColumns().addAll(sessionTitleCol, venueCol, capacityCol);
+        TableColumn<Session, String> startTimeCol = new TableColumn<>("Start Time");
+        startTimeCol.setCellValueFactory(c -> new SimpleStringProperty(
+                c.getValue().getStartTime() != null ? c.getValue().getStartTime().format(DATETIME_FORMATTER) : "N/A"));
+        startTimeCol.setPrefWidth(120);
+
+        TableColumn<Session, String> endTimeCol = new TableColumn<>("Start Time");
+        endTimeCol.setCellValueFactory(c -> new SimpleStringProperty(
+                c.getValue().getEndTime() != null ? c.getValue().getEndTime().format(DATETIME_FORMATTER) : "N/A"));
+        endTimeCol.setPrefWidth(120);
+
+        sessionTable.getColumns().addAll(sessionTitleCol, venueCol, capacityCol, startTimeCol, endTimeCol);
 
         // Registration controls
         Label ticketLabel = new Label("3. Choose Ticket Type");
@@ -331,6 +345,12 @@ public class AttendeeDashboardController {
         ticketTypeCombo.getItems().addAll(TicketType.values());
         ticketTypeCombo.getSelectionModel().select(0);
         ticketTypeCombo.setMaxWidth(Double.MAX_VALUE);
+
+        ticketTypeCombo.setConverter(new StringConverter<>() {
+            public String toString(TicketType t) { return t == null ? "" : t + " - $" + getTicketPrice(t); }
+            public TicketType fromString(String s) { return null; }
+        });
+
 
         Button registerBtn = new Button("Register for Session");
         registerBtn.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;");
@@ -409,7 +429,15 @@ private void loadSessionsForEvent(int eventId) {
 
         try {
             // Calculate ticket price (simplified - you may want to get this from session/event)
-            double ticketPrice = ticketType == TicketType.VIP ? 100.0 : 50.0;
+            double ticketPrice = 50.0; // Default for GENERAL
+
+            if (ticketType == TicketType.VIP) {
+                ticketPrice = 100.0;
+            } else if (ticketType == TicketType.EARLYBIRD) {
+                ticketPrice = 80.0;
+            } else {
+                ticketPrice = 50.0; // GENERAL
+            }
             
             boolean success = registrationService.registerAttendee(
                 currentUser.getId(), 
@@ -427,6 +455,15 @@ private void loadSessionsForEvent(int eventId) {
             }
         } catch (Exception e) {
             showAlert(Alert.AlertType.ERROR, "Error", "Registration failed: " + e.getMessage());
+        }
+    }
+
+    private double getTicketPrice(TicketType type) {
+        if (type == null) return 0.0;
+        switch (type) {
+            case VIP:       return 100.0;
+            case EARLYBIRD: return 80.0;
+            default:        return 50.0; // GENERAL
         }
     }
 

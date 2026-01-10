@@ -251,6 +251,24 @@ public class EventAdminServiceImpl implements EventAdminService {
         if (session.getTitle() == null || session.getTitle().trim().isEmpty()) {
             throw new IllegalArgumentException("Session title cannot be null or empty");
         }
+        if (session.getStartTime() == null || session.getEndTime() == null) {
+            throw new IllegalArgumentException("Session start time and end time cannot be null");
+        }
+        if (session.getStartTime().isAfter(session.getEndTime())) {
+            throw new IllegalArgumentException("Session start time cannot be after end time");
+        }
+        
+        // Validate session times comply with event times
+        Event event = eventDAO.findById(session.getEventId())
+                .orElseThrow(() -> new IllegalArgumentException("Event not found with ID: " + session.getEventId()));
+        
+        if (session.getStartTime().isBefore(event.getStartDate())) {
+            throw new IllegalArgumentException("Session start time cannot be before event start date");
+        }
+        if (session.getEndTime().isAfter(event.getEndDate())) {
+            throw new IllegalArgumentException("Session end time cannot be after event end date");
+        }
+        
         sessionDAO.create(session);
 
         String detail = String.format("""
