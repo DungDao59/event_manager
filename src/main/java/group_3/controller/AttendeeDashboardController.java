@@ -346,6 +346,12 @@ public class AttendeeDashboardController {
         ticketTypeCombo.getSelectionModel().select(0);
         ticketTypeCombo.setMaxWidth(Double.MAX_VALUE);
 
+        ticketTypeCombo.setConverter(new StringConverter<>() {
+            public String toString(TicketType t) { return t == null ? "" : t + " - $" + getTicketPrice(t); }
+            public TicketType fromString(String s) { return null; }
+        });
+
+
         Button registerBtn = new Button("Register for Session");
         registerBtn.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;");
         registerBtn.setMaxWidth(Double.MAX_VALUE);
@@ -423,7 +429,15 @@ private void loadSessionsForEvent(int eventId) {
 
         try {
             // Calculate ticket price (simplified - you may want to get this from session/event)
-            double ticketPrice = ticketType == TicketType.VIP ? 100.0 : 50.0;
+            double ticketPrice = 50.0; // Default for GENERAL
+
+            if (ticketType == TicketType.VIP) {
+                ticketPrice = 100.0;
+            } else if (ticketType == TicketType.EARLYBIRD) {
+                ticketPrice = 80.0;
+            } else {
+                ticketPrice = 50.0; // GENERAL
+            }
             
             boolean success = registrationService.registerAttendee(
                 currentUser.getId(), 
@@ -441,6 +455,15 @@ private void loadSessionsForEvent(int eventId) {
             }
         } catch (Exception e) {
             showAlert(Alert.AlertType.ERROR, "Error", "Registration failed: " + e.getMessage());
+        }
+    }
+
+    private double getTicketPrice(TicketType type) {
+        if (type == null) return 0.0;
+        switch (type) {
+            case VIP:       return 100.0;
+            case EARLYBIRD: return 80.0;
+            default:        return 50.0; // GENERAL
         }
     }
 
