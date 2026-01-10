@@ -18,6 +18,6 @@ public class QRCodeTest {
         String qr = QRCode.generateTicketQRPayload(ticket);
 
         assertNotNull(qr);
-        assertTrue(qr.contains("\ticketId\": 1"));
+        assertTrue(qr.contains("\"ticketId\": 1"));
     }
 }

@@ -23,11 +23,28 @@ import io.github.cdimascio.dotenv.Dotenv;
 
 public class DatabaseConnection {
 
-    private static final Dotenv dotenv = Dotenv.load();
+    private static final Dotenv dotenv = Dotenv.configure()
+            .ignoreIfMissing()
+            .load();
 
-    private static final String URL  = dotenv.get("DB_URL");
-    private static final String USER = dotenv.get("DB_USER");
-    private static final String PASS = dotenv.get("DB_PASS");
+    private static final String URL  = getEnvOrDefault("DB_URL", "jdbc:postgresql://localhost:5432/event_management");
+    private static final String USER = getEnvOrDefault("DB_USER", "postgres");
+    private static final String PASS = getEnvOrDefault("DB_PASS", "");
+
+    private static String getEnvOrDefault(String key, String defaultValue) {
+        // First try dotenv
+        String value = dotenv.get(key);
+        if (value != null && !value.isEmpty()) {
+            return value;
+        }
+        // Then try system environment
+        value = System.getenv(key);
+        if (value != null && !value.isEmpty()) {
+            return value;
+        }
+        // Fall back to default
+        return defaultValue;
+    }
 
     /**
      * Get a new database connection. Each call returns a fresh connection.

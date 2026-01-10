@@ -7,6 +7,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -46,7 +47,10 @@ class EventStatisticsServiceTest {
     
     private EventStatisticsServiceImpl statsService;
     
-   
+    @BeforeEach
+    void setUp() {
+        statsService = new EventStatisticsServiceImpl(eventDAO, sessionDAO, ticketDAO);
+    }
     
     @Test
     void testCalculateEventRevenue_WithValidTickets() {

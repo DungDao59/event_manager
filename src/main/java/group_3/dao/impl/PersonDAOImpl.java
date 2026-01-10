@@ -71,7 +71,7 @@ public class PersonDAOImpl implements PersonDAO {
 
     @Override
     public void create(Person person) {
-        String sql = "INSERT INTO person (username, password, full_name, date_of_birth, contact_information, role) VALUES (?, ?, ?, ?, ?::jsonb, ?)";
+        String sql = "INSERT INTO person (username, password, full_name, date_of_birth, contact_information, role) VALUES (?, ?, ?, ?, ?::jsonb, ?::user_role)";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, person.getUsername());
