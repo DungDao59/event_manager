@@ -88,4 +88,12 @@ public interface EventStatisticsService {
      * @return the count of tickets with status USED
      */
     int getTotalCheckedIn(int eventId);
+
+        
+    /**
+     * Get statistics for all events.
+     * 
+     * @return a list of EventStatistics for all events
+     */
+    List<EventStatistics> getAllEventStatistics();
 }

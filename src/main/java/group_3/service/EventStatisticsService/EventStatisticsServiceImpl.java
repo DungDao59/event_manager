@@ -221,4 +221,18 @@ public class EventStatisticsServiceImpl implements EventStatisticsService {
             .filter(ticket -> ticket.getStatus() == TicketStatus.USED)
             .count();
     }
+
+    @Override
+    public List<EventStatistics> getAllEventStatistics() {
+        List<Event> allEvents = eventDAO.findAll();
+        List<EventStatistics> statsList = new ArrayList<>();
+        
+        for (Event event : allEvents) {
+            int eventId = event.getEventId();
+            Optional<EventStatistics> stats = getEventStatistics(eventId);
+            stats.ifPresent(statsList::add);
+        }
+        
+        return statsList;
+    }
 }
