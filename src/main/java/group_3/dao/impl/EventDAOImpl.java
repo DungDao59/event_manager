@@ -16,8 +16,8 @@ import group_3.model.Event;
 import group_3.model.Session;
 import group_3.model.enums.EventStatus;
 import group_3.model.enums.EventType;
-import group_3.util.DatabaseConnection;
 import group_3.util.DaoProvider;
+import group_3.util.DatabaseConnection;
 /**
  * @author Group 3
  *
@@ -194,14 +194,7 @@ public class EventDAOImpl implements EventDAO {
         String statusStr = rs.getString("status");
         String eventImage = rs.getString("event_image");
 
-        EventType type = null;
-        if (typeStr != null) {
-            try {
-                type = EventType.valueOf(typeStr);
-            } catch (IllegalArgumentException e) {
-                type = EventType.CONFERENCE;
-            }
-        }
+        EventType type = mapToValidEventType(typeStr);
 
         EventStatus status = EventStatus.SCHEDULED;
         if (statusStr != null) {
@@ -217,10 +210,42 @@ public class EventDAOImpl implements EventDAO {
 
         Event event = new Event(id, name, type, startDate, endDate, location, duration, status, eventImage);
         
-        // NOTE: Sessions are NOT loaded here to avoid N+1 query problem
-        // If sessions are needed, use sessionDAO.findByEventId(eventId) explicitly
-        // This significantly improves performance when loading multiple events
+        // Load associated sessions
+        try {
+            SessionDAO sessionDAO = DaoProvider.getSessionDAO();
+            List<Session> sessions = sessionDAO.findByEventId(id);
+            for (Session session : sessions) {
+                event.addSession(String.valueOf(session.getSessionId()));
+            }
+        } catch (Exception e) {
+            // Log but don't fail - sessions can be loaded separately if needed
+            System.err.println("Warning: Could not load sessions for event " + id + ": " + e.getMessage());
+        }
         
         return event;
+    }
+
+    /**
+     * Maps raw database type strings to valid EventType enum values.
+     * Only returns values defined in EventType enum: CONFERENCE, WORKSHOP, CONCERT, EXHIBITION
+     */
+    private EventType mapToValidEventType(String rawType) {
+        if (rawType == null) return EventType.CONFERENCE;
+        
+        String upperType = rawType.toUpperCase().trim();
+        
+        try {
+            return EventType.valueOf(upperType);
+        } catch (IllegalArgumentException ex) {
+            return switch (upperType) {
+                case "SUMMIT" -> EventType.CONFERENCE;
+                case "SEMINAR" -> EventType.WORKSHOP;
+                case "EXPO" -> EventType.EXHIBITION;
+                case "FAIR" -> EventType.EXHIBITION;
+                case "MEETUP" -> EventType.WORKSHOP;
+                case "SYMPOSIUM" -> EventType.CONFERENCE;
+                default -> EventType.CONFERENCE;
+            };
+        }
     }
 }

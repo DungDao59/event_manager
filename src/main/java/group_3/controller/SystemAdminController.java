@@ -3,13 +3,10 @@ package group_3.controller;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import group_3.dao.EventDAO;
 import group_3.dao.ScheduleDAO;
-import group_3.dao.SessionDAO;
 import group_3.dao.TicketDAO;
 import group_3.dao.impl.PersonDAOImpl;
 import group_3.model.Event;
@@ -21,15 +18,13 @@ import group_3.model.SystemHistory;
 import group_3.model.Ticket;
 import group_3.model.enums.Role;
 import group_3.model.enums.TicketStatus;
-import group_3.security.AuthContext;
 import group_3.service.EventAdminService.EventAdminService;
 import group_3.service.EventAdminService.EventAdminServiceImpl;
-import group_3.service.EventStatisticsService.EventStatisticsService;
-import group_3.service.EventStatisticsService.EventStatisticsServiceImpl;
 import group_3.service.SystemHistoryService.SystemHistoryService;
 import group_3.service.SystemHistoryService.SystemHistoryServiceImpl;
 import group_3.service.UserService.UserService;
 import group_3.service.UserService.UserServiceImpl;
+import group_3.util.BulkDataLoader;
 import group_3.util.DaoProvider;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -49,6 +44,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableCell;
@@ -65,7 +61,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.scene.control.ProgressIndicator;
 import javafx.stage.Stage;
 
 /**
@@ -80,7 +75,6 @@ public class SystemAdminController {
     private final SystemHistoryService historyService;
     private final UserService userService;
     private final EventAdminService eventAdminService;
-    private final EventStatisticsService statisticsService;
     private final TicketDAO ticketDAO;
     private final ScheduleDAO scheduleDAO;
 
@@ -120,6 +114,10 @@ public class SystemAdminController {
     private Label totalTicketsValue;
     private Label totalRevenueValue;
 
+    // Loading overlay components
+    private StackPane loadingOverlay;
+    private Label loadingLabel;
+
     private static final DateTimeFormatter DATE_TIME_FORMATTER = 
         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -128,11 +126,8 @@ public class SystemAdminController {
         this.userService = new UserServiceImpl(new PersonDAOImpl());
         this.eventAdminService = new EventAdminServiceImpl();
         
-        EventDAO eventDAO = DaoProvider.getEventDAO();
-        SessionDAO sessionDAO = DaoProvider.getSessionDAO();
         this.ticketDAO = DaoProvider.getTicketDAO();
         this.scheduleDAO = DaoProvider.getScheduleDAO();
-        this.statisticsService = new EventStatisticsServiceImpl(eventDAO, sessionDAO, ticketDAO);
         
         initializeUI();
     }
@@ -155,118 +150,89 @@ public class SystemAdminController {
         Tab statsTab = new Tab("Reports & Statistics", createStatisticsView());
 
         tabPane.getTabs().addAll(historyTab, usersTab, eventsTab, sessionsTab, ticketsTab, schedulesTab, statsTab);
-        
+
         // Create loading overlay
-        VBox loadingBox = new VBox(20);
-        loadingBox.setAlignment(Pos.CENTER);
-        loadingBox.setStyle("-fx-background-color: rgba(255, 255, 255, 0.95);");
-        
+        loadingOverlay = new StackPane();
+        loadingOverlay.setStyle("-fx-background-color: rgba(255, 255, 255, 0.9);");
         ProgressIndicator progressIndicator = new ProgressIndicator();
-        progressIndicator.setStyle("-fx-progress-color: #2196F3;");
-        progressIndicator.setPrefSize(80, 80);
-        
-        Label loadingLabel = new Label("Loading Admin Dashboard...");
-        loadingLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #333;");
-        
-        Label loadingSubLabel = new Label("Please wait while we fetch all data");
-        loadingSubLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #666;");
-        
-        loadingBox.getChildren().addAll(progressIndicator, loadingLabel, loadingSubLabel);
-        
-        // Use StackPane to overlay loading screen
-        StackPane stackPane = new StackPane();
-        stackPane.getChildren().addAll(tabPane, loadingBox);
-        
-        root.setCenter(stackPane);
+        progressIndicator.setMaxSize(80, 80);
+        loadingLabel = new Label("Loading data...");
+        loadingLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        VBox loadingContent = new VBox(15, progressIndicator, loadingLabel);
+        loadingContent.setAlignment(Pos.CENTER);
+        loadingOverlay.getChildren().add(loadingContent);
+        loadingOverlay.setVisible(true);
+
+        // Wrap tabPane with loading overlay
+        StackPane contentWrapper = new StackPane(tabPane, loadingOverlay);
+        root.setCenter(contentWrapper);
+
         scene = new Scene(root);
         
-        // Load data and hide loading screen when done
-        loadAllDataAsync(loadingBox);
+        // Load all data asynchronously using BulkDataLoader (single connection)
+        loadAllDataAsync();
     }
 
-    private void loadAllDataAsync(VBox loadingBox) {
+    private void loadAllDataAsync() {
+        // Show loading overlay
+        Platform.runLater(() -> {
+            if (loadingOverlay != null) {
+                loadingOverlay.setVisible(true);
+                loadingLabel.setText("Loading data...");
+            }
+        });
+
         Thread loadThread = new Thread(() -> {
             try {
-                List<SystemHistory> historyData = new ArrayList<>();
-                List<Person> userData = new ArrayList<>();
-                List<Event> eventData = new ArrayList<>();
-                List<Session> sessionData = new ArrayList<>();
-                List<Ticket> ticketData = new ArrayList<>();
-                List<ScheduleEntry> scheduleData = new ArrayList<>();
-                List<EventStatistics> statsData = new ArrayList<>();
-                
-                try { historyData = historyService.getAllHistory(); } catch (Exception e) { e.printStackTrace(); }
-                try { userData = userService.getAllUsers(); } catch (Exception e) { e.printStackTrace(); }
-                try { eventData = eventAdminService.getAllEvents(); } catch (Exception e) { e.printStackTrace(); }
-                try { sessionData = eventAdminService.getAllSessions(); } catch (Exception e) { e.printStackTrace(); }
-                try { ticketData = ticketDAO.findAll(); } catch (Exception e) { e.printStackTrace(); }
-                try { scheduleData = scheduleDAO.findAllSchedule(); } catch (Exception e) { e.printStackTrace(); }
-                try { statsData = statisticsService.getAllEventStatistics(); } catch (Exception e) { e.printStackTrace(); }
-                
-                final List<SystemHistory> finalHistory = historyData;
-                final List<Person> finalUsers = userData;
-                final List<Event> finalEvents = eventData;
-                final List<Session> finalSessions = sessionData;
-                final List<Ticket> finalTickets = ticketData;
-                final List<ScheduleEntry> finalSchedules = scheduleData;
-                final List<EventStatistics> finalStats = statsData;
+               
+                // Use BulkDataLoader - ONE connection for ALL data including statistics
+                BulkDataLoader.SystemAdminData data = BulkDataLoader.loadSystemAdminData();
+                   
+                final BulkDataLoader.SystemAdminData finalData = data;
                 
                 Platform.runLater(() -> {
-                    try {
-                        System.out.println("DEBUG: Platform.runLater executing...");
-                        System.out.println("DEBUG: historyTable null? " + (historyTable == null));
-                        System.out.println("DEBUG: finalHistory size: " + finalHistory.size());
-                        
-                        historyTable.setItems(FXCollections.observableArrayList(finalHistory));
-                        historyTable.refresh();  // Force TableView refresh
-                        System.out.println("DEBUG: historyTable items set, count: " + historyTable.getItems().size());
-                        
-                        userList.addAll(finalUsers);
-                        userTable.refresh();  // Force refresh
-                        
-                        eventList.addAll(finalEvents);
-                        eventTable.refresh();  // Force refresh
-                        
-                        sessionList.addAll(finalSessions);
-                        sessionTable.refresh();  // Force refresh
-                        
-                        ticketList.addAll(finalTickets);
-                        ticketTable.refresh();  // Force refresh
-                        
-                        scheduleList.addAll(finalSchedules);
-                        scheduleTable.refresh();  // Force refresh
-                        
-                        statsTable.setItems(FXCollections.observableArrayList(finalStats));
-                        statsTable.refresh();  // Force refresh
-                        
-                        if (totalEventsValue != null) {
-                            totalEventsValue.setText(String.valueOf(finalEvents.size()));
-                            totalUsersValue.setText(String.valueOf(finalUsers.size()));
-                            totalTicketsValue.setText(String.valueOf(finalTickets.size()));
-                            double revenue = finalTickets.stream().mapToDouble(Ticket::getPrice).sum();
-                            totalRevenueValue.setText(String.format("$%.2f", revenue));
-                        }
-                        
-                        // Load actor options for history filter
-                        actorComboBox.getItems().clear();
-                        actorComboBox.getItems().add("All Users");
-                        for (Person user : finalUsers) {
-                            actorComboBox.getItems().add(user.getId() + " - " + user.getUsername());
-                        }
-                        System.out.println("DEBUG: Platform.runLater completed successfully!");
-                        
-                        // Hide loading screen with fade out animation
-                        loadingBox.setVisible(false);
-                        
-                    } catch (Exception ex) {
-                        System.err.println("DEBUG ERROR in Platform.runLater: " + ex.getMessage());
-                        ex.printStackTrace();
-                        // Hide loading screen even on error
-                        loadingBox.setVisible(false);
+                    // Update all tables
+                    historyTable.setItems(FXCollections.observableArrayList(finalData.history));
+                    userList.clear();
+                    userList.addAll(finalData.users);
+                    eventList.clear();
+                    eventList.addAll(finalData.events);
+                    sessionList.clear();
+                    sessionList.addAll(finalData.sessions);
+                    ticketList.clear();
+                    ticketList.addAll(finalData.tickets);
+                    scheduleList.clear();
+                    scheduleList.addAll(finalData.schedules);
+                    statsTable.setItems(FXCollections.observableArrayList(finalData.statistics));
+                    
+                    // Update statistics cards
+                    if (totalEventsValue != null) {
+                        totalEventsValue.setText(String.valueOf(finalData.events.size()));
+                        totalUsersValue.setText(String.valueOf(finalData.users.size()));
+                        totalTicketsValue.setText(String.valueOf(finalData.tickets.size()));
+                        double revenue = finalData.tickets.stream().mapToDouble(Ticket::getPrice).sum();
+                        totalRevenueValue.setText(String.format("$%.2f", revenue));
+                    }
+                    
+                    // Load actor options for history filter
+                    actorComboBox.getItems().clear();
+                    actorComboBox.getItems().add("All Users");
+                    for (Person user : finalData.users) {
+                        actorComboBox.getItems().add(user.getId() + " - " + user.getUsername());
+                    }
+                    
+                    // Hide loading overlay
+                    if (loadingOverlay != null) {
+                        loadingOverlay.setVisible(false);
                     }
                 });
             } catch (Exception e) {
                 e.printStackTrace();
+                Platform.runLater(() -> {
+                    if (loadingOverlay != null) {
+                        loadingOverlay.setVisible(false);
+                    }
+                });
             }
         });
         loadThread.setDaemon(true);
@@ -288,11 +254,15 @@ public class SystemAdminController {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
+        Button profileBtn = new Button("My Profile");
+        profileBtn.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;");
+        profileBtn.setOnAction(e -> handleMyProfile());
+
         Button logoutBtn = new Button("Logout");
         logoutBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold;");
         logoutBtn.setOnAction(e -> handleLogout());
 
-        header.getChildren().addAll(titleLabel, spacer, logoutBtn);
+        header.getChildren().addAll(titleLabel, spacer, profileBtn, logoutBtn);
         return header;
     }
 
@@ -525,7 +495,10 @@ public class SystemAdminController {
         confirm.setContentText("Are you sure?");
         Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            try { userService.deleteUser(user.getId()); showAlert(Alert.AlertType.INFORMATION, "Success", "User deleted."); loadUserData(); }
+            try { userService.deleteUser(user.getId());
+                showAlert(Alert.AlertType.INFORMATION, "Success", "User deleted.");
+                loadUserData();
+            }
             catch (Exception e) { showAlert(Alert.AlertType.ERROR, "Error", "Failed: " + e.getMessage()); }
         }
     }
@@ -1032,23 +1005,39 @@ public class SystemAdminController {
     }
 
     private void loadStatisticsData() {
-        try {
-            List<Event> events = eventAdminService.getAllEvents();
-            List<Person> users = userService.getAllUsers();
-            List<Ticket> tickets = ticketDAO.findAll();
-            double revenue = tickets.stream().mapToDouble(Ticket::getPrice).sum();
-
-            totalEventsValue.setText(String.valueOf(events.size()));
-            totalUsersValue.setText(String.valueOf(users.size()));
-            totalTicketsValue.setText(String.valueOf(tickets.size()));
-            totalRevenueValue.setText(String.format("$%.2f", revenue));
-
-            List<EventStatistics> stats = statisticsService.getAllEventStatistics();
-            statsTable.setItems(FXCollections.observableArrayList(stats));
-        } catch (Exception e) { e.printStackTrace(); }
+        // Use BulkDataLoader for optimized single-connection loading
+        Thread loadThread = new Thread(() -> {
+            try {
+                BulkDataLoader.SystemAdminData data = BulkDataLoader.loadSystemAdminData();
+                double revenue = data.tickets.stream().mapToDouble(Ticket::getPrice).sum();
+                
+                Platform.runLater(() -> {
+                    totalEventsValue.setText(String.valueOf(data.events.size()));
+                    totalUsersValue.setText(String.valueOf(data.users.size()));
+                    totalTicketsValue.setText(String.valueOf(data.tickets.size()));
+                    totalRevenueValue.setText(String.format("$%.2f", revenue));
+                    statsTable.setItems(FXCollections.observableArrayList(data.statistics));
+                });
+            } catch (Exception e) { 
+                e.printStackTrace(); 
+            }
+        });
+        loadThread.setDaemon(true);
+        loadThread.start();
     }
 
     // ======================= UTILITY METHODS =======================
+
+    private void handleMyProfile() {
+        try {
+            Stage stage = (Stage) scene.getWindow();
+            ProfileController profileController = new ProfileController();
+            stage.setScene(profileController.getScene());
+            stage.setTitle("My Profile");
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Navigation Error", "Could not load profile page: " + e.getMessage());
+        }
+    }
 
     private void handleLogout() {
         try {
