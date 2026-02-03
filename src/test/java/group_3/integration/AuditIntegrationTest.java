@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import group_3.dao.PersonDAO;
@@ -23,6 +24,7 @@ import group_3.util.PasswordUtil;
 /**
  * @author Group 3
  */
+@Disabled("Integration test - requires real Postgres DB")
 public class AuditIntegrationTest {
 
     @Test

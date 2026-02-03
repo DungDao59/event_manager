@@ -126,7 +126,8 @@ public class Session {
      * @param presenterId presenter identifier
      */
     public void removePresenter(int presenterId) {
-        presenterIds.remove(presenterId);
+        // remove by object (value) to avoid accidental index removal
+        presenterIds.remove(Integer.valueOf(presenterId));
     }
 
     /** Snapshot of presenter ids assigned to this session (unmodifiable). */
